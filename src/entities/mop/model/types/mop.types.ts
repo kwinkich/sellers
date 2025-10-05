@@ -1,10 +1,12 @@
+import type { ClientLevels } from "@/entities/client";
+
 export interface MopProfile {
 	id: number;
 	mopUserId: number;
 	clientId: number;
 	currentSlotId: number;
 	repScore: number;
-	level: "LEVEL_3";
+	level: ClientLevels;
 	createdAt: string;
 	updatedAt: string;
 	clientUser: {
@@ -36,7 +38,7 @@ export interface CreateMopProfileRequest {
 	name: string;
 	telegramUsername: string;
 	repScore: number;
-	level: "LEVEL_3";
+	level: ClientLevels;
 }
 
 export interface GetMopProfilesParams {

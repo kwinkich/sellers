@@ -1,9 +1,9 @@
-import { useId, type FC } from "react";
-
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useId, type ComponentProps, type FC } from "react";
 
-interface InputFloatingLabelProps {
-	variant?: "dark" | "default";
+interface InputFloatingLabelProps extends ComponentProps<"input"> {
+	variant?: "dark" | "second" | "default";
 	placeholder?: string;
 	value?: string;
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,17 +18,13 @@ const InputFloatingLabel: FC<InputFloatingLabelProps> = ({
 	onChange,
 	type = "text",
 	disabled = false,
+	className,
+	...props
 }) => {
 	const id = useId();
 
 	return (
-		<div className="group relative w-full max-w-xs">
-			<label
-				htmlFor={id}
-				className="origin-start text-muted-foreground group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:text-foreground absolute top-1/2 block -translate-y-1/2 cursor-text px-2 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium"
-			>
-				<span className="inline-flex px-1">{placeholder}</span>
-			</label>
+		<div className="group relative w-full min-h-[64px]">
 			<Input
 				id={id}
 				type={type}
@@ -37,7 +33,30 @@ const InputFloatingLabel: FC<InputFloatingLabelProps> = ({
 				value={value}
 				onChange={onChange}
 				disabled={disabled}
+				className={cn(
+					"peer h-16 pt-2",
+					"flex items-start justify-start",
+					className
+				)}
+				{...props}
 			/>
+			<label
+				htmlFor={id}
+				className={cn(
+					"pointer-events-none absolute left-3 z-10  px-1 text-sm text-muted-foreground transition-all duration-200",
+					`${
+						variant !== "default"
+							? "text-base-gray peer-focus:text-base-gray -not-placeholder-shown:text-base-gray"
+							: "text-black peer-focus:text-foreground -not-placeholder-shown:text-foreground"
+					}`,
+					"top-1/2 -translate-y-1/2",
+					"peer-focus:top-3 peer-focus:-translate-y-0 peer-focus:text-xs peer-focus:font-medium ",
+					"peer-not-placeholder-shown:top-2 peer-not-placeholder-shown:-translate-y-0 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:font-medium ",
+					"peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+				)}
+			>
+				{placeholder}
+			</label>
 		</div>
 	);
 };

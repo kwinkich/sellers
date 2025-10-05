@@ -1,5 +1,10 @@
 import {
+	AdminAddClientPage,
+	AdminClientsListPage,
 	AdminHomePage,
+	AdminLicensesListPage,
+	AdminsControlPage,
+	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
   MopProfilePage,
@@ -7,6 +12,7 @@ import {
 } from "@/pages";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
+import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
 
 export const route = createBrowserRouter([
@@ -22,6 +28,7 @@ export const route = createBrowserRouter([
 				path: "home",
 				element: <ClientHomePage />,
 			},
+
 			{
 				path: "list-mop",
 				element: <ClientListMopPage />,
@@ -44,7 +51,33 @@ export const route = createBrowserRouter([
   },
 
 	{
-		path: "/admin/home",
-		element: <AdminHomePage />,
+		path: "/admin",
+		element: <AdminLayout />,
+		children: [
+			{
+				path: "home",
+				element: <AdminHomePage />,
+			},
+			{
+				path: "clients",
+				element: <AdminClientsListPage />,
+			},
+			{
+				path: "clients/create",
+				element: <AdminAddClientPage />,
+			},
+			{
+				path: "clients/update/:clientId",
+				element: <AdminUpdateClientPage />,
+			},
+			{
+				path: "clients/licenses/:clientId",
+				element: <AdminLicensesListPage />,
+			},
+			{
+				path: "list",
+				element: <AdminsControlPage />,
+			},
+		],
 	},
 ]);

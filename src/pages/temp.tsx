@@ -1,29 +1,34 @@
 import {
 	AdminsAPI,
+	AuthAPI,
 	ClientsAPI,
 	CoursesAPI,
 	MopProfilesAPI,
 	PracticesAPI,
 	type CreateClientRequest,
 } from "@/entities";
+import { updateAuthToken } from "@/shared/lib/getAuthToken";
+import { useMutation } from "@tanstack/react-query";
 import WebApp from "@twa-dev/sdk";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface ApiDashboardProps {
 	// Пропсы при необходимости
 }
 
 export const ApiDashboard: React.FC<ApiDashboardProps> = () => {
-	// const auth = useMutation({
-	// 	mutationFn: AuthAPI.authTelegram,
-	// 	onSuccess: (data) =>
-	// 		console.info(`[AUTH]: Auth succes - ${data.data.accessToken}`),
-	// 	onError: () => console.error("[AUTH]: Auth error"),
-	// });
+	const auth = useMutation({
+		mutationFn: AuthAPI.authTelegram,
+		onSuccess: (data) => {
+			updateAuthToken(data.data.accessToken);
+			console.info(`[AUTH]: Auth success - ${data.data.accessToken}`);
+		},
+		onError: () => console.error("[AUTH]: Auth error"),
+	});
 
-	// useEffect(() => {
-	// 	auth.mutate();
-	// }, []);
+	useEffect(() => {
+		auth.mutate();
+	}, []);
 
 	console.log("Initdata:", WebApp.initData);
 
