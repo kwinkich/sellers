@@ -3,6 +3,7 @@ import {
 	AdminClientsListPage,
 	AdminHomePage,
 	AdminLicensesListPage,
+	AdminsControlPage,
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
@@ -61,6 +62,10 @@ export const route = createBrowserRouter([
 			{
 				path: "clients/licenses/:clientId",
 				element: <AdminLicensesListPage />,
+			},
+			{
+				path: "list",
+				element: <AdminsControlPage />,
 			},
 		],
 	},
