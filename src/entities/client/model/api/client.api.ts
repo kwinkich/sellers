@@ -122,3 +122,7 @@ export const clientsMutationOptions = {
 			ClientsAPI.addClientLicenses(id, data),
 	}),
 };
+
+export type CreateClientMutation = ReturnType<
+	typeof clientsMutationOptions.create
+>;

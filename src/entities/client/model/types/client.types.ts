@@ -1,6 +1,8 @@
+export type ClientLevels = "LEVEL_3" | "LEVEL_4";
+
 export interface Client {
 	id: number;
-	level: "LEVEL_3";
+	level: ClientLevels;
 	inn: string;
 	addedByAdminId: number;
 	clientUserId: number;
@@ -35,7 +37,7 @@ export interface LicenseSlot {
 export interface ClientListItem {
 	id: number;
 	companyName: string;
-	level: "LEVEL_3";
+	level: ClientLevels;
 	licensesTotal: number;
 	licensesActive: number;
 	licensesNotActive: number;
@@ -51,7 +53,7 @@ export interface ClientDetail {
 	id: number;
 	displayName: string;
 	telegramUsername: string;
-	level: "LEVEL_3";
+	level: ClientLevels;
 	inn: string;
 	numberOfLicenses: number;
 	closestLicenseExpiresAt: string;
@@ -83,7 +85,7 @@ export interface LicenseInfo {
 }
 
 export interface CreateClientRequest {
-	level: "LEVEL_3";
+	level: ClientLevels;
 	telegramUsername: string;
 	companyName: string;
 	inn: string;
@@ -92,7 +94,7 @@ export interface CreateClientRequest {
 }
 
 export interface UpdateClientRequest {
-	level: "LEVEL_3";
+	level: ClientLevels;
 	telegramUsername: string;
 	companyName: string;
 	inn: string;
