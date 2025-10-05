@@ -16,7 +16,7 @@ const MOCK_CLIENT_DATA = {
 	closestLicenseExpiresAt: "2024-12-31",
 };
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 export const AdminUpdateClientPage = () => {
 	const { clientId } = useParams<{ clientId: string }>();

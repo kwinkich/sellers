@@ -10,7 +10,7 @@ interface ClientsListProps {
 	searchQuery: string;
 }
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 export const ClientsList = ({ type, searchQuery }: ClientsListProps) => {
 	if (USE_MOCK_DATA) {

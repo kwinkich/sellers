@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { MOCK_LICENSES } from "./mock";
 import { LicenseCard } from "./ui";
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 export const AdminLicencesList = () => {
 	const { clientId } = useParams<{ clientId: string }>();

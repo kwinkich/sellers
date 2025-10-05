@@ -7,6 +7,7 @@ import {
 	PracticesAPI,
 	type CreateClientRequest,
 } from "@/entities";
+import { updateAuthToken } from "@/shared/lib/getAuthToken";
 import { useMutation } from "@tanstack/react-query";
 import WebApp from "@twa-dev/sdk";
 import React, { useEffect, useState } from "react";
@@ -18,8 +19,10 @@ interface ApiDashboardProps {
 export const ApiDashboard: React.FC<ApiDashboardProps> = () => {
 	const auth = useMutation({
 		mutationFn: AuthAPI.authTelegram,
-		onSuccess: (data) =>
-			console.info(`[AUTH]: Auth succes - ${data.data.accessToken}`),
+		onSuccess: (data) => {
+			updateAuthToken(data.data.accessToken);
+			console.info(`[AUTH]: Auth success - ${data.data.accessToken}`);
+		},
 		onError: () => console.error("[AUTH]: Auth error"),
 	});
 

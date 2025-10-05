@@ -16,7 +16,6 @@ import {
 } from "@/entities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -104,7 +103,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 			id: parseInt(clientId),
 			data: {
 				licenseCount,
-				licenseExpiresAt: format(licenseExpiresAt, "yyyy-MM-dd"),
+				licenseExpiresAt: licenseExpiresAt.toISOString(),
 			},
 		});
 	};

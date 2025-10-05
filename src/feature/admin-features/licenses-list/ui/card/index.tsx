@@ -34,15 +34,16 @@ export const LicenseCard: FC<{ data: LicenseInfo }> = ({ data }) => {
 	const getExpirationDate = () => {
 		const today = new Date();
 		const expirationDate = new Date(today);
-		expirationDate.setDate(today.getDate() + data.daysLeft);
+		// Convert seconds to days and add to today's date
+		const daysFromSeconds = Math.floor(data.durationSeconds / (24 * 60 * 60));
+		expirationDate.setDate(today.getDate() + daysFromSeconds);
 		return format(expirationDate, "dd.MM.yyyy");
 	};
 
 	const getExpiredDate = () => {
 		const today = new Date();
-		const expiredDate = new Date(today);
-		expiredDate.setDate(today.getDate() - Math.abs(data.daysLeft));
-		return format(expiredDate, "dd.MM.yyyy");
+		// For expired licenses, just return today's date
+		return format(today, "dd.MM.yyyy");
 	};
 
 	return (
