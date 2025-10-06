@@ -7,12 +7,17 @@ interface Props extends VariantProps<typeof headTextVariants> {
 	className?: string;
 }
 
-const headTextVariants = cva("flex flex-col items-start", {
+const headTextVariants = cva("flex flex-col ", {
 	variants: {
 		variant: {
 			"white-gray": "[&_.head]:text-white [&_.label]:text-base-gray",
 			"black-black": "[&_.head]:text-black [&_.label]:text-black",
 			"black-gray": "[&_.head]:text-black [&_.label]:text-second-gray",
+		},
+		aligin: {
+			start: "items-start",
+			center: "items-center",
+			end: "items-end",
 		},
 		headSize: {
 			sm: "[&_.head]:text-sm",
@@ -40,6 +45,7 @@ const headTextVariants = cva("flex flex-col items-start", {
 		headSize: "2xl",
 		labelSize: "xs",
 		gap: "sm",
+		aligin: "start",
 	},
 });
 
@@ -50,12 +56,14 @@ export const HeadText: FC<Props> = ({
 	headSize,
 	labelSize,
 	gap,
+	aligin,
 	className,
 }) => {
 	return (
 		<div
 			className={headTextVariants({
 				variant,
+				aligin,
 				headSize,
 				labelSize,
 				gap,

@@ -4,15 +4,17 @@ import {
 	AdminCreateCasePage,
 	AdminHomePage,
 	AdminLicensesListPage,
+	AdminScenariosCreatePage,
 	AdminsControlPage,
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
+	LessonDetailsPage,
 	MopCoursesPage,
 	MopDetailsPage,
 	MopLessonsPage,
 	MopProfilePage,
-	AdminScenariosCreatePage,
+	QuizPage,
 } from "@/pages";
 import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeHomePage from "@/pages/practice/home";
@@ -69,6 +71,14 @@ export const route = createBrowserRouter([
 						path: "courses/:courseId/lessons",
 						element: <MopLessonsPage />,
 					},
+					{
+						path: "lesson/:lessonId",
+						element: <LessonDetailsPage />,
+					},
+					{
+						path: "quizzes/:id",
+						element: <QuizPage />,
+					},
 				],
 			},
 		],
@@ -106,10 +116,10 @@ export const route = createBrowserRouter([
 				path: "cases/create",
 				element: <AdminCreateCasePage />,
 			},
-            {
-                path: "scenarios/create",
-                element: <AdminScenariosCreatePage />,
-            },
+			{
+				path: "scenarios/create",
+				element: <AdminScenariosCreatePage />,
+			},
 		],
 	},
 	{
