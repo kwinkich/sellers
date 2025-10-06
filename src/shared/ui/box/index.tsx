@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { FC, PropsWithChildren } from "react";
+import type { ComponentProps, FC, PropsWithChildren } from "react";
 
 interface Props extends PropsWithChildren {
 	className?: string;
@@ -50,6 +50,7 @@ const boxVariants = cva(
 
 export const Box: FC<
 	Props &
+		ComponentProps<"div"> &
 		VariantProps<typeof boxVariants> & {
 			asChild?: boolean;
 		}

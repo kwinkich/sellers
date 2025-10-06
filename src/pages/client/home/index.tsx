@@ -14,8 +14,10 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const ClientHomePage = () => {
+	const navigate = useNavigate();
 	const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
 	const { data, isLoading, error } = useQuery({
@@ -141,7 +143,11 @@ export const ClientHomePage = () => {
 						</p>
 					</Box>
 
-					<Box variant={"dark"} rounded="3xl">
+					<Box
+						variant={"dark"}
+						rounded="3xl"
+						onClick={() => navigate("/client/list-mop")}
+					>
 						<ListIcon size={36} fill="#06935F" />
 						<p className="font-medium text-white leading-[100%]">Список МОП</p>
 					</Box>
