@@ -1,7 +1,7 @@
-export type PracticeType = "ROLE_PLAY" | "SIMULATION" | "ASSESSMENT";
+export type PracticeType = "WITH_CASE" | "WITHOUT_CASE" | "MINI";
 
 export const PRACTICE_TYPE_LABELS: Record<PracticeType, string> = {
-	ROLE_PLAY: "Ролевая игра",
-	SIMULATION: "Симуляция",
-	ASSESSMENT: "Оценка",
+	WITH_CASE: "Игра с кейсом",
+	WITHOUT_CASE: "Игра без кейса",
+	MINI: "Мини-игра",
 };

@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 const tabsListVariants = cva(
-	"inline-flex min-h-10 w-full items-center justify-center rounded-lg p-1",
+	"inline-flex h-[40px] w-full items-center justify-center rounded-xl p-1 gap-0.25",
 	{
 		variants: {
 			variant: {
@@ -20,7 +20,7 @@ const tabsListVariants = cva(
 );
 
 const tabsTriggerVariants = cva(
-	"inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center  rounded-md border border-transparent px-3 py-2 text-sm  font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+	"inline-flex h-[32px] flex-1 items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 cursor-pointer",
 	{
 		variants: {
 			variant: {
@@ -61,8 +61,10 @@ function Tabs({
 }
 
 interface TabsListProps
-	extends React.ComponentProps<typeof TabsPrimitive.List>,
-		VariantProps<typeof tabsListVariants> {}
+    extends React.ComponentProps<typeof TabsPrimitive.List>,
+        VariantProps<typeof tabsListVariants> {
+    children?: React.ReactNode;
+}
 
 function TabsList({ className, variant, ...props }: TabsListProps) {
 	return (
@@ -75,8 +77,10 @@ function TabsList({ className, variant, ...props }: TabsListProps) {
 }
 
 interface TabsTriggerProps
-	extends React.ComponentProps<typeof TabsPrimitive.Trigger>,
-		VariantProps<typeof tabsTriggerVariants> {}
+    extends React.ComponentProps<typeof TabsPrimitive.Trigger>,
+        VariantProps<typeof tabsTriggerVariants> {
+    children?: React.ReactNode;
+}
 
 function TabsTrigger({ className, variant, ...props }: TabsTriggerProps) {
 	return (

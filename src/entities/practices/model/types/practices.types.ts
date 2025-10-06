@@ -1,4 +1,5 @@
 export type PracticeRole = "SELLER" | "BUYER" | "MODERATOR";
+export type PracticeParticipantRole = PracticeRole | "OBSERVER";
 export type PracticeStatus =
 	| "CREATED"
 	| "SCHEDULED"
@@ -22,7 +23,7 @@ export interface Practice {
 	title: string;
 	scenarioId: number;
 	scenarioVersion: number;
-	caseId: number;
+	caseId: number | null;
 	practiceType: string;
 	createdByUserId: number;
 	createdByRole: string;
@@ -30,9 +31,9 @@ export interface Practice {
 	status: PracticeStatus;
 	zoomLink: string;
 	autoCancelAt: string;
-	sellerUserId: number;
-	buyerUserId: number;
-	moderatorUserId: number;
+	sellerUserId: number | null;
+	buyerUserId: number | null;
+	moderatorUserId: number | null;
 	createdAt: string;
 	updatedAt: string;
 	[key: string]: any;
@@ -42,38 +43,60 @@ export interface PracticeCard {
 	id: number;
 	practiceType: string;
 	title: string;
-	description: string;
+	description: string | null;
 	skills: SkillPractices[];
 	participantsCount: number;
 	startAt: string;
 	endAt: string;
 	status: PracticeStatus;
 	freeRoles: PracticeRole[];
-	myRole: PracticeRole;
-	zoomLink: string;
-	case: CaseInfo;
+	myRole: PracticeParticipantRole | null;
+	zoomLink: string | null;
+	case: CaseInfo | null;
 	resultsAvailable: boolean;
-	recordingUrl: string;
+	recordingUrl: string | null;
 }
 
 export interface CreatePracticeRequest {
 	scenarioId: number;
-	caseId: number;
+	caseId?: number | null;
 	skillIds: number[];
 	startAt: string;
-	initialRole: PracticeRole;
-	zoomLink: string;
+	initialRole?: PracticeRole;
+	zoomLink?: string;
 }
 
-export interface ClaimRoleRequest {
-	role: PracticeRole;
+export interface JoinPracticeRequest {
+	as: PracticeParticipantRole;
+}
+
+export interface SwitchRoleRequest {
+  to: PracticeParticipantRole;
 }
 
 export interface PracticeFinishResult {
 	practiceId: number;
-	status: PracticeStatus;
+	status: string;
 }
 
+export interface EvalAnswer {
+	blockId: number;
+	scaleItemId?: number | null;
+	selectedOptionId?: number | null;
+	textAnswer?: string | null;
+}
+
+export interface SubmitEvalRequest {
+	evaluatedUserId: number;
+	answers: EvalAnswer[];
+}
+
+export interface SubmitEvalResult {
+	taskStatus: "SUBMITTED";
+	submissionId: number;
+}
+
+// Query params
 export interface GetPracticesParams {
 	limit?: number;
 	page?: number;
@@ -94,11 +117,8 @@ export interface GetPracticesParams {
 export interface GetPracticeCardsParams {
 	limit?: number;
 	page?: number;
-	by?: "id" | "startAt" | "createdAt";
+	by?: "startAt" | "createdAt" | "id";
 	order?: "asc" | "desc";
-	status?: string | string[];
-	from?: string;
-	to?: string;
 }
 
 export interface GetMyPracticesParams {
@@ -109,4 +129,8 @@ export interface GetMyPracticesParams {
 export interface GetPastPracticesParams {
 	limit?: number;
 	page?: number;
+}
+
+export interface GetEvalFormParams {
+	evaluatedUserId: number;
 }

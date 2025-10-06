@@ -1,15 +1,16 @@
 import { API, createSearchParams, type GApiResponse } from "@/shared";
 import { queryOptions } from "@tanstack/react-query";
 import type {
-	ClaimRoleRequest,
 	CreatePracticeRequest,
 	GetMyPracticesParams,
 	GetPastPracticesParams,
 	GetPracticeCardsParams,
 	GetPracticesParams,
+	JoinPracticeRequest,
 	Practice,
 	PracticeCard,
 	PracticeFinishResult,
+  SwitchRoleRequest,
 } from "../types/practices.types";
 
 export const PracticesAPI = {
@@ -49,8 +50,8 @@ export const PracticesAPI = {
 	getPracticeById: (id: number) =>
 		API.get(`practices/${id}`).json<GApiResponse<PracticeCard>>(),
 
-	claimRole: (id: number, roleData: ClaimRoleRequest) =>
-		API.post(`practices/${id}/claim-role`, { json: roleData }).json<
+	joinPractice: (id: number, data: JoinPracticeRequest) =>
+		API.post(`practices/${id}/join`, { json: data }).json<
 			GApiResponse<PracticeCard>
 		>(),
 
@@ -58,6 +59,11 @@ export const PracticesAPI = {
 		API.post(`practices/${id}/finish`).json<
 			GApiResponse<PracticeFinishResult>
 		>(),
+
+  switchRole: (id: number, data: SwitchRoleRequest) =>
+    API.patch(`practices/${id}/switch-role`, { json: data }).json<
+      GApiResponse<PracticeCard>
+    >(),
 };
 
 export const practicesQueryOptions = {
@@ -97,12 +103,22 @@ export const practicesMutationOptions = {
 		mutationFn: PracticesAPI.createPractice,
 	}),
 
-	claimRole: () => ({
-		mutationFn: ({ id, data }: { id: number; data: ClaimRoleRequest }) =>
-			PracticesAPI.claimRole(id, data),
+	join: () => ({
+		mutationFn: ({
+			id,
+			data,
+		}: {
+			id: number;
+			data: JoinPracticeRequest;
+		}) => PracticesAPI.joinPractice(id, data),
 	}),
 
 	finish: () => ({
 		mutationFn: PracticesAPI.finishPractice,
 	}),
+
+  switchRole: () => ({
+    mutationFn: ({ id, data }: { id: number; data: SwitchRoleRequest }) =>
+      PracticesAPI.switchRole(id, data),
+  }),
 };

@@ -62,7 +62,7 @@ export const HeadText: FC<Props> = ({
 				className,
 			})}
 		>
-			<p className="font-medium head ">{head}</p>
+			<p className="font-medium head">{head}</p>
 			<p className="label">{label}</p>
 		</div>
 	);

@@ -1,16 +1,16 @@
 import {
-	AdminAddClientPage,
-	AdminClientsListPage,
-	AdminCreateCasePage,
-	AdminHomePage,
-	AdminLicensesListPage,
-	AdminsControlPage,
-	AdminUpdateClientPage,
-	ClientHomePage,
-	ClientListMopPage,
-  MopProfilePage,
-
+    AdminAddClientPage,
+    AdminClientsListPage,
+    AdminHomePage,
+    AdminLicensesListPage,
+    AdminsControlPage,
+    AdminUpdateClientPage,
+    ClientHomePage,
+    ClientListMopPage,
+    MopProfilePage,
+    AdminCreateCasePage
 } from "@/pages";
+import PracticeHomePage from "@/pages/practice/home";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
@@ -85,4 +85,8 @@ export const route = createBrowserRouter([
 			},
 		],
 	},
+  {
+    path: "practice",
+    element: <PracticeHomePage />,
+  },
 ]);
