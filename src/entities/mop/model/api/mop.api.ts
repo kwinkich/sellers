@@ -37,7 +37,6 @@ export const MopProfilesAPI = {
 	deleteMopProfile: (id: number) =>
 		API.delete(`mop-profiles/${id}`).json<GApiResponse<void>>(),
 
-	// Новые методы для профиля МОП
 	getMopProfileInfo: () =>
 		API.get("mop-profiles/profile/info").json<GApiResponse<MopProfileInfo>>(),
 
@@ -86,7 +85,6 @@ export const mopProfilesQueryOptions = {
 			queryFn: () => MopProfilesAPI.getMopProfileById(id),
 		}),
 
-	// Новые query options для профиля МОП
 	profileInfo: () =>
 		queryOptions({
 			queryKey: ["mop-profiles", "profile", "info"],

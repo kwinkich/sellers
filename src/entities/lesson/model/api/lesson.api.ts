@@ -40,6 +40,7 @@ export const lessonsQueryOptions = {
 		queryOptions({
 			queryKey: ["lessons", "list", params],
 			queryFn: () => LessonsAPI.getLessons(params),
+			retry: false, //TODO: REMOVE
 		}),
 
 	byModule: (moduleId: number, params?: GetLessonsParams) =>
