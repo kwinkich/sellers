@@ -5,7 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import * as React from "react";
 
 const selectTriggerVariants = cva(
-	"h-16 pl-4 pr-2 rounded-2xl placeholder:text-second-gray text-sm font-medium w-full min-w-0 transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex items-center justify-between gap-2 whitespace-nowrap shadow-xs",
+    "h-16 pl-4 pr-10 rounded-2xl placeholder:text-second-gray text-sm font-medium w-full min-w-0 transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex items-center justify-between gap-2 whitespace-nowrap shadow-xs relative",
 	{
 		variants: {
 			variant: {
@@ -54,20 +54,18 @@ function SelectTrigger({
 			{...props}
 		>
 			{children}
-			<SelectPrimitive.Icon asChild>
-				<svg
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-					className="absolute right-5 top-1/2 -translate-y-1/2 "
-				>
-					<path d="M15 12L10 17L10 7L15 12Z" fill="#06935F" />
-				</svg>
-
-				{/* <ChevronDownIcon /> */}
-			</SelectPrimitive.Icon>
+            <SelectPrimitive.Icon>
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                    <path d="M15 12L10 17L10 7L15 12Z" fill="#06935F" />
+                </svg>
+            </SelectPrimitive.Icon>
 		</SelectPrimitive.Trigger>
 	);
 }

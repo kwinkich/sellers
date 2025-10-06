@@ -11,6 +11,8 @@ import {
     AdminCreateCasePage
 } from "@/pages";
 import PracticeHomePage from "@/pages/practice/home";
+import PracticeCreatePage from "@/pages/practice/create";
+import PracticePreviewPage from "@/pages/practice/preview";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
@@ -88,5 +90,13 @@ export const route = createBrowserRouter([
   {
     path: "practice",
     element: <PracticeHomePage />,
+  },
+  {
+    path: "/practice/create",
+    element: <PracticeCreatePage />,
+  },
+  {
+    path: "/practice/preview",
+    element: <PracticePreviewPage />,
   },
 ]);

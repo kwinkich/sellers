@@ -4,6 +4,8 @@ import { Badge, ClientIcon, TimerIcon } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeParticipantRole, PracticeRole } from "@/entities/practices";
 import { practicesMutationOptions } from "@/entities/practices";
+import { useTermsStore } from "../model/terms.store";
+import { useSuccessDrawerStore } from "../model/successDrawer.store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { usePracticeJoinStore } from "../model/joinDrawer.store";
@@ -32,14 +34,23 @@ export const PracticeJoinDrawer = () => {
 
   const join = useMutation({
     ...practicesMutationOptions.join(),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["practices", "cards"] }),
         qc.invalidateQueries({ queryKey: ["practices", "mine"] }),
         qc.invalidateQueries({ queryKey: ["practices", "past"] }),
         practice ? qc.invalidateQueries({ queryKey: ["practices", "detail", practice.id] }) : Promise.resolve(),
       ]);
-      close();
+      // if joined as moderator, open terms; else show success
+      if (selectedRole === "MODERATOR") {
+        const updated = res?.data ?? practice!;
+        close();
+        requestAnimationFrame(() => useTermsStore.getState().open("MODERATOR", updated));
+      } else {
+        const updated = res?.data ?? practice!;
+        close();
+        requestAnimationFrame(() => useSuccessDrawerStore.getState().open(updated));
+      }
     },
   });
 
@@ -53,15 +64,37 @@ export const PracticeJoinDrawer = () => {
         qc.invalidateQueries({ queryKey: ["practices", "past"] }),
         practice ? qc.invalidateQueries({ queryKey: ["practices", "detail", practice.id] }) : Promise.resolve(),
       ]);
-      close();
+      // if switching to moderator, show terms
+      if (selectedRole === "MODERATOR") {
+        close();
+        if (res?.data) {
+          requestAnimationFrame(() => useTermsStore.getState().open("MODERATOR", res.data));
+        }
+      } else {
+        close();
+        if (res?.data) {
+          requestAnimationFrame(() => useSuccessDrawerStore.getState().open(res.data));
+        }
+      }
     },
   });
 
   if (!practice) return null;
 
   const start = new Date(practice.startAt);
-  const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const date = start.toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Europe/Moscow",
+  });
+
+  const time = start.toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Moscow",
+  });
+
 
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
@@ -107,27 +140,31 @@ export const PracticeJoinDrawer = () => {
                 const isSelected = selectedRole === role;
                 const label =
                   role === "OBSERVER" ? "Наблюдатель" : role === "BUYER" ? "Покупатель" : role === "SELLER" ? "Продавец" : "Модератор";
+                const repMin = role === "OBSERVER" ? null : role === "BUYER" ? 2 : role === "SELLER" ? 3 : 4;
 
                 return (
                   <div key={role} className="flex items-center justify-between py-3">
                     <div className="flex items-center gap-2">
                       <p className="text-white">{label}</p>
-                      {isMine && <span className="text-xs text-base-main">моя роль</span>}
-                      {taken && !isMine && <span className="text-xs text-red-400">Занято</span>}
+                      {repMin && <span className="text-xs text-emerald-400">от {repMin} REP</span>}
                     </div>
-                    {isAvailable ? (
-                      <Button
-                        size="2s"
-                        rounded="3xl"
-                        variant={isSelected ? "default" : "main-opacity10"}
-                        text={isSelected ? "white" : "main"}
-                        onClick={() => setSelectedRole(role)}
-                      >
-                        Выбрать
-                      </Button>
-                    ) : (
-                      <div className="px-4 py-2 text-xs text-base-gray">—</div>
-                    )}
+                    <div className="min-w-[96px] flex items-center justify-end">
+                      {isMine ? (
+                        <span className="text-sm text-base-main">Моя роль</span>
+                      ) : taken ? (
+                        <span className="text-sm text-red-400">Занято</span>
+                      ) : (
+                        <Button
+                          size="2s"
+                          variant={isSelected ? "default" : "main-opacity10"}
+                          text={isSelected ? "white" : "main"}
+                          onClick={() => setSelectedRole(role)}
+                          className="rounded-lg px-3"
+                        >
+                          Выбрать
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -143,6 +180,11 @@ export const PracticeJoinDrawer = () => {
               if (practice.myRole) {
                 switchRole.mutate({ id: practice.id, data: { to: selectedRole } });
               } else {
+                if (selectedRole === "MODERATOR") {
+                  // After join success, show terms in onSuccess handler above is not called here, so open now
+                  close();
+                  requestAnimationFrame(() => useTermsStore.getState().open("MODERATOR"));
+                }
                 join.mutate({ id: practice.id, data: { as: selectedRole } });
               }
             }}

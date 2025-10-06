@@ -18,7 +18,11 @@ export const PracticeCard = ({ data }: Props) => {
     month: "2-digit",
     year: "numeric",
   });
-  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const time = start.toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Moscow",
+  });
 
   return (
     <div className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { HeadText } from "@/shared/ui/head-text";
-import { PracticeList, PracticeJoinDrawer } from "@/feature/practice-feature";
+import { PracticeList, PracticeJoinDrawer, ModeratorTermsDrawer, PracticeSuccessDrawer, CaseInfoDrawer } from "@/feature/practice-feature";
+import { useNavigate } from "react-router-dom";
 import { practicesQueryOptions } from "@/entities/practices";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ type TabKey = "all" | "mine" | "past";
 
 export const PracticeHomePage = () => {
   const [tab, setTab] = useState<TabKey>("all");
+  const navigate = useNavigate();
   const cardsQ = useQuery(practicesQueryOptions.cards());
   const mineQ = useQuery(practicesQueryOptions.mine());
   const pastQ = useQuery(practicesQueryOptions.past());
@@ -21,12 +23,12 @@ export const PracticeHomePage = () => {
     <div className="bg-second-bg min-h-dvh">
       <div className="flex flex-col gap-3 px-2 pb-3">
         <div className="gap-0.5 pl-2 pt-2">
-          <HeadText head="Площадка сражений" label="Оттачивайте переговорные навыки"/>
+          <HeadText head="Площадка практик" label="Оттачивайте переговорные навыки"/>
         </div>
 
         <div className="w-full inline-flex min-h-10 items-center justify-center rounded-lg p-1 bg-base-bg">
           {[
-            { key: "all", label: "Все бои" },
+            { key: "all", label: "Все практики" },
             { key: "mine", label: "Участвую" },
             { key: "past", label: "Прошедшие" },
           ].map((t) => {
@@ -46,7 +48,7 @@ export const PracticeHomePage = () => {
           })}
         </div>
           {tab === "all" && (
-          <Button size="xs" rounded="3xl" className="w-full">Создать бой</Button>
+          <Button size="xs" rounded="3xl" className="w-full" onClick={() => navigate("/practice/create")}>Создать практику</Button>
           )}
         </div>
 
@@ -64,6 +66,9 @@ export const PracticeHomePage = () => {
       </div>
 
       <PracticeJoinDrawer />
+      <ModeratorTermsDrawer />
+      <PracticeSuccessDrawer />
+      <CaseInfoDrawer />
     </div>
   );
 };
