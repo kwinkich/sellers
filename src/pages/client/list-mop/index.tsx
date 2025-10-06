@@ -1,4 +1,4 @@
-import { MopCard } from "@/entities";
+import { ClientMopsList } from "@/feature";
 import { HeadText } from "@/shared";
 
 export const ClientListMopPage = () => {
@@ -10,13 +10,7 @@ export const ClientListMopPage = () => {
 				label="Оттачивайте переговорные навыки"
 			/>
 
-			<div className="flex flex-col gap-2">
-				{Array(20)
-					.fill(null)
-					.map((_, idx) => (
-						<MopCard key={idx} />
-					))}
-			</div>
+			<ClientMopsList />
 		</div>
 	);
 };

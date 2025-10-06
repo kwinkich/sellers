@@ -1,15 +1,16 @@
 import {
-    AdminAddClientPage,
-    AdminClientsListPage,
-    AdminHomePage,
-    AdminLicensesListPage,
-    AdminsControlPage,
-    AdminUpdateClientPage,
-    ClientHomePage,
-    ClientListMopPage,
-    MopProfilePage,
-    AdminCreateCasePage,
-    AdminScenariosCreatePage,
+	AdminAddClientPage,
+	AdminClientsListPage,
+	AdminCreateCasePage,
+	AdminHomePage,
+	AdminLicensesListPage,
+	AdminsControlPage,
+	AdminUpdateClientPage,
+	ClientHomePage,
+	ClientListMopPage,
+	MopDetailsPage,
+	MopProfilePage,
+	AdminScenariosCreatePage,
 } from "@/pages";
 import PracticeHomePage from "@/pages/practice/home";
 import ApiDashboard from "@/pages/temp";
@@ -35,22 +36,22 @@ export const route = createBrowserRouter([
 				path: "list-mop",
 				element: <ClientListMopPage />,
 			},
-			// {
-			// 	path: "mop/:id",
-			// 	element: <MopProfilePage />,
-			// },
+			{
+				path: "mop/:id",
+				element: <MopDetailsPage />,
+			},
 		],
 	},
-  {
-    path: "/mop",
-    element: <MopProfilePage />,
-    children: [
-      {
-        path: "profile",
-        element: <MopProfilePage />,
-      },
-    ],
-  },
+	{
+		path: "/mop",
+		element: <MopProfilePage />,
+		children: [
+			{
+				path: "profile",
+				element: <MopProfilePage />,
+			},
+		],
+	},
 
 	{
 		path: "/admin",
@@ -90,8 +91,8 @@ export const route = createBrowserRouter([
             },
 		],
 	},
-  {
-    path: "practice",
-    element: <PracticeHomePage />,
-  },
+	{
+		path: "practice",
+		element: <PracticeHomePage />,
+	},
 ]);

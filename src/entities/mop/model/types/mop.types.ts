@@ -53,7 +53,6 @@ export interface GetMopProfilesParams {
 	currentSlotId?: number | number[];
 }
 
-// Новые типы для профиля МОП
 export interface MopProfileInfo {
 	id: number;
 	displayName: string;
@@ -62,7 +61,7 @@ export interface MopProfileInfo {
 	currentSlotId: number;
 	currentSlotStatus: "NOT_ACTIVE" | "ACTIVE" | "EXPIRED";
 	currentSlotExpiresAt: string;
-  learningProgress?: number;
+	learningProgress?: number;
 }
 
 export interface MopSkill {

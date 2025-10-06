@@ -1,34 +1,34 @@
-import { ArrowIcon, Box, HeadText } from "@/shared";
-import { useQuery } from "@tanstack/react-query";
-import { mopProfilesQueryOptions } from "@/entities";
 import type { MopPractice, MopSkill } from "@/entities";
-import { Loader2 } from "lucide-react";
+import { mopProfilesQueryOptions } from "@/entities";
+import { ArrowIcon, Box, HeadText } from "@/shared";
 import { MopNavBar } from "@/widget";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 export const MopProfilePage = () => {
-    const { data: profileRes, isLoading, error } = useQuery(
-        mopProfilesQueryOptions.profileInfo()
-    );
-    const profile = profileRes?.data;
+	const {
+		data: profileRes,
+		isLoading,
+		error,
+	} = useQuery(mopProfilesQueryOptions.profileInfo());
+	const profile = profileRes?.data;
 
-    const displayName = profile?.displayName ?? "-";
-    const companyName = profile?.companyName ?? "-";
-    const repScore = profile?.repScore ?? 0;
-    const licenseId = profile?.currentSlotId ?? "-";
-    const licenseExpiresAt = profile?.currentSlotExpiresAt
-        ? new Date(profile.currentSlotExpiresAt).toLocaleDateString("ru-RU")
-        : "-";
-    const learningProgress = profile?.learningProgress ?? 0;
+	const displayName = profile?.displayName ?? "-";
+	const companyName = profile?.companyName ?? "-";
+	const repScore = profile?.repScore ?? 0;
+	const licenseId = profile?.currentSlotId ?? "-";
+	const licenseExpiresAt = profile?.currentSlotExpiresAt
+		? new Date(profile.currentSlotExpiresAt).toLocaleDateString("ru-RU")
+		: "-";
+	const learningProgress = profile?.learningProgress ?? 0;
 	const normalizedProgress = Math.max(0, Math.min(100, learningProgress));
 
-	const { data: skillsRes } = useQuery(
-		mopProfilesQueryOptions.profileSkills()
-	);
+	const { data: skillsRes } = useQuery(mopProfilesQueryOptions.profileSkills());
 	const skills = skillsRes?.data ?? [];
 
 	const { data: practicesRes } = useQuery(
-        mopProfilesQueryOptions.profilePractices()
-    );
+		mopProfilesQueryOptions.profilePractices()
+	);
 	const practices = practicesRes?.data ?? [];
 
 	const getSkillClasses = (status: MopSkill["status"]) => {
@@ -116,19 +116,28 @@ export const MopProfilePage = () => {
 					</div>
 
 					<div className="w-full flex items-center gap-2">
-					{Array(5)
-						.fill(null)
-						.map((_, idx) => {
-							const segmentStart = idx * 20;
-							const filledInSegment = Math.min(20, Math.max(0, normalizedProgress - segmentStart));
-							const widthPercent = (filledInSegment / 20) * 100;
+						{Array(5)
+							.fill(null)
+							.map((_, idx) => {
+								const segmentStart = idx * 20;
+								const filledInSegment = Math.min(
+									20,
+									Math.max(0, normalizedProgress - segmentStart)
+								);
+								const widthPercent = (filledInSegment / 20) * 100;
 
-							return (
-								<div key={idx} className="h-2 rounded-full w-full bg-[#FFFFFF0A] overflow-hidden">
-									<div className="h-full bg-base-main" style={{ width: `${widthPercent}%` }} />
-								</div>
-							);
-						})}
+								return (
+									<div
+										key={idx}
+										className="h-2 rounded-full w-full bg-[#FFFFFF0A] overflow-hidden"
+									>
+										<div
+											className="h-full bg-base-main"
+											style={{ width: `${widthPercent}%` }}
+										/>
+									</div>
+								);
+							})}
 					</div>
 				</Box>
 			</div>
@@ -176,7 +185,8 @@ export const MopProfilePage = () => {
 							</div>
 							<div className="flex items-center justify-between mt-1.5">
 								<p className="text-xs text-base-gray">
-									{new Date(p.startAt).toLocaleString("ru-RU")} — {new Date(p.endAt).toLocaleString("ru-RU")}
+									{new Date(p.startAt).toLocaleString("ru-RU")} —{" "}
+									{new Date(p.endAt).toLocaleString("ru-RU")}
 								</p>
 								<div className="flex items-center gap-2">
 									<span className="text-[10px] text-base-gray">{p.myRole}</span>
