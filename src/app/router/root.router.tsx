@@ -8,13 +8,17 @@ import {
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
+	MopCoursesPage,
 	MopDetailsPage,
+	MopLessonsPage,
 	MopProfilePage,
 	AdminScenariosCreatePage,
 } from "@/pages";
+import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeHomePage from "@/pages/practice/home";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
+import { MopLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
 
@@ -44,11 +48,28 @@ export const route = createBrowserRouter([
 	},
 	{
 		path: "/mop",
-		element: <MopProfilePage />,
+		element: <MopLayout />,
 		children: [
 			{
 				path: "profile",
 				element: <MopProfilePage />,
+			},
+			{
+				path: "education",
+				children: [
+					{
+						path: "courses",
+						element: <MopCoursesPage />,
+					},
+					{
+						path: "courses/:courseId",
+						element: <MopCourseDetailPage />,
+					},
+					{
+						path: "courses/:courseId/lessons",
+						element: <MopLessonsPage />,
+					},
+				],
 			},
 		],
 	},
