@@ -11,7 +11,7 @@ export const AdminNavBar = () => {
 	const location = useLocation();
 
 	return (
-		<div className="w-full flex items-center justify-center py-6 bg-base-bg rounded-t-3xl fixed bottom-0">
+		<div className="w-full flex items-center justify-center py-6 bg-base-bg rounded-t-3xl fixed bottom-0 z-50">
 			<NavItem
 				data={{
 					route: "/admin/home",

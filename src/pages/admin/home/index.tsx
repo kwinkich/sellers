@@ -10,6 +10,7 @@ import {
 	PracticeIcon,
 } from "@/shared";
 import { AdminNavBar } from "@/widget";
+import { Link } from "react-router-dom";
 
 export const AdminHomePage = () => {
 	return (
@@ -103,12 +104,14 @@ export const AdminHomePage = () => {
 							</p>
 						</Box>
 
-						<Box variant={"dark"} rounded="3xl">
-							<CreateCaseIcon size={36} fill="#06935F" />
-							<p className="font-medium text-white leading-[100%]">
-								Добавить кейс
-							</p>
-						</Box>
+						<Link to="/admin/cases/create">
+							<Box variant={"dark"} rounded="3xl">
+								<CreateCaseIcon size={36} fill="#06935F" />
+								<p className="font-medium text-white leading-[100%]">
+									Добавить кейс
+								</p>
+							</Box>
+						</Link>
 
 						<Box
 							variant={"dark"}
