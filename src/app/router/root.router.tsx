@@ -8,7 +8,8 @@ import {
     ClientHomePage,
     ClientListMopPage,
     MopProfilePage,
-    AdminCreateCasePage
+    AdminCreateCasePage,
+    AdminScenariosCreatePage,
 } from "@/pages";
 import PracticeHomePage from "@/pages/practice/home";
 import ApiDashboard from "@/pages/temp";
@@ -83,6 +84,10 @@ export const route = createBrowserRouter([
 				path: "cases/create",
 				element: <AdminCreateCasePage />,
 			},
+            {
+                path: "scenarios/create",
+                element: <AdminScenariosCreatePage />,
+            },
 		],
 	},
   {

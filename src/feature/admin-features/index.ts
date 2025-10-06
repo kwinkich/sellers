@@ -1,5 +1,6 @@
 export * from "./clients-list/index";
 export * from "./create-case/index";
+export * from "./create-scenario/index";
 export * from "./create-client/index";
 export * from "./licenses-list/index";
 export * from "./update-client/index";
