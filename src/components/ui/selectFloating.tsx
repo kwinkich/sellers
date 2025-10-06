@@ -90,7 +90,7 @@ const SelectFloatingLabel = React.forwardRef<
 							"pointer-events-none row-start-1 col-start-1 z-10 self-start",
 							"mx-3 mt-3 px-1  text-sm text-muted-foreground transition-all duration-200",
 							!isLabelLifted && "self-center mt-0",
-							isLabelLifted && "text-xs font-medium text-foreground",
+							isLabelLifted && "text-xs font-medium text-muted-foreground",
 							disabled && "cursor-not-allowed opacity-50"
 						)}
 					>

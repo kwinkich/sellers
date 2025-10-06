@@ -1,6 +1,6 @@
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs are rendered on the page container, not here
 import {
 	Form,
 	FormControl,
@@ -103,14 +103,7 @@ export function CreateScenarioForm() {
 					)}
 				/>
 
-				{/* Tabs: Продавец | Покупатель | Модератор */}
-				<Tabs defaultValue="seller">
-					<TabsList variant="second" className="grid grid-cols-3 w-full">
-						<TabsTrigger variant="second" value="seller">Продавец</TabsTrigger>
-						<TabsTrigger variant="second" value="buyer">Покупатель</TabsTrigger>
-						<TabsTrigger variant="second" value="moderator">Модератор</TabsTrigger>
-					</TabsList>
-				</Tabs>
+				{/* Tabs were moved outside, below the form on the page container */}
 
 				{/* No actions here per spec */}
 			</form>
