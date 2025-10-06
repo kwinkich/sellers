@@ -1,5 +1,6 @@
 import ky, { type KyRequest, type Options } from "ky";
 import { getAuthToken } from "../lib/getAuthToken";
+import { showApiError } from "../lib/alert.service";
 
 const CONFIG: Options = {
 	hooks: {
@@ -15,7 +16,15 @@ const CONFIG: Options = {
 		afterResponse: [
 			async (_request, _options, response): Promise<void> => {
 				if (response.status >= 400) {
-					throw await response.json();
+					let data: any;
+					try {
+						data = await response.json();
+					} catch {
+						data = { message: response.statusText };
+					}
+					// Push a global alert, then throw for callers that rely on promise rejection
+					showApiError({ status: response.status, message: data?.error?.message ?? data?.message, error: data?.error ?? data });
+					throw data;
 				}
 				return response.json();
 			},

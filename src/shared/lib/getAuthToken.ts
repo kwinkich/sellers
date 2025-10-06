@@ -1,6 +1,5 @@
 export const getAuthToken = (): string => {
 	const token = localStorage.getItem("authToken");
-	console.log("token", token);
 	if (token) return token;
 
 	return "";

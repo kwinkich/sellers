@@ -26,10 +26,10 @@ export const MopNavBar = () => {
 
 			<NavItem
 				data={{
-					route: "/mop/practice",
+					route: "/practice",
 					icon: <PracticeIcon />,
 					label: "Практика",
-					isActive: location.pathname.includes("mop/practice"),
+					isActive: location.pathname.includes("practice"),
 				}}
 			/>
 		</div>

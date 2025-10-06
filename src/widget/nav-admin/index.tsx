@@ -41,10 +41,10 @@ export const AdminNavBar = () => {
 
 			<NavItem
 				data={{
-					route: "/admin/practice",
+					route: "practice",
 					icon: <PracticeIcon />,
 					label: "Практика",
-					isActive: location.pathname.includes("admin/practice"),
+					isActive: location.pathname.includes("practice"),
 				}}
 			/>
 		</div>

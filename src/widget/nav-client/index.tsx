@@ -26,10 +26,10 @@ export const ClientNavBar = () => {
 
 			<NavItem
 				data={{
-					route: "/client/practice",
+					route: "/practice",
 					icon: <PracticeIcon />,
 					label: "Практика",
-					isActive: location.pathname.includes("client/mop"),
+					isActive: location.pathname.includes("practice"),
 				}}
 			/>
 		</div>

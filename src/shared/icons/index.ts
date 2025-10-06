@@ -15,3 +15,6 @@ export * from "./main-icon/index";
 export * from "./practice-icon/index";
 export * from "./practice-list-icon/index";
 export * from "./timer-icon/index";
+export * from "./practice-with-case-icon/index";
+export * from "./mini-game-icon/index";
+export * from "./practice-no-case-icon/index";
