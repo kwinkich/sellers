@@ -8,6 +8,7 @@ export * from "./courses-list-icon/index";
 export * from "./create-admin-icon/index";
 export * from "./create-case-icon/index";
 export * from "./create-course-icon/index";
+export * from "./academy-icon/index";
 export * from "./link-icon/index";
 export * from "./list-icon/index";
 export * from "./main-icon/index";

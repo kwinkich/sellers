@@ -62,6 +62,7 @@ export interface MopProfileInfo {
 	currentSlotId: number;
 	currentSlotStatus: "NOT_ACTIVE" | "ACTIVE" | "EXPIRED";
 	currentSlotExpiresAt: string;
+  learningProgress?: number;
 }
 
 export interface MopSkill {

@@ -8,7 +8,8 @@ import {
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
-	ClientMopProfilePage,
+  MopProfilePage,
+
 } from "@/pages";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
@@ -33,12 +34,22 @@ export const route = createBrowserRouter([
 				path: "list-mop",
 				element: <ClientListMopPage />,
 			},
-			{
-				path: "mop/:mopId",
-				element: <ClientMopProfilePage />,
-			},
+			// {
+			// 	path: "mop/:id",
+			// 	element: <MopProfilePage />,
+			// },
 		],
 	},
+  {
+    path: "/mop",
+    element: <MopProfilePage />,
+    children: [
+      {
+        path: "profile",
+        element: <MopProfilePage />,
+      },
+    ],
+  },
 
 	{
 		path: "/admin",
