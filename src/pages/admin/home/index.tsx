@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { adminsQueryOptions } from "@/entities";
 import {
 	Box,
 	ClientIcon,
@@ -10,13 +11,36 @@ import {
 	PracticeIcon,
 } from "@/shared";
 import { AdminNavBar } from "@/widget";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const AdminHomePage = () => {
+	const { data, isLoading, error } = useQuery(adminsQueryOptions.profile());
+
+	const mockProfile = {
+		activeClientsTotal: 123,
+		scheduledPracticesTotal: 45,
+	};
+
+	const profileData = data?.data ?? mockProfile;
+
+	if (isLoading) {
+		return (
+			<div className="w-dvw h-dvh bg-white flex items-center justify-center">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
+	if (error) {
+		console.error("Ошибка загрузки профиля:", error);
+	}
+
 	return (
 		<>
 			<div className="w-dvw h-dvh bg-white">
-				<div className="bg-base-bg flex  text-white flex-col  w-full rounded-b-3xl p-2">
+				<div className="bg-base-bg flex text-white flex-col w-full rounded-b-3xl p-2">
 					<HeadText
 						className="gap-0.5 mb-8 pl-2 pt-2"
 						head="Панель администратора"
@@ -28,9 +52,9 @@ export const AdminHomePage = () => {
 							<div className="w-full flex items-center gap-4">
 								<PracticeIcon size={48} fill="#99A1A8" />
 								<div className="flex flex-col items-start gap-0.5">
-									<p className="text-base-gray leading-[100%]">Боев</p>
+									<p className="text-base-gray leading-[100%]">Практик</p>
 									<p className="text-[32px] text-white font-medium leading-[100%]">
-										123
+										{profileData.scheduledPracticesTotal}
 									</p>
 								</div>
 							</div>
@@ -51,7 +75,7 @@ export const AdminHomePage = () => {
 								<div className="flex flex-col items-start gap-0.5">
 									<p className="text-base-gray leading-[100%]">Клиентов</p>
 									<p className="text-[32px] text-white font-medium leading-[100%]">
-										2231
+										{profileData.activeClientsTotal}
 									</p>
 								</div>
 							</div>
@@ -76,22 +100,24 @@ export const AdminHomePage = () => {
 						>
 							Создать практику
 						</Button>
-						<Button
-							className="flex-1"
-							variant="main-opacity"
-							text="main"
-							size="2s"
-						>
-							Добавить клиента
-						</Button>
+						<Link to="/admin/clients/create" className="flex-1">
+							<Button
+								className="w-full"
+								variant="main-opacity"
+								text="main"
+								size="2s"
+							>
+								Добавить клиента
+							</Button>
+						</Link>
 					</div>
 				</div>
 
-				<div className="px-2 ">
+				<div className="px-2">
 					<HeadText
 						className="gap-0.5 mb-8 pl-2 pt-2"
 						head="Дополнительные действия"
-						label="Подзаголовок"
+						label="Управление системой и контентом"
 						variant="black-gray"
 						headSize="lg"
 					/>
@@ -113,17 +139,19 @@ export const AdminHomePage = () => {
 							</Box>
 						</Link>
 
-						<Box
-							variant={"dark"}
-							rounded="3xl"
-							direction="row"
-							className="h-[90px] col-span-2"
-						>
-							<CreateAdminIcon size={36} fill="#06935F" />
-							<p className="font-medium text-white leading-[100%]">
-								Добавить администратора
-							</p>
-						</Box>
+						<Link to="/admin/admins" className="col-span-2">
+							<Box
+								variant={"dark"}
+								rounded="3xl"
+								direction="row"
+								className="h-[90px] col-span-2"
+							>
+								<CreateAdminIcon size={36} fill="#06935F" />
+								<p className="font-medium text-white leading-[100%]">
+									Добавить администратора
+								</p>
+							</Box>
+						</Link>
 					</div>
 				</div>
 

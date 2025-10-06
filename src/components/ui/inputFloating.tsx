@@ -47,7 +47,7 @@ const InputFloatingLabel: FC<InputFloatingLabelProps> = ({
 					`${
 						variant !== "default"
 							? "text-base-gray peer-focus:text-base-gray -not-placeholder-shown:text-base-gray"
-							: "text-black peer-focus:text-foreground -not-placeholder-shown:text-foreground"
+							: "text-black peer-focus:text-muted-foreground -not-placeholder-shown:text-foreground"
 					}`,
 					"top-1/2 -translate-y-1/2",
 					"peer-focus:top-3 peer-focus:-translate-y-0 peer-focus:text-xs peer-focus:font-medium ",

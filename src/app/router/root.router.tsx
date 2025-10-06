@@ -1,20 +1,28 @@
 import {
-    AdminAddClientPage,
-    AdminClientsListPage,
-    AdminHomePage,
-    AdminLicensesListPage,
-    AdminsControlPage,
-    AdminUpdateClientPage,
-    ClientHomePage,
-    ClientListMopPage,
-    MopProfilePage,
-    AdminCreateCasePage
+	AdminAddClientPage,
+	AdminClientsListPage,
+	AdminCreateCasePage,
+	AdminHomePage,
+	AdminLicensesListPage,
+	AdminScenariosCreatePage,
+	AdminsControlPage,
+	AdminUpdateClientPage,
+	ClientHomePage,
+	ClientListMopPage,
+	LessonDetailsPage,
+	MopCoursesPage,
+	MopDetailsPage,
+	MopLessonsPage,
+	MopProfilePage,
+	QuizPage,
 } from "@/pages";
+import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeHomePage from "@/pages/practice/home";
 import PracticeCreatePage from "@/pages/practice/create";
 import PracticePreviewPage from "@/pages/practice/preview";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
+import { MopLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
 
@@ -36,22 +44,47 @@ export const route = createBrowserRouter([
 				path: "list-mop",
 				element: <ClientListMopPage />,
 			},
-			// {
-			// 	path: "mop/:id",
-			// 	element: <MopProfilePage />,
-			// },
+			{
+				path: "mop/:id",
+				element: <MopDetailsPage />,
+			},
 		],
 	},
-  {
-    path: "/mop",
-    element: <MopProfilePage />,
-    children: [
-      {
-        path: "profile",
-        element: <MopProfilePage />,
-      },
-    ],
-  },
+	{
+		path: "/mop",
+		element: <MopLayout />,
+		children: [
+			{
+				path: "profile",
+				element: <MopProfilePage />,
+			},
+			{
+				path: "education",
+				children: [
+					{
+						path: "courses",
+						element: <MopCoursesPage />,
+					},
+					{
+						path: "courses/:courseId",
+						element: <MopCourseDetailPage />,
+					},
+					{
+						path: "courses/:courseId/lessons",
+						element: <MopLessonsPage />,
+					},
+					{
+						path: "lesson/:lessonId",
+						element: <LessonDetailsPage />,
+					},
+					{
+						path: "quizzes/:id",
+						element: <QuizPage />,
+					},
+				],
+			},
+		],
+	},
 
 	{
 		path: "/admin",
@@ -84,6 +117,10 @@ export const route = createBrowserRouter([
 			{
 				path: "cases/create",
 				element: <AdminCreateCasePage />,
+			},
+			{
+				path: "scenarios/create",
+				element: <AdminScenariosCreatePage />,
 			},
 		],
 	},

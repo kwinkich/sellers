@@ -53,6 +53,7 @@ function DrawerContent({
 			<DrawerOverlay />
 			<DrawerPrimitive.Content
 				data-slot="drawer-content"
+				aria-describedby={undefined}
 				className={cn(
 					"group/drawer-content bg-background fixed z-50 flex h-auto flex-col",
 					// animations

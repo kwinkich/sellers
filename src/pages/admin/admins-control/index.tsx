@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { adminsMutationOptions } from "@/entities";
-import { AdminsList } from "@/feature/admin-features/admins-list/ui/list";
+import { AdminsList } from "@/feature/admin-feature/admins-list/ui/list";
 import { HeadText } from "@/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";

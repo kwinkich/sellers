@@ -73,12 +73,10 @@ export function CreateCaseForm() {
 			return;
 		}
 
-		// Check if scenario is selected
+
+		// If scenario is not selected, go to scenarios/create
 		if (!formData.scenarioId) {
-			// Redirect to scenario creation page (placeholder for now)
-			toast.info("Переход к созданию сценария", {
-				description: "Функция будет реализована в следующем этапе",
-			});
+			navigate("/admin/scenarios/create");
 			return;
 		}
 
@@ -278,16 +276,26 @@ export function CreateCaseForm() {
 					)}
 				/>
 
-				<Button type="submit" className="w-full" disabled={isPending || scenariosLoading}>
-					{isPending ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							{isScenarioSelected ? "Создание кейса..." : "Создание сценария..."}
-						</>
-					) : (
-						isScenarioSelected ? "Создать кейс" : "Создать сценарий"
-					)}
-				</Button>
+				{isScenarioSelected ? (
+					<Button type="submit" className="w-full" disabled={isPending}>
+						{isPending ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								{"Создание кейса..."}
+							</>
+						) : (
+							"Создать кейс"
+						)}
+					</Button>
+				) : (
+					<Button
+						type="button"
+						className="w-full"
+						onClick={() => navigate("/admin/scenarios/create")}
+					>
+						Создать сценарий
+					</Button>
+				)}
 			</form>
 		</Form>
 	);
