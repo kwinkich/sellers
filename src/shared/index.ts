@@ -1,4 +1,5 @@
 export * from "./api/index";
+export * from "./hooks/useInit";
 export * from "./icons/index";
 export * from "./lib/index";
 export * from "./types/index";

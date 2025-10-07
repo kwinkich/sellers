@@ -17,123 +17,124 @@ import {
 	QuizPage,
 } from "@/pages";
 import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
-import PracticeHomePage from "@/pages/practice/home";
 import PracticeCreatePage from "@/pages/practice/create";
+import PracticeHomePage from "@/pages/practice/home";
 import PracticePreviewPage from "@/pages/practice/preview";
-import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
-import { MopLayout } from "../layouts";
+import { AppInitLayout, MopLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
 
 export const route = createBrowserRouter([
 	{
 		path: "/",
-		element: <ApiDashboard />,
-	},
-	{
-		path: "/client",
-		element: <ClientLayout />,
+		element: <AppInitLayout />,
 		children: [
 			{
-				path: "home",
-				element: <ClientHomePage />,
-			},
-
-			{
-				path: "list-mop",
-				element: <ClientListMopPage />,
-			},
-			{
-				path: "mop/:id",
-				element: <MopDetailsPage />,
-			},
-		],
-	},
-	{
-		path: "/mop",
-		element: <MopLayout />,
-		children: [
-			{
-				path: "profile",
-				element: <MopProfilePage />,
-			},
-			{
-				path: "education",
+				path: "client",
+				element: <ClientLayout />,
 				children: [
 					{
-						path: "courses",
-						element: <MopCoursesPage />,
+						path: "home",
+						element: <ClientHomePage />,
+					},
+
+					{
+						path: "list-mop",
+						element: <ClientListMopPage />,
 					},
 					{
-						path: "courses/:courseId",
-						element: <MopCourseDetailPage />,
-					},
-					{
-						path: "courses/:courseId/lessons",
-						element: <MopLessonsPage />,
-					},
-					{
-						path: "lesson/:lessonId",
-						element: <LessonDetailsPage />,
-					},
-					{
-						path: "quizzes/:id",
-						element: <QuizPage />,
+						path: "mop/:id",
+						element: <MopDetailsPage />,
 					},
 				],
 			},
-		],
-	},
+			{
+				path: "mop",
+				element: <MopLayout />,
+				children: [
+					{
+						path: "profile",
+						element: <MopProfilePage />,
+					},
+					{
+						path: "education",
+						children: [
+							{
+								path: "courses",
+								element: <MopCoursesPage />,
+							},
+							{
+								path: "courses/:courseId",
+								element: <MopCourseDetailPage />,
+							},
+							{
+								path: "courses/:courseId/lessons",
+								element: <MopLessonsPage />,
+							},
+							{
+								path: "lesson/:lessonId",
+								element: <LessonDetailsPage />,
+							},
+							{
+								path: "quizzes/:id",
+								element: <QuizPage />,
+							},
+						],
+					},
+				],
+			},
 
-	{
-		path: "/admin",
-		element: <AdminLayout />,
-		children: [
 			{
-				path: "home",
-				element: <AdminHomePage />,
+				path: "admin",
+				element: <AdminLayout />,
+				children: [
+					{
+						path: "home",
+						element: <AdminHomePage />,
+					},
+					{
+						path: "clients",
+						element: <AdminClientsListPage />,
+					},
+					{
+						path: "clients/create",
+						element: <AdminAddClientPage />,
+					},
+					{
+						path: "clients/update/:clientId",
+						element: <AdminUpdateClientPage />,
+					},
+					{
+						path: "clients/licenses/:clientId",
+						element: <AdminLicensesListPage />,
+					},
+					{
+						path: "list",
+						element: <AdminsControlPage />,
+					},
+					{
+						path: "cases/create",
+						element: <AdminCreateCasePage />,
+					},
+					{
+						path: "scenarios/create",
+						element: <AdminScenariosCreatePage />,
+					},
+				],
 			},
 			{
-				path: "clients",
-				element: <AdminClientsListPage />,
+				path: "practice",
+				element: <PracticeHomePage />,
 			},
 			{
-				path: "clients/create",
-				element: <AdminAddClientPage />,
+				path: "practice/create",
+				element: <PracticeCreatePage />,
 			},
 			{
-				path: "clients/update/:clientId",
-				element: <AdminUpdateClientPage />,
-			},
-			{
-				path: "clients/licenses/:clientId",
-				element: <AdminLicensesListPage />,
-			},
-			{
-				path: "list",
-				element: <AdminsControlPage />,
-			},
-			{
-				path: "cases/create",
-				element: <AdminCreateCasePage />,
-			},
-			{
-				path: "scenarios/create",
-				element: <AdminScenariosCreatePage />,
+				path: "practice/preview",
+				element: <PracticePreviewPage />,
 			},
 		],
 	},
-  {
-    path: "practice",
-    element: <PracticeHomePage />,
-  },
-  {
-    path: "/practice/create",
-    element: <PracticeCreatePage />,
-  },
-  {
-    path: "/practice/preview",
-    element: <PracticePreviewPage />,
-  },
 ]);
