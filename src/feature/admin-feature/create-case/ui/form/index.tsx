@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { createCaseSchema, type CreateCaseFormData } from "../../model";
@@ -26,6 +27,15 @@ export function CreateCaseForm() {
 	// Fetch scenarios for dropdown
 	const { data: scenariosData, isLoading: scenariosLoading } = useQuery(
 		scenariosQueryOptions.options()
+	);
+
+	// Multi-scenario selection state (dynamic selectors)
+	const [scenarioSelects, setScenarioSelects] = useState<Array<number | null>>([null]);
+
+	// Build final selected ids (non-null)
+	const selectedScenarioIds = useMemo(
+		() => scenarioSelects.filter((v): v is number => typeof v === "number"),
+		[scenarioSelects]
 	);
 
 	const { mutate: createCase, isPending } = useMutation({
@@ -60,7 +70,6 @@ export function CreateCaseForm() {
 			buyerLegend: "",
 			sellerTask: "",
 			buyerTask: "",
-			scenarioId: undefined,
 		},
 	});
 
@@ -74,15 +83,15 @@ export function CreateCaseForm() {
 		}
 
 
-		// If scenario is not selected, go to scenarios/create
-		if (!formData.scenarioId) {
+		// If no scenarios selected, go to scenarios/create
+		if (selectedScenarioIds.length === 0) {
 			navigate("/admin/scenarios/create");
 			return;
 		}
 
 		const requestData: CreateCaseRequest = {
 			title: formData.title,
-			scenarioId: formData.scenarioId,
+			scenarioIds: selectedScenarioIds,
 			recommendedSellerLevel: formData.recommendedSellerLevel,
 			situation: formData.situation,
 			sellerLegend: formData.sellerLegend,
@@ -95,17 +104,20 @@ export function CreateCaseForm() {
 	};
 
 	// Prepare scenario options for dropdown
-	const scenarioOptions = scenariosData?.data?.map((scenario) => ({
-		value: scenario.id.toString(),
-		label: scenario.title,
-	})) || [];
+	const scenarioOptions =
+		scenariosData?.data?.map((scenario) => ({
+			value: scenario.id.toString(),
+			label: scenario.title,
+		})) || [];
+
+	// Track taken scenario ids for filtering (keeps current value visible)
+	const takenScenarioIds = useMemo(() => new Set(selectedScenarioIds), [selectedScenarioIds]);
 
 	// Get current admin ID from JWT token
 	const currentAdminId = getUserIdFromToken();
 
-	// Watch scenarioId to determine button text and behavior
-	const selectedScenarioId = form.watch("scenarioId");
-	const isScenarioSelected = !!selectedScenarioId;
+	// Determine button text and behavior based on multi-select
+	const isScenarioSelected = selectedScenarioIds.length > 0;
 
 	return (
 		<Form {...form}>
@@ -258,23 +270,37 @@ export function CreateCaseForm() {
 					)}
 				/>
 
-				{/* 9. Выберите сценарий - last field */}
-				<FormField
-					control={form.control}
-					name="scenarioId"
-					render={({ field }) => (
-						<FormItem>
+				{/* 9. Выберите сценарий(и) - dynamic selectors */}
+				<div className="space-y-2">
+					{scenarioSelects.map((val, idx) => (
+						<div key={idx}>
 							<SelectFloatingLabel
-								placeholder="Выберите сценарий"
-								value={field.value?.toString() || ""}
-								onValueChange={(value) => field.onChange(parseInt(value))}
-								options={scenarioOptions}
+								placeholder={idx === 0 ? "Выберите сценарий" : "Добавьте ещё один сценарий (опционально)"}
+								value={val ? String(val) : ""}
+								onValueChange={(value) => {
+									const num = parseInt(value);
+									setScenarioSelects((prev) => {
+										const next = [...prev];
+										next[idx] = Number.isNaN(num) ? null : num;
+										// If this is the last selector and user selected a value, append a new empty selector
+										if (idx === prev.length - 1 && !Number.isNaN(num)) {
+											next.push(null);
+										}
+										return next;
+									});
+								}}
+								options={scenarioOptions.filter((o) => {
+									// allow currently selected value for this selector
+									if (val && String(val) === o.value) return true;
+									// otherwise filter out already taken ids
+									const id = parseInt(o.value);
+									return !takenScenarioIds.has(id);
+								})}
 								disabled={isPending || scenariosLoading}
 							/>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+						</div>
+					))}
+				</div>
 
 				{isScenarioSelected ? (
 					<Button type="submit" className="w-full" disabled={isPending}>

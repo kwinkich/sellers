@@ -34,5 +34,6 @@ const CONFIG: Options = {
 
 export const API = ky.extend({
   prefixUrl: import.meta.env.VITE_API_URL,
+  credentials: "include",
   ...CONFIG,
 });

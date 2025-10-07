@@ -2,8 +2,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import TextareaFloatingLabel from "@/components/ui/textareaFloating";
+import { useState } from "react";
 
-export function TextBlock({ id, onDelete }: { id: string; onDelete?: () => void }) {
+interface TextBlockProps {
+  id: string;
+  onDelete?: () => void;
+  textContent?: string;
+  onTextChange?: (text: string) => void;
+}
+
+export function TextBlock({ id, onDelete, textContent = "", onTextChange }: TextBlockProps) {
+  const [text, setText] = useState(textContent);
+
+  const handleTextChange = (value: string) => {
+    setText(value);
+    onTextChange?.(value);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -19,7 +34,12 @@ export function TextBlock({ id, onDelete }: { id: string; onDelete?: () => void 
         </Button>
       </CardHeader>
       <CardContent>
-        <TextareaFloatingLabel placeholder="Введите текст...." className="min-h-[100px]" />
+        <TextareaFloatingLabel 
+          placeholder="Введите текст...." 
+          className="min-h-[100px]"
+          value={text}
+          onChange={(e) => handleTextChange(e.target.value)}
+        />
       </CardContent>
     </Card>
   );

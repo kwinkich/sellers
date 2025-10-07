@@ -1,5 +1,5 @@
 export const getAuthToken = (): string => {
-	const token = localStorage.getItem("authToken");
+	const token = localStorage.getItem("accessToken");
 	if (token) return token;
 
 	return "";
@@ -10,7 +10,7 @@ export const updateAuthToken = (t: string): boolean => {
 
 	console.log("updateAuthToken", t);
 
-	localStorage.setItem("authToken", t);
+	localStorage.setItem("accessToken", t);
 
 	return true;
 };

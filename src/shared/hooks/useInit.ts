@@ -1,4 +1,5 @@
 import { AuthAPI, type AuthResponse } from "@/entities";
+import { updateAuthToken } from "@/shared/lib/getAuthToken";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,8 @@ export const useAppInit = (): UseAppInitReturn => {
 		mutationFn: AuthAPI.authTelegram,
 		onSuccess: (data) => {
 			if (data.data) {
+				// persist access token on initial auth
+				updateAuthToken(data.data.accessToken);
 				setUserData(data.data.user);
 				redirectByRole(data.data.user.role as UserAppRole);
 			}
@@ -46,6 +49,8 @@ export const useAppInit = (): UseAppInitReturn => {
 		mutationFn: AuthAPI.refreshTelegram,
 		onSuccess: (data) => {
 			if (data.data) {
+				// persist refreshed access token
+				updateAuthToken(data.data.accessToken);
 				setUserData(data.data.user);
 				redirectByRole(data.data.user.role as UserAppRole);
 			} else {

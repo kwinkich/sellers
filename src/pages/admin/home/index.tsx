@@ -18,12 +18,11 @@ import { Link } from "react-router-dom";
 export const AdminHomePage = () => {
 	const { data, isLoading, error } = useQuery(adminsQueryOptions.profile());
 
-	const mockProfile = {
-		activeClientsTotal: 123,
-		scheduledPracticesTotal: 45,
-	};
 
-	const profileData = data?.data ?? mockProfile;
+	const profileData = data?.data ?? {
+		activeClientsTotal: 0,
+		scheduledPracticesTotal: 0,
+	};
 
 	if (isLoading) {
 		return (

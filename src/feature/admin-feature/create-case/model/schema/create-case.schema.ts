@@ -33,12 +33,6 @@ export const createCaseSchema = z.object({
 		.min(1, "Задача покупателя обязательна")
 		.min(10, "Задача покупателя должна содержать минимум 10 символов")
 		.max(1000, "Задача покупателя не должна превышать 1000 символов"),
-	scenarioId: z
-		.number({
-			error: "Выберите сценарий",
-		})
-		.int("ID сценария должен быть целым числом")
-		.positive("Выберите сценарий"),
 });
 
 export type CreateCaseFormData = z.infer<typeof createCaseSchema>;

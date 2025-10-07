@@ -8,8 +8,7 @@ export interface ScenarioCase {
 export interface Case {
 	id: number;
 	title: string;
-	scenarioId: number;
-	scenario: ScenarioCase;
+	scenarios: ScenarioCase[];
 	recommendedSellerLevel: string;
 	situation: string;
 	sellerLegend: string;
@@ -25,7 +24,6 @@ export interface Case {
 export interface CaseListItem {
 	id: number;
 	title: string;
-	scenarioId: number;
 	recommendedSellerLevel: string;
 	createdAt: string;
 	updatedAt: string;
@@ -38,7 +36,7 @@ export interface CaseOption {
 
 export interface CreateCaseRequest {
 	title: string;
-	scenarioId: number;
+	scenarioIds?: number[];
 	recommendedSellerLevel: string;
 	situation: string;
 	sellerLegend: string;
@@ -49,7 +47,7 @@ export interface CreateCaseRequest {
 
 export interface UpdateCaseRequest {
 	title?: string;
-	scenarioId?: number;
+	scenarioIds?: number[];
 	recommendedSellerLevel?: string;
 	situation?: string;
 	sellerLegend?: string;
