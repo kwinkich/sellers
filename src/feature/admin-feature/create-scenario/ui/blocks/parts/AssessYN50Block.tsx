@@ -11,7 +11,7 @@ import { X } from "lucide-react";
 
 type Row = { id: string; question: string; value: "YES" | "NO" | "FIFTY" | "UNKNOWN" | "" };
 
-export function AssessYN50Block({ id, onDelete }: { id: string; onDelete?: () => void }) {
+export function AssessYN50Block({ onDelete }: { id: string; onDelete?: () => void }) {
   const { data } = useQuery(skillsQueryOptions.list());
   const skillOptions = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
   const [selectedSkillId, setSelectedSkillId] = useState<string>("");

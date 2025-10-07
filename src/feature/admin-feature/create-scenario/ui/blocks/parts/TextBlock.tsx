@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import TextareaFloatingLabel from "@/components/ui/textareaFloating";
 
-export function TextBlock({ id, onDelete }: { id: string; onDelete?: () => void }) {
+export function TextBlock({ onDelete }: { id: string; onDelete?: () => void }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

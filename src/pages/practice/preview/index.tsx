@@ -14,7 +14,7 @@ const PracticePreviewPage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, caseTitle, skillNames } = store;
+  const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, skillNames } = store;
   const scenarioDetail = useQuery({ ...scenariosQueryOptions.byId(scenarioId ?? 0), enabled: !!scenarioId });
   const practiceType = scenarioDetail.data?.data?.practiceType as PracticeType | undefined;
   const practiceTypeLabel = practiceType ? getPracticeTypeLabel(practiceType) : undefined;

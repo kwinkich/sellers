@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-export function QuestionBlock({ id, onDelete }: { id: string; onDelete?: () => void }) {
+export function QuestionBlock({ onDelete }: { id: string; onDelete?: () => void }) {
   const [question, setQuestion] = useState("");
   return (
     <Card>
