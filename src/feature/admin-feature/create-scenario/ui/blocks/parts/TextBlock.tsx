@@ -11,7 +11,7 @@ interface TextBlockProps {
   onTextChange?: (text: string) => void;
 }
 
-export function TextBlock({ id, onDelete, textContent = "", onTextChange }: TextBlockProps) {
+export function TextBlock({  onDelete, textContent = "", onTextChange }: TextBlockProps) {
   const [text, setText] = useState(textContent);
 
   const handleTextChange = (value: string) => {

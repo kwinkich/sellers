@@ -191,7 +191,7 @@ export const AdminScenariosCreatePage = () => {
         }
         
         // Convert blocks to proper format for API
-        const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[], role: string): any[] => {
+        const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[]): any[] => {
             return blocks.map((block, index) => {
                 // Generate block title according to specification
 
@@ -257,19 +257,19 @@ export const AdminScenariosCreatePage = () => {
                     role: "SELLER",
                     title: "Форма продавца",
                     descr: "Сценарий для продавца",
-                    blocks: convertBlocksToFormBlocks(sellerBlocks, "SELLER")
+                    blocks: convertBlocksToFormBlocks(sellerBlocks)
                 },
                 {
                     role: "BUYER", 
                     title: "Форма покупателя",
                     descr: "Сценарий для покупателя",
-                    blocks: convertBlocksToFormBlocks(buyerBlocks, "BUYER")
+                    blocks: convertBlocksToFormBlocks(buyerBlocks)
                 },
                 {
                     role: "MODERATOR",
                     title: "Форма модератора", 
                     descr: "Сценарий для модератора",
-                    blocks: convertBlocksToFormBlocks(moderatorBlocks, "MODERATOR")
+                    blocks: convertBlocksToFormBlocks(moderatorBlocks)
                 }
             ]
         };

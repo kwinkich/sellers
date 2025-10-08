@@ -7,8 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { ScenarioIcon, PracticeTypeIcon, SkillsIcon, CalendarIcon } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import { useQuery } from "@tanstack/react-query";
-import { scenariosQueryOptions } from "@/entities/scenarios/model/api/scenarios.api";
 
 const PracticePreviewPage = () => {
   const store = useCreatePracticeStore();
