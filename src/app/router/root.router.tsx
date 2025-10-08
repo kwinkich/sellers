@@ -54,7 +54,7 @@ export const route = createBrowserRouter([
 				element: <MopLayout />,
 				children: [
 					{
-						path: "profile",
+						path: "home",
 						element: <MopProfilePage />,
 					},
 					{
