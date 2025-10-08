@@ -145,11 +145,13 @@
 }
 
 @layer components {
+  /* Popover styling */
   .timepicker-popover {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border-radius: 1rem;
   }
 
+  /* Selection overlay indicator */
   .tp-selection-overlay {
     top: calc(50% - 12px);
     background: linear-gradient(
@@ -163,17 +165,32 @@
     border-radius: 8px;
   }
 
-  /* CRITICAL: Enable smooth GPU-accelerated animations */
+  /* Wheel container - enable smooth touch scrolling */
+  .timepicker-wheel-container {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: grab;
+  }
+
+  .timepicker-wheel-container:active {
+    cursor: grabbing;
+  }
+
+  /* Wheel items - smooth transitions */
   .timepicker-wheel-item {
     will-change: transform, opacity, color;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Prevent text selection during scrolling */
+  /* Prevent text selection during interactions */
   .timepicker-popover * {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   /* Smooth hover transitions */
@@ -193,7 +210,17 @@
     z-index: 1;
   }
 
-  /* Smooth popover entrance */
+  /* Separator styling */
+  .timepicker-separator {
+    color: var(--color-base-main, #374151);
+  }
+
+  /* Dark mode separator */
+  .dark .timepicker-separator {
+    color: white;
+  }
+
+  /* Smooth popover entrance animation */
   .timepicker-popover[data-state="open"] {
     animation: timepicker-dropdown-in 0.2s ease-out;
   }
@@ -209,7 +236,11 @@
     }
   }
 
-  /* Optional: Bouncy selection animation */
+  /* Bouncy selection animation */
+  .timepicker-wheel-item.selected {
+    animation: timepicker-item-select 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   @keyframes timepicker-item-select {
     0% {
       transform: scale(1);
@@ -219,6 +250,34 @@
     }
     100% {
       transform: scale(1.1);
+    }
+  }
+
+  /* Mobile optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .timepicker-wheel-container {
+      cursor: default;
+    }
+
+    .timepicker-wheel-item:hover:not(.selected) {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+  }
+
+  /* Popover exit animation */
+  .timepicker-popover[data-state="closed"] {
+    animation: timepicker-dropdown-out 0.15s ease-in;
+  }
+
+  @keyframes timepicker-dropdown-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
     }
   }
 }

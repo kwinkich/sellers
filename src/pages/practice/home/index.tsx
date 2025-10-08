@@ -20,7 +20,7 @@ export const PracticeHomePage = () => {
   const past = pastQ.data?.data ?? [];
 
   return (
-    <div className="bg-second-bg">
+    <div className="bg-second-bg min-h-[dvh]">
       <div className="flex flex-col gap-3 px-2 pb-5">
         <div className="gap-0.5 pl-2 pt-2">
           <HeadText head="Площадка практик" label="Оттачивайте переговорные навыки"/>
