@@ -20,24 +20,27 @@ export interface ScaleItem {
 	skillId: number;
 }
 
+// Align with /v1/practices/:id/evaluation/forms schema
+export type FormBlockType = "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
+
 export interface EvaluationFormBlock {
-	blockId: number;
-	type: string;
-	title: string;
-	helpText: string;
-	required: boolean;
-	position: number;
-	skillId: number;
-	scaleId: number;
-	scaleItems: ScaleItem[];
+    blockId: number;
+    type: FormBlockType;
+    title?: string;
+    helpText?: string;
+    required: boolean;
+    position: number;
+    skillId?: number;
+    scaleId?: number;
+    scaleItems?: ScaleItem[];
 }
 
 export interface EvaluationForm {
-	formId: number;
-	role: "SELLER" | "BUYER" | "MODERATOR";
-	title: string;
-	descr: string;
-	blocks: EvaluationFormBlock[];
+    formId: number;
+    role: "SELLER" | "BUYER" | "MODERATOR";
+    title: string;
+    descr: string;
+    blocks: EvaluationFormBlock[];
 }
 
 export interface EvaluationAnswer {

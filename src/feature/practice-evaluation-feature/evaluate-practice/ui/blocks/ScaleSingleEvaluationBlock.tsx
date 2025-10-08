@@ -7,6 +7,7 @@ import type { EvaluationBlock } from "../EvaluationForm";
 interface ScaleSingleEvaluationBlockProps {
   block: EvaluationBlock;
   formRole: string;
+  onChange?: (data: { position: number; values: Record<number, number> }) => void;
 }
 
 // default text colors by ord: 0→rose, 1→amber, 2→emerald, 3→slate
@@ -28,6 +29,7 @@ const selectedByOrd: Record<number, string> = {
 export const ScaleSingleEvaluationBlock = ({
   block,
   formRole,
+  onChange,
 }: ScaleSingleEvaluationBlockProps) => {
   const skillId = block.items?.[0]?.skillId;
   const { data: skillsData } = useQuery(skillsQueryOptions.list());
@@ -35,6 +37,12 @@ export const ScaleSingleEvaluationBlock = ({
 
   // controlled selection per item index (no default check)
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
+
+  // Notify parent AFTER render commit when answers change
+  React.useEffect(() => {
+    if (onChange) onChange({ position: block.position, values: answers });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers]);
 
   return (
     <Card>

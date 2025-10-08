@@ -7,14 +7,21 @@ import type { EvaluationBlock } from "../EvaluationForm";
 interface ScaleMultiEvaluationBlockProps {
   block: EvaluationBlock;
   formRole: string;
+  onChange?: (data: { position: number; values: Record<number, number> }) => void;
 }
 
-export const ScaleMultiEvaluationBlock = ({ block, formRole }: ScaleMultiEvaluationBlockProps) => {
+export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMultiEvaluationBlockProps) => {
   // Fetch skills data to get skill names
   const { data: skillsData } = useQuery(skillsQueryOptions.list());
   
   // Controlled selection per skill
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
+
+  // Notify parent AFTER render commit when answers change
+  React.useEffect(() => {
+    if (onChange) onChange({ position: block.position, values: answers });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers]);
 
   return (
     <Card>

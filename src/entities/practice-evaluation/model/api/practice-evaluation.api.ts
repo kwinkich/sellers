@@ -21,6 +21,11 @@ export const PracticeEvaluationAPI = {
 		}).json<GApiResponse<EvaluationForm>>();
 	},
 
+  getEvaluationForms: (practiceId: number) =>
+    API.get(`practices/${practiceId}/evaluation/forms`).json<
+      GApiResponse<EvaluationForm[]>
+    >(),
+
 	submitEvaluation: (practiceId: number, submission: EvaluationSubmission) =>
 		API.post(`practices/${practiceId}/evaluation/submit`, {
 			json: submission,
@@ -40,6 +45,12 @@ export const practiceEvaluationQueryOptions = {
 			queryFn: () =>
 				PracticeEvaluationAPI.getEvaluationForm(practiceId, params),
 		}),
+
+  forms: (practiceId: number) =>
+    queryOptions({
+      queryKey: ["practices", "evaluation", "forms", practiceId],
+      queryFn: () => PracticeEvaluationAPI.getEvaluationForms(practiceId),
+    }),
 };
 
 export const practiceEvaluationMutationOptions = {

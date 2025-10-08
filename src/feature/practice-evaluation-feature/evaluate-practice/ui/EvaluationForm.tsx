@@ -44,6 +44,10 @@ export const EvaluationForm = () => {
   const [activeTab, setActiveTab] = useState<string>("");
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  // aggregated answers per role -> per block position
+  const [answers, setAnswers] = useState<Record<string, Record<number, any>>>({});
+  // per-role completion flags
+  const [roleFilled, setRoleFilled] = useState<Record<string, boolean>>({});
 
   // Fetch evaluation forms from backend
   const { data: evaluationData, isLoading } = useQuery({
@@ -246,7 +250,42 @@ export const EvaluationForm = () => {
                 onTouchEnd={handleTouchEnd}
               >
                 <div className="p-2 space-y-4">
-                  <EvaluationBlocks blocks={form.blocks} formRole={form.role} />
+                  <EvaluationBlocks 
+                    blocks={form.blocks} 
+                    formRole={form.role}
+                    onAnswersChange={(payload)=>{
+                      setAnswers(prev=>{
+                        const byRole = prev[form.role] ? { ...prev[form.role] } : {};
+                        byRole[payload.position] = payload;
+                        const next = { ...prev, [form.role]: byRole };
+
+                        // Recompute filled flag for this role immediately
+                        const currentForm = evaluationData.forms.find(f=>f.role===form.role);
+                        const computeFilled = () => {
+                          if (!currentForm) return false;
+                          const roleAns = next[form.role] || {};
+                          for (const block of currentForm.blocks){
+                            if (block.type === "QA"){
+                              const a = roleAns[block.position]?.value ?? "";
+                              if (!a || !String(a).trim()) return false;
+                            } else if (block.type === "SCALE_SKILL_SINGLE"){
+                              const vals = roleAns[block.position]?.values as Record<number, number> | undefined;
+                              const itemsCount = block.items?.length ?? 0;
+                              if (!vals || Object.keys(vals).length !== itemsCount) return false;
+                            } else if (block.type === "SCALE_SKILL_MULTI"){
+                              const vals = roleAns[block.position]?.values as Record<number, number> | undefined;
+                              const itemsCount = block.items?.length ?? 0;
+                              if (!vals || Object.keys(vals).length !== itemsCount) return false;
+                            }
+                          }
+                          return true;
+                        };
+                        setRoleFilled(prevFlags => ({ ...prevFlags, [form.role]: computeFilled() }));
+
+                        return next;
+                      });
+                    }}
+                  />
                 </div>
               </div>
             </TabsContent>
@@ -255,7 +294,18 @@ export const EvaluationForm = () => {
       </div>
 
       {/* Footer CTA */}
-      <EvaluationFooter />
+      <EvaluationFooter 
+        isLastTab={activeTab === evaluationData.forms[evaluationData.forms.length - 1].role}
+        canFinish={evaluationData.forms.every(f => roleFilled[f.role])}
+        onNext={() => {
+          const currentIndex = evaluationData.forms.findIndex(f => f.role === activeTab);
+          const next = evaluationData.forms[currentIndex + 1];
+          if (next) setActiveTab(next.role);
+        }}
+        onFinish={() => {
+          // TODO: submit when backend contract is ready
+        }}
+      />
     </div>
   );
 };
