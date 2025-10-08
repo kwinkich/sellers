@@ -20,8 +20,8 @@ export const PracticeHomePage = () => {
   const past = pastQ.data?.data ?? [];
 
   return (
-    <div className="bg-second-bg min-h-dvh">
-      <div className="flex flex-col gap-3 px-2 pb-3">
+    <div className="bg-second-bg">
+      <div className="flex flex-col gap-3 px-2 pb-5">
         <div className="gap-0.5 pl-2 pt-2">
           <HeadText head="Площадка практик" label="Оттачивайте переговорные навыки"/>
         </div>
@@ -65,7 +65,7 @@ export const PracticeHomePage = () => {
           ) : !mine.length ? (
             <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
           ) : (
-            <div className="flex flex-col gap-3 px-2">
+            <div className="flex flex-col gap-3 px-2 pb-5">
               {mine.map((p) => (
                 <PracticeMineCard key={p.id} data={p} />
               ))}
@@ -80,7 +80,7 @@ export const PracticeHomePage = () => {
           ) : !past.length ? (
             <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
           ) : (
-            <div className="flex flex-col gap-3 px-2">
+            <div className="flex flex-col gap-3 px-2 pb-5">
               {past.map((p) => (
                 <PracticePastCard key={p.id} data={p} />
               ))}

@@ -13,7 +13,6 @@ const PracticePreviewPage = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, skillNames, practiceType } = store;
-  // const scenarioDetail = useQuery({ ...scenariosQueryOptions.byId(scenarioId ?? 0), enabled: !!scenarioId });
   const practiceTypeLabel = practiceType ? getPracticeTypeLabel(practiceType as PracticeType) : undefined;
 
   const create = useMutation({
@@ -26,7 +25,7 @@ const PracticePreviewPage = () => {
   });
 
   return (
-    <div className="bg-white min-h-dvh text-black">
+    <div className="bg-white text-black">
 
       <div className="flex flex-col bg-base-bg p-3 text-sm rounded-b-2xl text-white gap-2 mb-3">
         <div className="flex flex-row justify-between items-center">
@@ -86,7 +85,7 @@ const PracticePreviewPage = () => {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-24 p-4 pb-0 bg-white z-[60]">
+      <div className="fixed inset-x-0 bottom-24 p-4 pb-0">
         <Button
           className="w-full"
           disabled={create.isPending || !initialRole || !zoomLink}
