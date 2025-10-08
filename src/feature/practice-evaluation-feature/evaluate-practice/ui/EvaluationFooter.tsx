@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 interface EvaluationFooterProps {
   isLastTab: boolean;
   canFinish: boolean; // only used on last tab
+  loading?: boolean;
   onNext: () => void;
   onFinish: () => void;
 }
 
-export const EvaluationFooter = ({ isLastTab, canFinish, onNext, onFinish }: EvaluationFooterProps) => {
-  const label = isLastTab ? "Завершить" : "Далее";
-  const disabled = isLastTab ? !canFinish : false; // "Далее" is always enabled
+export const EvaluationFooter = ({ isLastTab, canFinish, loading, onNext, onFinish }: EvaluationFooterProps) => {
+  const label = isLastTab ? (loading ? "Отправка..." : "Завершить") : "Далее";
+  const disabled = isLastTab ? (loading || !canFinish) : false; // "Далее" is always enabled
 
   const handleClick = () => {
     if (isLastTab) onFinish();

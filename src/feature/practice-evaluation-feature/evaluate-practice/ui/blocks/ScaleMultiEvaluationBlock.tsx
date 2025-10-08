@@ -1,6 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import * as React from "react";
 import type { EvaluationBlock } from "../EvaluationForm";
 
@@ -11,9 +9,6 @@ interface ScaleMultiEvaluationBlockProps {
 }
 
 export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMultiEvaluationBlockProps) => {
-  // Fetch skills data to get skill names
-  const { data: skillsData } = useQuery(skillsQueryOptions.list());
-  
   // Controlled selection per skill
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
 
@@ -32,15 +27,12 @@ export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMu
         
         <div className="space-y-4">
           {block.items?.map((item, itemIndex) => {
-            const skill = skillsData?.data?.find(s => s.id === item.skillId);
             const groupName = `${formRole}-skill-${item.skillId}`;
-            const selected = answers[item.skillId];
+            const selected = answers[item.skillId ?? 0];
 
             return (
               <div key={itemIndex} className="flex flex-col gap-3">
-                <h4 className="text-sm font-medium text-gray-800">
-                  {skill?.name || "Неизвестный навык"}
-                </h4>
+                <h4 className="text-sm font-medium text-gray-800">{item.title || "Неизвестный навык"}</h4>
 
                 <div className="space-y-2">
                   {block.scale?.options.map((option) => (
@@ -52,7 +44,7 @@ export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMu
                         className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
                         checked={selected === option.value}
                         onChange={() =>
-                          setAnswers((prev) => ({ ...prev, [item.skillId]: option.value }))
+                          setAnswers((prev) => ({ ...prev, [item.skillId ?? 0]: option.value }))
                         }
                       />
                       <span className="text-sm text-gray-700">{option.label}</span>
