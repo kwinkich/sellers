@@ -2,7 +2,6 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePickerFloatingLabel } from "@/components/ui/datePickerFloating";
-import { TimePickerFloatingLabel } from "@/components/ui/timePicker";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
@@ -231,14 +230,22 @@ const PracticeCreatePage = () => {
               updateStartAt(d, time);
             }}
           />
-          <TimePickerFloatingLabel
-            placeholder="Время (МСК)"
-            value={time}
-            onValueChange={(v: string) => {
-              setTime(v);
-              updateStartAt(selectedDate, v);
-            }}
-          />
+          <div className="flex items-center">
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => {
+                setTime(e.target.value);
+                updateStartAt(selectedDate, e.target.value);
+              }}
+              className="w-full h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
+              placeholder="Время (МСК)"
+              step={300}
+              min="00:00"
+              max="23:59"
+              lang="ru-RU"
+            />
+          </div>
         </div>
 
       <div className="fixed inset-x-0 bottom-24 p-4 pb-0">
