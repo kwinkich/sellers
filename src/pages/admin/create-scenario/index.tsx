@@ -194,33 +194,22 @@ export const AdminScenariosCreatePage = () => {
         const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[], role: string): any[] => {
             return blocks.map((block, index) => {
                 // Generate block title according to specification
-                const blockTitle = block.type === "TEXT" || block.type === "QA" 
-                    ? (block.type === "TEXT" ? block.textContent || "Текстовый блок" : block.questionContent || "Блок вопросов")
-                    : `${formData.title.toUpperCase()}_${role}_${block.type}_${index}`;
 
                 const baseBlock: any = {
                     type: block.type,
-                    title: blockTitle,
-                    helpText: "",
                     required: true,
-                    position: index,
-                    scale: { options: [] },
-                    items: []
+                    position: index
                 };
 
                 // Handle different block types with REAL data
                 if (block.type === "TEXT") {
-                    // TEXT blocks: use textContent as title, empty scale and items
+                    // TEXT blocks: use textContent as title, no scale and items
                     baseBlock.title = block.textContent || "Текстовый блок";
-                    baseBlock.scale = { options: [] };
-                    baseBlock.items = [];
                 } else if (block.type === "QA") {
-                    // QA blocks: use questionContent as title, empty scale and items
+                    // QA blocks: use questionContent as title, no scale and items
                     baseBlock.title = block.questionContent || "Блок вопросов";
-                    baseBlock.scale = { options: [] };
-                    baseBlock.items = [];
                 } else if (block.type === "SCALE_SKILL_SINGLE") {
-                    // SCALE_SKILL_SINGLE: use real scale options and questions
+                    // SCALE_SKILL_SINGLE: use real scale options and questions (no title)
                     baseBlock.scale = {
                         options: (block.scaleOptions || []).map((opt, ord) => ({
                             ord,
@@ -236,7 +225,7 @@ export const AdminScenariosCreatePage = () => {
                         skillId: block.selectedSkillId || 1
                     }));
                 } else if (block.type === "SCALE_SKILL_MULTI") {
-                    // SCALE_SKILL_MULTI: use real scale options and skills
+                    // SCALE_SKILL_MULTI: use real scale options and skills (no title)
                     baseBlock.scale = {
                         options: (block.scaleOptionsMulti || []).map((opt, ord) => ({
                             ord,
