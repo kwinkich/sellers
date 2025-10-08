@@ -9,14 +9,23 @@ import {
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
+	CreateCoursePage,
+	CreateLessonPage,
+	CreateModulePage,
+	CreateQuizPage,
+	EditQuizPage,
 	EvaluationPage,
+	EvaluationReportPage,
 	LessonDetailsPage,
+	LessonEditPage,
 	MopCoursesPage,
 	MopDetailsPage,
 	MopLessonsPage,
 	MopProfilePage,
 	QuizPage,
 } from "@/pages";
+import { CourseEditPage } from "@/pages/admin/course-edit";
+import { ModuleEditPage } from "@/pages/admin/module-edit";
 import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeCreatePage from "@/pages/practice/create";
 import PracticeHomePage from "@/pages/practice/home";
@@ -122,8 +131,49 @@ export const route = createBrowserRouter([
 						path: "scenarios/create",
 						element: <AdminScenariosCreatePage />,
 					},
+					{
+						path: "course/create",
+						element: <CreateCoursePage />,
+					},
+					{
+						path: "course/:id/edit",
+						element: <CourseEditPage />,
+					},
+					{
+						path: "course/:id/module/create",
+						element: <CreateModulePage />,
+					},
+					{
+						path: "module/:id/edit",
+						element: <ModuleEditPage />,
+					},
+					{
+						path: "module/:id/lesson/create",
+						element: <CreateLessonPage />,
+					},
+					{
+						path: "lesson/:id/edit",
+						element: <LessonEditPage />,
+					},
+					{
+						path: "lesson/:id/quiz/create",
+						element: <CreateQuizPage />,
+					},
+					{
+						path: "quiz/:id/edit",
+						element: <EditQuizPage />,
+					},
 				],
 			},
+			// {
+			// 	path: "practice",
+			// 	element: <PracticeLayout />,
+			// 	children: [
+			// 	  { index: true, element: <PracticeHomePage /> },
+			// 	  { path: "create", element: <PracticeCreatePage /> },
+			// 	  { path: "preview", element: <PracticePreviewPage /> },
+			// 	],
+			// },
 		],
 	},
   {
@@ -136,7 +186,11 @@ export const route = createBrowserRouter([
     ],
   },
   {
-    path: "/evaluation",
+    path: "/evaluation/evaluate/:practiceId",
     element: <EvaluationPage />,
+  },
+  {
+    path: "/evaluation/report/:practiceId",
+    element: <EvaluationReportPage />,
   },
 ]);

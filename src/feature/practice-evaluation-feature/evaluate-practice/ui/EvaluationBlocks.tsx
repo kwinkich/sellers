@@ -7,9 +7,10 @@ import { ScaleMultiEvaluationBlock } from "./blocks/index";
 interface EvaluationBlocksProps {
   blocks: EvaluationBlock[];
   formRole: string;
+  onAnswersChange?: (answers: any) => void;
 }
 
-export const EvaluationBlocks = ({ blocks, formRole }: EvaluationBlocksProps) => {
+export const EvaluationBlocks = ({ blocks, formRole, onAnswersChange }: EvaluationBlocksProps) => {
   return (
     <>
       {blocks.map((block, index) => (
@@ -17,6 +18,7 @@ export const EvaluationBlocks = ({ blocks, formRole }: EvaluationBlocksProps) =>
           key={`${formRole}-${block.position}`}
           block={block}
           formRole={formRole}
+          onAnswersChange={onAnswersChange}
         />
       ))}
     </>
@@ -26,20 +28,22 @@ export const EvaluationBlocks = ({ blocks, formRole }: EvaluationBlocksProps) =>
 // Universal block renderer component
 const EvaluationBlockRenderer = ({ 
   block, 
-  formRole 
+  formRole,
+  onAnswersChange
 }: { 
   block: EvaluationBlock; 
   formRole: string;
+  onAnswersChange?: (answers: any) => void;
 }) => {
   switch (block.type) {
     case "TEXT":
       return <TextEvaluationBlock block={block}/>;
     case "QA":
-      return <QAEvaluationBlock block={block} formRole={formRole} />;
+      return <QAEvaluationBlock block={block} formRole={formRole} onChange={(d)=>onAnswersChange?.({kind:"QA", ...d})} />;
     case "SCALE_SKILL_SINGLE":
-      return <ScaleSingleEvaluationBlock block={block} formRole={formRole} />;
+      return <ScaleSingleEvaluationBlock block={block} formRole={formRole} onChange={(d)=>onAnswersChange?.({kind:"SINGLE", ...d})} />;
     case "SCALE_SKILL_MULTI":
-      return <ScaleMultiEvaluationBlock block={block} formRole={formRole} />;
+      return <ScaleMultiEvaluationBlock block={block} formRole={formRole} onChange={(d)=>onAnswersChange?.({kind:"MULTI", ...d})} />;
     default:
       return null;
   }

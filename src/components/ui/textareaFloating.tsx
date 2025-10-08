@@ -47,7 +47,7 @@ const TextareaFloatingLabel: FC<TextareaFloatingLabelProps> = ({
 				maxLength={maxLength}
 				className={cn(
 					// shadcn/ui base textarea styles
-					"flex field-sizing-content min-h-[100px] w-full rounded-md border px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+					"flex field-sizing-content min-h-[100px] w-full rounded-md border px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 text-sm",
 					getVariantClasses(),
 					className
 				)}

@@ -6,16 +6,9 @@ import { ClientNavBar } from "@/widget";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { MOCK_MOP_PRACTICES, MOCK_MOP_PROFILE, MOCK_MOP_SKILLS } from "./mock";
-
-const USE_MOCK_DATA = true;
 
 export const MopDetailsPage = () => {
 	const { id } = useParams<{ id: string }>();
-
-	const mockProfile = MOCK_MOP_PROFILE;
-	const mockSkills = MOCK_MOP_SKILLS;
-	const mockPractices = MOCK_MOP_PRACTICES;
 
 	const {
 		data: profileRes,
@@ -31,9 +24,43 @@ export const MopDetailsPage = () => {
 		mopProfilesQueryOptions.profilePracticesById(parseInt(id!))
 	);
 
-	const profile = USE_MOCK_DATA ? mockProfile : profileRes?.data;
-	const skills = USE_MOCK_DATA ? mockSkills : skillsRes?.data ?? [];
-	const practices = USE_MOCK_DATA ? mockPractices : practicesRes?.data ?? [];
+	const profile = profileRes?.data;
+	const skills = skillsRes?.data ?? [];
+	const practices = practicesRes?.data ?? [];
+
+	if (isLoading) {
+		return (
+			<div className="bg-second-bg min-h-screen pb-28">
+				<div className="flex flex-col gap-6 px-2 pt-4">
+					<HeadText
+						head="Профиль МОП"
+						label="Загрузка данных..."
+						variant="black-gray"
+					/>
+					<div className="flex justify-center py-8">
+						<Loader2 className="h-8 w-8 animate-spin" />
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (error || !profile) {
+		return (
+			<div className="bg-second-bg min-h-screen pb-28">
+				<div className="flex flex-col gap-6 px-2 pt-4">
+					<HeadText
+						head="Профиль МОП"
+						label="Ошибка загрузки профиля"
+						variant="black-gray"
+					/>
+					<div className="text-center py-8 text-base-gray">
+						{error?.message || "МОП не найден"}
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const displayName = profile?.displayName ?? "-";
 	const companyName = profile?.companyName ?? "-";
@@ -138,40 +165,6 @@ export const MopDetailsPage = () => {
 			),
 		},
 	];
-
-	if (!USE_MOCK_DATA && isLoading) {
-		return (
-			<div className="bg-second-bg min-h-screen pb-28">
-				<div className="flex flex-col gap-6 px-2 pt-4">
-					<HeadText
-						head="Профиль МОП"
-						label="Загрузка данных..."
-						variant="black-gray"
-					/>
-					<div className="flex justify-center py-8">
-						<Loader2 className="h-8 w-8 animate-spin" />
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	if (!USE_MOCK_DATA && (error || !profileRes)) {
-		return (
-			<div className="bg-second-bg min-h-screen pb-28">
-				<div className="flex flex-col gap-6 px-2 pt-4">
-					<HeadText
-						head="Профиль МОП"
-						label="Ошибка загрузки профиля"
-						variant="black-gray"
-					/>
-					<div className="text-center py-8 text-base-gray">
-						{(error as any)?.message || "МОП не найден"}
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	return (
 		<div className="bg-second-bg min-h-full pb-28">

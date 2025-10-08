@@ -15,6 +15,8 @@ const buttonVariants = cva(
 				second: "bg-second-bg text-white",
 				link: "bg-transparent",
 				ghost: "bg-white/50",
+				bordered:
+					"bg-base-opacity10-main border border-dashed border-base-main",
 			},
 			size: {
 				default: "px-6 h-16",

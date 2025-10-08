@@ -3,43 +3,14 @@ import { UpdateClientForm } from "@/feature";
 import { HeadText } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
-const MOCK_CLIENT_DATA = {
-	id: 1,
-	displayName: "ООО Ромашка",
-	telegramUsername: "@romashka_company",
-	level: "LEVEL_3" as const,
-	inn: "1234567890",
-	numberOfLicenses: 5,
-	closestLicenseExpiresAt: "2024-12-31",
-};
-
-const USE_MOCK_DATA = false;
 
 export const AdminUpdateClientPage = () => {
 	const { clientId } = useParams<{ clientId: string }>();
-	const [mockLoading, setMockLoading] = useState(USE_MOCK_DATA);
 
-	useEffect(() => {
-		if (USE_MOCK_DATA) {
-			const timer = setTimeout(() => {
-				setMockLoading(false);
-			}, 1000);
-			return () => clearTimeout(timer);
-		}
-	}, []);
-
-	const mockQuery = {
-		data: USE_MOCK_DATA ? { data: MOCK_CLIENT_DATA } : undefined,
-		isLoading: USE_MOCK_DATA ? mockLoading : false,
-		error: null,
-	};
-
-	const realQuery = useQuery(clientsQueryOptions.byId(parseInt(clientId!)));
-
-	const { data, isLoading, error } = USE_MOCK_DATA ? mockQuery : realQuery;
+	const { data, isLoading, error } = useQuery(
+		clientsQueryOptions.byId(parseInt(clientId!))
+	);
 
 	if (isLoading) {
 		return (

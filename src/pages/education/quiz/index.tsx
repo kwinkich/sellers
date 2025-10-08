@@ -1,63 +1,14 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
 	quizzesMutationOptions,
 	quizzesQueryOptions,
 	type QuizOption,
-	type UserQuiz,
-} from "@/entities"
-import { ArrowIcon, HeadText } from "@/shared"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { Loader2 } from "lucide-react"
-import { useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-
-// Мок данные для квиза
-const MOCK_QUIZ: UserQuiz = {
-	quizId: 1,
-	attemptId: 123,
-	passThresholdPercent: 70,
-	questions: [
-		{
-			id: 1,
-			text: "Что такое React?",
-			order: 1,
-			options: [
-				{ id: 1, text: "Фреймворк для backend разработки", isCorrect: false },
-				{
-					id: 2,
-					text: "JavaScript библиотека для создания UI",
-					isCorrect: true,
-				},
-				{ id: 3, text: "База данных", isCorrect: false },
-				{ id: 4, text: "Язык программирования", isCorrect: false },
-			],
-		},
-		{
-			id: 2,
-			text: "Что такое JSX?",
-			order: 2,
-			options: [
-				{ id: 5, text: "Расширение синтаксиса JavaScript", isCorrect: true },
-				{ id: 6, text: "Отдельный язык программирования", isCorrect: false },
-				{ id: 7, text: "Тип базы данных", isCorrect: false },
-				{ id: 8, text: "CSS фреймворк", isCorrect: false },
-			],
-		},
-		{
-			id: 3,
-			text: "Какой хук используется для управления состоянием?",
-			order: 3,
-			options: [
-				{ id: 9, text: "useEffect", isCorrect: false },
-				{ id: 10, text: "useState", isCorrect: true },
-				{ id: 11, text: "useContext", isCorrect: false },
-				{ id: 12, text: "useReducer", isCorrect: false },
-			],
-		},
-	],
-};
-
-const USE_MOCK_DATA = true;
+} from "@/entities";
+import { ArrowIcon, HeadText } from "@/shared";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const QuizPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -78,9 +29,56 @@ export const QuizPage = () => {
 	} = useQuery(quizzesQueryOptions.byId(parseInt(id!)));
 
 	// Мутация для отправки ответов
-	const submitQuizMutation = useMutation(quizzesMutationOptions.submit());
+	const submitQuizMutation = useMutation({
+		...quizzesMutationOptions.submit(),
+		onSuccess: (result) => {
+			if (result.success && result.data) {
+				// Обработка успешной отправки
+				console.log("Quiz result:", result.data);
+				// Можно добавить навигацию на страницу результатов или показать уведомление
+				alert(`Квиз завершен! Результат: ${result.data.scorePercent}%`);
+				navigate(-1); // Возврат назад
+			} else {
+				alert("Ошибка при отправке квиза. Попробуйте еще раз.");
+			}
+		},
+		onError: (error) => {
+			console.error("Error submitting quiz:", error);
+			alert("Произошла ошибка при отправке квиза. Попробуйте еще раз.");
+		},
+	});
 
-	const quiz = USE_MOCK_DATA ? MOCK_QUIZ : quizResponse?.data;
+	const quiz = quizResponse?.data;
+
+	if (isLoading) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
+	if (error || !quizResponse) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<div className="text-center">
+					<h2 className="text-lg font-semibold mb-2">Ошибка загрузки квиза</h2>
+					<p className="text-gray-500">{error?.message || "Квиз не найден"}</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!quiz) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<div className="text-center">
+					<h2 className="text-lg font-semibold mb-2">Квиз не найден</h2>
+					<p className="text-gray-500">Попробуйте обновить страницу</p>
+				</div>
+			</div>
+		);
+	}
 
 	// Обработчик выбора варианта ответа
 	const handleOptionSelect = (optionId: number) => {
@@ -113,59 +111,14 @@ export const QuizPage = () => {
 				})
 			);
 
-			if (USE_MOCK_DATA) {
-				// Имитация отправки для мок данных
-				console.log("Mock submission:", { answers });
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				// Здесь можно добавить логику для отображения результатов
-				alert(`Квиз завершен! Ответы отправлены.`);
-				navigate(-1); // Возврат назад
-			} else {
-				const result = await submitQuizMutation.mutateAsync({
-					id: quiz.quizId,
-					data: { answers },
-				});
-				// Обработка реальных результатов
-				console.log("Quiz result:", result);
-			}
-		} catch (error) {
-			console.error("Error submitting quiz:", error);
+			submitQuizMutation.mutate({
+				id: quiz.quizId,
+				data: { answers },
+			});
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
-
-	if (!USE_MOCK_DATA && isLoading) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<Loader2 className="h-8 w-8 animate-spin" />
-			</div>
-		);
-	}
-
-	if (!USE_MOCK_DATA && (error || !quizResponse)) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<div className="text-center">
-					<h2 className="text-lg font-semibold mb-2">Ошибка загрузки квиза</h2>
-					<p className="text-gray-500">
-						{(error as any)?.message || "Квиз не найден"}
-					</p>
-				</div>
-			</div>
-		);
-	}
-
-	if (!quiz) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<div className="text-center">
-					<h2 className="text-lg font-semibold mb-2">Квиз не найден</h2>
-					<p className="text-gray-500">Попробуйте обновить страницу</p>
-				</div>
-			</div>
-		);
-	}
 
 	const currentQuestion = quiz.questions[currentQuestionIndex];
 	const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
@@ -261,15 +214,6 @@ export const QuizPage = () => {
 					)}
 				</div>
 			</div>
-
-			{USE_MOCK_DATA && (
-				<div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mx-4">
-					<p className="text-sm text-yellow-800">
-						<strong>Режим разработки:</strong> Используются мок-данные. Для
-						перехода на реальные данные установите USE_MOCK_DATA = false
-					</p>
-				</div>
-			)}
 		</div>
 	);
 };
