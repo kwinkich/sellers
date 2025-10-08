@@ -9,6 +9,7 @@ import {
 	AdminUpdateClientPage,
 	ClientHomePage,
 	ClientListMopPage,
+	EvaluationPage,
 	LessonDetailsPage,
 	MopCoursesPage,
 	MopDetailsPage,
@@ -133,5 +134,9 @@ export const route = createBrowserRouter([
       { path: "create", element: <PracticeCreatePage /> },
       { path: "preview", element: <PracticePreviewPage /> },
     ],
+  },
+  {
+    path: "/evaluation",
+    element: <EvaluationPage />,
   },
 ]);
