@@ -61,7 +61,7 @@ export const AdminScenariosCreatePage = () => {
     const findSkillId = (name: string) => skills.find(s => s.name === name)?.id;
 
     // Create scenario mutation
-    const { isPending } = useMutation({
+    const { mutate: createScenario, isPending } = useMutation({
         ...scenariosMutationOptions.create(),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["scenarios"] });
@@ -273,14 +273,9 @@ export const AdminScenariosCreatePage = () => {
                 }
             ]
         };
-
-        console.log("=== CREATE SCENARIO REQUEST ===");
-        console.log(JSON.stringify(requestData, null, 2));
-        console.log("=== END REQUEST ===");
-
-        toast.success("Request logged to console", {
-            description: "Check browser console for the complete request schema",
-        });
+        
+        // Call the actual API
+        createScenario(requestData);
     };
 
 	return (
