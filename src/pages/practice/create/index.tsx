@@ -19,6 +19,33 @@ const PracticeCreatePage = () => {
 
   const [time, setTime] = React.useState<string>("15:00");
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(startAt ? new Date(startAt) : undefined);
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    const detect = () => {
+      if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+      return window.matchMedia("(pointer: coarse)").matches;
+    };
+    setIsMobile(detect());
+    const mq = typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia("(pointer: coarse)") : undefined;
+    const handler = () => setIsMobile(detect());
+    if (mq) {
+      if (mq.addEventListener) {
+        mq.addEventListener("change", handler);
+      } else if ((mq as any).addListener) {
+        (mq as any).addListener(handler);
+      }
+    }
+    return () => {
+      if (mq) {
+        if (mq.removeEventListener) {
+          mq.removeEventListener("change", handler);
+        } else if ((mq as any).removeListener) {
+          (mq as any).removeListener(handler);
+        }
+      }
+    };
+  }, []);
 
   const skills = useQuery(skillsQueryOptions.list());
   const scenarios = useInfiniteQuery({
@@ -231,14 +258,33 @@ const PracticeCreatePage = () => {
               updateStartAt(d, time);
             }}
           />
-          <TimePickerFloatingLabel
-            placeholder="Время (МСК)"
-            value={time}
-            onValueChange={(v: string) => {
-              setTime(v);
-              updateStartAt(selectedDate, v);
-            }}
-          />
+          {isMobile ? (
+            <div className="flex items-center">
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => {
+                  setTime(e.target.value);
+                  updateStartAt(selectedDate, e.target.value);
+                }}
+                className="w-full h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
+                placeholder="Время (МСК)"
+                step={300}
+                min="00:00"
+                max="23:59"
+                lang="ru-RU"
+              />
+            </div>
+          ) : (
+            <TimePickerFloatingLabel
+              placeholder="Время (МСК)"
+              value={time}
+              onValueChange={(v: string) => {
+                setTime(v);
+                updateStartAt(selectedDate, v);
+              }}
+            />
+          )}
         </div>
 
       <div className="fixed inset-x-0 bottom-24 p-4 pb-0">
