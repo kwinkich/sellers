@@ -10,22 +10,29 @@ import type {
 } from "../types/quiz.types";
 
 export const QuizzesAPI = {
-	createQuiz: (quizData: CreateQuizRequest) =>
-		API.post("quizzes", { json: quizData }).json<GApiResponse<Quiz>>(),
+	createQuiz: (quizData: CreateQuizRequest) => {
+		return API.post("quizzes", { json: quizData }).json<GApiResponse<Quiz>>();
+	},
 
-	getQuizById: (id: number) =>
-		API.get(`quizzes/${id}/`).json<GApiResponse<UserQuiz>>(),
+	getQuizById: (id: number) => {
+		return API.get(`quizzes/${id}/`).json<GApiResponse<UserQuiz>>();
+	},
 
-	updateQuiz: (id: number, quizData: UpdateQuizRequest) =>
-		API.put(`quizzes/${id}`, { json: quizData }).json<GApiResponse<Quiz>>(),
+	updateQuiz: (id: number, quizData: UpdateQuizRequest) => {
+		return API.put(`quizzes/${id}`, { json: quizData }).json<
+			GApiResponse<Quiz>
+		>();
+	},
 
-	deleteQuiz: (id: number) =>
-		API.delete(`quizzes/${id}`).json<GApiResponse<void>>(),
+	deleteQuiz: (id: number) => {
+		return API.delete(`quizzes/${id}`).json<GApiResponse<void>>();
+	},
 
-	submitQuiz: (id: number, submission: QuizSubmission) =>
-		API.post(`quizzes/${id}/submit`, { json: submission }).json<
+	submitQuiz: (id: number, submission: QuizSubmission) => {
+		return API.post(`quizzes/${id}/submit`, { json: submission }).json<
 			GApiResponse<QuizResult>
-		>(),
+		>();
+	},
 };
 
 export const quizzesQueryOptions = {

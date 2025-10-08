@@ -4,7 +4,11 @@ export interface Module {
 	title: string;
 	shortDesc: string;
 	testVariant: "NONE" | "QUIZ" | "PRACTICE";
+	lessonsCount: number;
 	quizId: number;
+	completedLessons: number;
+	progressPercent: number;
+	quizQuestionsCount: number;
 	unlockRule: "ALL" | "PREVIOUS" | "TEST";
 	orderIndex: number;
 	createdAt: string;
