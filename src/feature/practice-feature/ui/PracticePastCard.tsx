@@ -124,6 +124,15 @@ export const PracticePastCard = ({ data }: Props) => {
           </div>
           <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onWatch} disabled={!data.resultsAvailable || !data.recordingUrl}>Смотреть</Button>
         </div>
+
+        {/* Meeting pdf */}
+        <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
+          <div className="flex flex-col">
+            <span className="text-base-gray">PDF встречи</span>
+            <span className="text-white font-medium">{data.resultsAvailable && data.recordingUrl ? "Доступна" : "Недоступна"}</span>
+          </div>
+          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onWatch} disabled={!data.resultsAvailable || !data.recordingUrl}>Смотреть</Button>
+        </div>
       </div>
 
       {/* Bottom watch button */}
