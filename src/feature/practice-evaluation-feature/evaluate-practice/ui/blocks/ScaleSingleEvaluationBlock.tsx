@@ -1,4 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import * as React from "react";
 import type { EvaluationBlock } from "../EvaluationForm";
 
@@ -29,8 +31,15 @@ export const ScaleSingleEvaluationBlock = ({
   formRole,
   onChange,
 }: ScaleSingleEvaluationBlockProps) => {
-  // Use the first item's title as the skill name label (backend provides item titles)
-  const skillTitle = block.items?.[0]?.title || "Неизвестный навык";
+  // Resolve skill name by skillId of the first item
+  const firstSkillId = block.items?.[0]?.skillId;
+
+  const { data: skillRes } = useQuery({
+    ...skillsQueryOptions.byId(firstSkillId as number),
+    enabled: !!firstSkillId,
+  });
+
+  const skillTitle = skillRes?.data?.name ?? block.items?.[0]?.title ?? "Неизвестный навык";
 
   // controlled selection per item index (no default check)
   const [answers, setAnswers] = React.useState<Record<number, number>>({});

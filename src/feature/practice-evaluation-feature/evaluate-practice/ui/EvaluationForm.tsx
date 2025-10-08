@@ -5,7 +5,7 @@ import { EvaluationHeader } from "./index";
 import { EvaluationTabs } from "./index";
 import { EvaluationBlocks } from "./index";
 import { EvaluationFooter } from "./index";
-import type { EvaluationSubmission } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
+import type { EvaluationSubmission, EvaluationBatchSubmission } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
 import { useMutation } from "@tanstack/react-query";
 import { practiceEvaluationMutationOptions } from "@/entities/practice-evaluation/model/api/practice-evaluation.api";
 import { toast } from "sonner";
@@ -299,10 +299,11 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
         onFinish={() => {
           (async () => {
             try {
-              for (const form of evaluationData.forms) {
-                const submission = buildSubmissionForForm(form);
-                await submitEvaluation({ practiceId, data: submission });
-              }
+              const submissions = evaluationData.forms.map((form) => buildSubmissionForForm(form));
+              console.log(submissions);
+              const payload: EvaluationBatchSubmission = { submissions };
+              console.log(payload);
+              await submitEvaluation({ practiceId, data: payload });
               toast.success("Оценка отправлена");
               navigate(`/practice`);
             } catch (e) {
