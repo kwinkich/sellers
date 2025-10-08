@@ -3,8 +3,10 @@ import { Outlet } from "react-router-dom";
 
 export const AdminLayout = () => {
 	return (
-		<div className="w-dvw h-dvh bg-white">
-			<Outlet />
+		<div className="w-dvw h-dvh bg-white relative">
+			<div className="w-full h-full overflow-auto pb-16">
+				<Outlet />
+			</div>
 			<AdminNavBar />
 		</div>
 	);
