@@ -22,7 +22,6 @@ export interface EvaluationFormData {
 }
 
 
-
 export interface EvaluationBlock {
   id?: number;
   type: "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
