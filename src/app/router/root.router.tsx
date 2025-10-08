@@ -198,13 +198,4 @@ export const route = createBrowserRouter([
       }
 		],
 	},
-
-  // {
-  //   path: "/evaluation/evaluate/:practiceId",
-  //   element: <EvaluationPage />,
-  // },
-  // {
-  //   path: "/evaluation/report/:practiceId",
-  //   element: <EvaluationReportPage />,
-  // },
 ]);
