@@ -2,8 +2,6 @@
 import { useAppInit } from "@/shared";
 import { Loader2 } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import { useAppInit } from "@/shared";
-import { Loader2 } from "lucide-react";
 
 export const AppInitLayout = () => {
 	const { isLoading, isError, error } = useAppInit();
