@@ -20,7 +20,7 @@ export const ClientHomePage = () => {
 	const navigate = useNavigate();
 	const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
-	const { data, isLoading, error } = useQuery({
+	const { data, isLoading } = useQuery({
 		...clientsQueryOptions.profile(),
 		retry: 1,
 	});
@@ -36,28 +36,16 @@ export const ClientHomePage = () => {
 			};
 		}
 
-		if (error || !data?.data) {
-			console.error("Ошибка загрузки профиля:", error);
-			return {
-				totalLicenses: 30,
-				activeLicenses: 21,
-				notActiveLicenses: 9,
-				closestExpirationDate: "2024-12-12",
-				isLoading: false,
-			};
-		}
-
 		return {
-			...data.data,
+			...data?.data,
 			isLoading: false,
 		};
 	};
 
 	const profileData = getProfileData();
-	const availableLicenses =
-		profileData.totalLicenses - profileData.activeLicenses;
+	const availableLicenses = (profileData.totalLicenses ?? 0) - (profileData.activeLicenses ?? 0);
 	const expirationDate = format(
-		new Date(profileData.closestExpirationDate),
+		new Date(profileData.closestExpirationDate ?? ""),
 		"dd.MM.yyyy",
 		{ locale: ru }
 	);

@@ -8,8 +8,11 @@ import type {
 } from "../types/module.types";
 
 export const ModulesAPI = {
-	createModule: (moduleData: CreateModuleRequest) =>
-		API.post("modules", { json: moduleData }).json<GApiResponse<Module>>(),
+	createModule: (moduleData: CreateModuleRequest) => {
+		return API.post("modules", { json: moduleData }).json<
+			GApiResponse<Module>
+		>();
+	},
 
 	getModules: (params?: GetModulesParams) => {
 		const searchParams = createSearchParams(params);
@@ -25,14 +28,19 @@ export const ModulesAPI = {
 		>();
 	},
 
-	getModuleById: (id: number) =>
-		API.get(`modules/${id}`).json<GApiResponse<Module>>(),
+	getModuleById: (id: number) => {
+		return API.get(`modules/${id}`).json<GApiResponse<Module>>();
+	},
 
-	updateModule: (id: number, moduleData: UpdateModuleRequest) =>
-		API.put(`modules/${id}`, { json: moduleData }).json<GApiResponse<Module>>(),
+	updateModule: (id: number, moduleData: UpdateModuleRequest) => {
+		return API.put(`modules/${id}`, { json: moduleData }).json<
+			GApiResponse<Module>
+		>();
+	},
 
-	deleteModule: (id: number) =>
-		API.delete(`modules/${id}`).json<GApiResponse<void>>(),
+	deleteModule: (id: number) => {
+		return API.delete(`modules/${id}`).json<GApiResponse<void>>();
+	},
 };
 
 export const modulesQueryOptions = {

@@ -11,3 +11,4 @@ export * from "./practices/index";
 export * from "./quiz/index";
 export * from "./scenarios/index";
 export * from "./skill/index";
+export * from "./storage/index";

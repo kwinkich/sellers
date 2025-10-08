@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import type {
 	EvaluationForm,
 	EvaluationSubmission,
+	EvaluationBatchSubmission,
 	EvaluationSubmitResult,
 	EvaluationTask,
 	GetEvaluationFormParams,
@@ -21,7 +22,12 @@ export const PracticeEvaluationAPI = {
 		}).json<GApiResponse<EvaluationForm>>();
 	},
 
-	submitEvaluation: (practiceId: number, submission: EvaluationSubmission) =>
+  getEvaluationForms: (practiceId: number) =>
+    API.get(`practices/${practiceId}/evaluation/forms`).json<
+      GApiResponse<EvaluationForm[]>
+    >(),
+
+	submitEvaluation: (practiceId: number, submission: EvaluationBatchSubmission) =>
 		API.post(`practices/${practiceId}/evaluation/submit`, {
 			json: submission,
 		}).json<GApiResponse<EvaluationSubmitResult>>(),
@@ -40,6 +46,12 @@ export const practiceEvaluationQueryOptions = {
 			queryFn: () =>
 				PracticeEvaluationAPI.getEvaluationForm(practiceId, params),
 		}),
+
+  forms: (practiceId: number) =>
+    queryOptions({
+      queryKey: ["practices", "evaluation", "forms", practiceId],
+      queryFn: () => PracticeEvaluationAPI.getEvaluationForms(practiceId),
+    }),
 };
 
 export const practiceEvaluationMutationOptions = {
@@ -49,7 +61,7 @@ export const practiceEvaluationMutationOptions = {
 			data,
 		}: {
 			practiceId: number;
-			data: EvaluationSubmission;
+			data: EvaluationBatchSubmission;
 		}) => PracticeEvaluationAPI.submitEvaluation(practiceId, data),
 	}),
 };

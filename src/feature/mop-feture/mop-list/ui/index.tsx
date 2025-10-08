@@ -1,18 +1,16 @@
 import {
 	MopCard,
 	mopProfilesMutationOptions,
+	mopProfilesQueryOptions,
 	type MopProfile,
 } from "@/entities";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MOCK_MOPS } from "../mock";
-
-const USE_MOCK_DATA = true;
 
 export const ClientMopsList = () => {
 	const queryClient = useQueryClient();
 
-	const mops = USE_MOCK_DATA ? MOCK_MOPS : [];
+	const { data, isLoading, error } = useQuery(mopProfilesQueryOptions.list());
 
 	const { mutate: deleteMop, isPending: isDeleting } = useMutation({
 		...mopProfilesMutationOptions.delete(),
@@ -34,6 +32,22 @@ export const ClientMopsList = () => {
 			deleteMop(mop.id);
 		}
 	};
+
+	if (isLoading) {
+		return (
+			<div className="text-center py-8 text-base-gray">Загрузка МОП...</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="text-center py-8 text-destructive">
+				Ошибка загрузки: {error.message}
+			</div>
+		);
+	}
+
+	const mops = data?.data ?? [];
 
 	if (mops.length === 0) {
 		return (

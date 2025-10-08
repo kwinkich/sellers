@@ -61,7 +61,7 @@ export const AdminScenariosCreatePage = () => {
     const findSkillId = (name: string) => skills.find(s => s.name === name)?.id;
 
     // Create scenario mutation
-    const { isPending } = useMutation({
+    const { mutate: createScenario, isPending } = useMutation({
         ...scenariosMutationOptions.create(),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["scenarios"] });
@@ -191,7 +191,7 @@ export const AdminScenariosCreatePage = () => {
         }
 
         // Convert blocks to proper format for API
-        const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[], role: string): any[] => {
+        const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[]): any[] => {
             return blocks.map((block, index) => {
                 // Generate block title according to specification
 
@@ -257,30 +257,25 @@ export const AdminScenariosCreatePage = () => {
                     role: "SELLER",
                     title: "Форма продавца",
                     descr: "Сценарий для продавца",
-                    blocks: convertBlocksToFormBlocks(sellerBlocks, "SELLER")
+                    blocks: convertBlocksToFormBlocks(sellerBlocks)
                 },
                 {
                     role: "BUYER",
                     title: "Форма покупателя",
                     descr: "Сценарий для покупателя",
-                    blocks: convertBlocksToFormBlocks(buyerBlocks, "BUYER")
+                    blocks: convertBlocksToFormBlocks(buyerBlocks)
                 },
                 {
                     role: "MODERATOR",
                     title: "Форма модератора",
                     descr: "Сценарий для модератора",
-                    blocks: convertBlocksToFormBlocks(moderatorBlocks, "MODERATOR")
+                    blocks: convertBlocksToFormBlocks(moderatorBlocks)
                 }
             ]
         };
-
-        console.log("=== CREATE SCENARIO REQUEST ===");
-        console.log(JSON.stringify(requestData, null, 2));
-        console.log("=== END REQUEST ===");
-
-        toast.success("Request logged to console", {
-            description: "Check browser console for the complete request schema",
-        });
+        
+        // Call the actual API
+        createScenario(requestData);
     };
 
 	return (
