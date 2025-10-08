@@ -1,9 +1,11 @@
 import { create } from "zustand";
 
+import type { PracticeType } from "@/shared/types/practice.types";
+
 interface CreatePracticeState {
   scenarioId?: number;
   scenarioTitle?: string;
-  practiceType?: string;
+  practiceType?: PracticeType;
   caseId?: number;
   caseTitle?: string;
   skillIds: number[];
@@ -13,7 +15,7 @@ interface CreatePracticeState {
   initialRole?: "SELLER" | "BUYER" | "MODERATOR";
   close: () => void;
   setScenario: (id: number | undefined, title?: string) => void;
-  setPracticeType: (type?: string) => void;
+  setPracticeType: (type?: PracticeType) => void;
   setCase: (id: number | undefined, title?: string) => void;
   setSkills: (ids: number[]) => void;
   setSkillNames: (names: string[]) => void;

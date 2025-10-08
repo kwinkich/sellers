@@ -5,7 +5,7 @@ export const MopNavBar = () => {
 	const location = useLocation();
 
 	return (
-		<div className="w-full flex items-center justify-center py-6 bg-base-bg rounded-t-3xl fixed bottom-0">
+		<div className="w-full flex items-center justify-center py-6 bg-black rounded-t-3xl fixed bottom-0">
 			<NavItem
 				data={{
 					route: "/mop/profile",

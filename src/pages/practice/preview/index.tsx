@@ -14,10 +14,9 @@ const PracticePreviewPage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, caseTitle, skillNames } = store;
+  const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, skillNames, practiceType } = store;
   const scenarioDetail = useQuery({ ...scenariosQueryOptions.byId(scenarioId ?? 0), enabled: !!scenarioId });
-  const practiceType = scenarioDetail.data?.data?.practiceType as PracticeType | undefined;
-  const practiceTypeLabel = practiceType ? getPracticeTypeLabel(practiceType) : undefined;
+  const practiceTypeLabel = practiceType ? getPracticeTypeLabel(practiceType as PracticeType) : undefined;
 
   const create = useMutation({
     ...practicesMutationOptions.create(),
@@ -89,15 +88,16 @@ const PracticePreviewPage = () => {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 p-4 bg-white">
+      <div className="fixed inset-x-0 bottom-24 p-4 pb-0 bg-white z-[60]">
         <Button
           className="w-full"
           disabled={create.isPending || !initialRole || !zoomLink}
           onClick={() => {
-            if (!scenarioId || !caseId || !startAt || !initialRole) return;
+            if (!scenarioId || !startAt || !initialRole || !practiceType) return;
             create.mutate({
               scenarioId,
-              caseId,
+              practiceType,
+              caseId: practiceType === "WITHOUT_CASE" ? undefined : caseId,
               skillIds,
               startAt,
               initialRole,

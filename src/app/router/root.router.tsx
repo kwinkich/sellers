@@ -23,6 +23,7 @@ import PracticePreviewPage from "@/pages/practice/preview";
 import ApiDashboard from "@/pages/temp";
 import { createBrowserRouter } from "react-router-dom";
 import { MopLayout } from "../layouts";
+import { PracticeLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
 
@@ -125,15 +126,12 @@ export const route = createBrowserRouter([
 		],
 	},
   {
-    path: "practice",
-    element: <PracticeHomePage />,
-  },
-  {
-    path: "/practice/create",
-    element: <PracticeCreatePage />,
-  },
-  {
-    path: "/practice/preview",
-    element: <PracticePreviewPage />,
+    path: "/practice",
+    element: <PracticeLayout />,
+    children: [
+      { index: true, element: <PracticeHomePage /> },
+      { path: "create", element: <PracticeCreatePage /> },
+      { path: "preview", element: <PracticePreviewPage /> },
+    ],
   },
 ]);

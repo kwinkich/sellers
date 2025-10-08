@@ -1,4 +1,5 @@
-export type PracticeType = "WITH_CASE" | "WITHOUT_CASE" | "MINI";
+import type { PracticeType } from "@/entities/practices";
+
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
 export type BlockType = "TEXT" | "SCALE" | "RADIO" | "CHECKBOX" | "SELECT";
 
@@ -129,9 +130,11 @@ export interface GetScenariosParams {
 	page?: number;
 	by?: "id" | "title" | "version" | "createdAt" | "updatedAt";
 	order?: "asc" | "desc";
-	practiceType?: PracticeType;
-	title?: string;
-	createdByUserId?: number;
+    practiceType?: PracticeType;
+    title?: string;
+    createdByUserId?: number;
+    caseId?: number;
+    skillIds?: number[];
 }
 
 export interface GetScenarioOptionsParams {
