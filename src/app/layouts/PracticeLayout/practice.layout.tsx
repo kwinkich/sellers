@@ -3,10 +3,12 @@ import { RoleNavBar } from "@/widget";
 
 export const PracticeLayout = () => {
   return (
-    <div className="w-dvw h-dvh bg-white">
-      <Outlet />
-      <RoleNavBar />
-    </div>
+		<div className="bg-white h-dvh relative">
+			<div className="w-full overflow-auto pb-16">
+				<Outlet />
+			</div>
+			<RoleNavBar />
+		</div>
   );
 };
 

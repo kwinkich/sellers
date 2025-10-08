@@ -1,4 +1,5 @@
 import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon } from "@/shared";
+import { PracticesAPI } from "@/entities/practices";
 import { Button } from "@/components/ui/button";
 import type { PracticeCard as PracticeCardType } from "@/entities/practices";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
@@ -38,6 +39,22 @@ export const PracticePastCard = ({ data }: Props) => {
 
   const onWatch = () => {
     if (data.recordingUrl) window.open(data.recordingUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const onDownloadReport = async () => {
+    try {
+      const blob = await PracticesAPI.downloadReport(data.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `practice-${data.id}-report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (_) {
+      // Error is handled globally by API hooks
+    }
   };
 
   return (
@@ -123,6 +140,15 @@ export const PracticePastCard = ({ data }: Props) => {
             <span className="text-white font-medium">{data.resultsAvailable && data.recordingUrl ? "Доступна" : "Недоступна"}</span>
           </div>
           <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onWatch} disabled={!data.resultsAvailable || !data.recordingUrl}>Смотреть</Button>
+        </div>
+
+        {/* PDF report */}
+        <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
+          <div className="flex flex-col">
+            <span className="text-base-gray">PDF отчёт</span>
+            <span className="text-white font-medium">{data.resultsAvailable ? "Доступен" : "Недоступен"}</span>
+          </div>
+          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!data.resultsAvailable}>Скачать</Button>
         </div>
       </div>
 

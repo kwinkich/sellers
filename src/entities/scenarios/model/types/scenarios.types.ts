@@ -9,6 +9,7 @@ export interface ScenarioListItem {
     version: number;
 	createdAt: string;
 	updatedAt: string;
+    practiceType?: PracticeType;
 }
 
 export interface ScenarioForm {

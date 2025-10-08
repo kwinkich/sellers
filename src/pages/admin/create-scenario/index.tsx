@@ -28,7 +28,7 @@ const PREBUILT_BLOCKS = {
 interface ExtendedBlockItem extends ScenarioBlockItem {
     // For TEXT blocks
     textContent?: string;
-    // For QA blocks  
+    // For QA blocks
     questionContent?: string;
     // For SCALE_SKILL_SINGLE blocks
     selectedSkillId?: number;
@@ -42,34 +42,34 @@ interface ExtendedBlockItem extends ScenarioBlockItem {
 export const AdminScenariosCreatePage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    
+
     const [sellerBlocks, setSellerBlocks] = useState<ExtendedBlockItem[]>([]);
     const [buyerBlocks, setBuyerBlocks] = useState<ExtendedBlockItem[]>([]);
     const [moderatorBlocks, setModeratorBlocks] = useState<ExtendedBlockItem[]>([]);
-    
+
     // Form data state
     const [formData, setFormData] = useState<{ title: string; caseIds: number[] }>({ title: "", caseIds: [] });
-    
+
     // Track if pre-built blocks have been initialized
     const prebuiltInitialized = useRef(false);
-    
+
     // Fetch skills to find IDs for pre-built blocks
     const { data: skillsData } = useQuery(skillsQueryOptions.list());
     const skills = useMemo(() => skillsData?.data || [], [skillsData]);
-    
+
     // Find skill IDs by name
     const findSkillId = (name: string) => skills.find(s => s.name === name)?.id;
-    
+
     // Create scenario mutation
     const { mutate: createScenario, isPending } = useMutation({
         ...scenariosMutationOptions.create(),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-            
+
             toast.success("Сценарий успешно создан", {
                 description: `Сценарий "${data.data.title}" добавлен в систему`,
             });
-            
+
             navigate("/admin/home");
         },
         onError: (error) => {
@@ -79,16 +79,16 @@ export const AdminScenariosCreatePage = () => {
             });
         },
     });
-    
+
     // Create pre-built blocks when skills are loaded (only once)
     useEffect(() => {
         if (skills.length === 0 || prebuiltInitialized.current) return;
-        
+
         // Add MODERATOR pre-built block
         const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skills
             .map(skillName => findSkillId(skillName))
             .filter((id): id is number => id !== undefined);
-        
+
         if (moderatorSkillIds.length > 0) {
             const prebuiltBlock: ExtendedBlockItem = {
                 id: `MODERATOR-prebuilt-${Date.now()}`,
@@ -103,12 +103,12 @@ export const AdminScenariosCreatePage = () => {
             };
             setModeratorBlocks(prev => [...prev, prebuiltBlock]);
         }
-        
+
         // Add BUYER pre-built block
         const buyerSkillIds = PREBUILT_BLOCKS.BUYER.skills
             .map(skillName => findSkillId(skillName))
             .filter((id): id is number => id !== undefined);
-        
+
         if (buyerSkillIds.length > 0) {
             const prebuiltBlock: ExtendedBlockItem = {
                 id: `BUYER-prebuilt-${Date.now()}`,
@@ -123,7 +123,7 @@ export const AdminScenariosCreatePage = () => {
             };
             setBuyerBlocks(prev => [...prev, prebuiltBlock]);
         }
-        
+
         // Mark as initialized
         prebuiltInitialized.current = true;
     }, [skills]);
@@ -131,8 +131,8 @@ export const AdminScenariosCreatePage = () => {
 
     const handleAdd = (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
         const createItem = (t: BlockKind): ExtendedBlockItem => {
-            const baseItem: ExtendedBlockItem = { 
-                id: `${role}-${t}-${Date.now()}`, 
+            const baseItem: ExtendedBlockItem = {
+                id: `${role}-${t}-${Date.now()}`,
                 type: t,
                 textContent: "",
                 questionContent: "",
@@ -142,7 +142,7 @@ export const AdminScenariosCreatePage = () => {
                 selectedSkills: [],
                 scaleOptionsMulti: []
             };
-            
+
             // Initialize with default values based on block type
             if (t === "SCALE_SKILL_SINGLE") {
                 baseItem.scaleOptions = [
@@ -158,10 +158,10 @@ export const AdminScenariosCreatePage = () => {
                     { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 }
                 ];
             }
-            
+
             return baseItem;
         };
-        
+
         if (role === "SELLER") setSellerBlocks((prev) => [...prev, createItem(type)]);
         if (role === "BUYER") setBuyerBlocks((prev) => [...prev, createItem(type)]);
         if (role === "MODERATOR") setModeratorBlocks((prev) => [...prev, createItem(type)]);
@@ -174,14 +174,14 @@ export const AdminScenariosCreatePage = () => {
     };
 
     const handleDataChange = (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string, data: any) => {
-        const updateBlock = (blocks: ExtendedBlockItem[]) => 
+        const updateBlock = (blocks: ExtendedBlockItem[]) =>
             blocks.map(block => block.id === id ? { ...block, ...data } : block);
 
         if (role === "SELLER") setSellerBlocks(prev => updateBlock(prev));
         if (role === "BUYER") setBuyerBlocks(prev => updateBlock(prev));
         if (role === "MODERATOR") setModeratorBlocks(prev => updateBlock(prev));
     };
-    
+
     const handleSubmit = () => {
         if (!formData.title.trim()) {
             toast.error("Ошибка валидации", {
@@ -189,7 +189,7 @@ export const AdminScenariosCreatePage = () => {
             });
             return;
         }
-        
+
         // Convert blocks to proper format for API
         const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[]): any[] => {
             return blocks.map((block, index) => {
@@ -244,11 +244,11 @@ export const AdminScenariosCreatePage = () => {
                         };
                     });
                 }
-                
+
                 return baseBlock;
             });
         };
-        
+
         const requestData: CreateScenarioRequest = {
             title: formData.title,
             caseIds: formData.caseIds.length > 0 ? formData.caseIds : undefined,
@@ -260,14 +260,14 @@ export const AdminScenariosCreatePage = () => {
                     blocks: convertBlocksToFormBlocks(sellerBlocks)
                 },
                 {
-                    role: "BUYER", 
+                    role: "BUYER",
                     title: "Форма покупателя",
                     descr: "Сценарий для покупателя",
                     blocks: convertBlocksToFormBlocks(buyerBlocks)
                 },
                 {
                     role: "MODERATOR",
-                    title: "Форма модератора", 
+                    title: "Форма модератора",
                     descr: "Сценарий для модератора",
                     blocks: convertBlocksToFormBlocks(moderatorBlocks)
                 }
@@ -294,34 +294,34 @@ export const AdminScenariosCreatePage = () => {
 						</TabsList>
 
 						<TabsContent value="SELLER" className="pt-3 data-[state=inactive]:hidden" forceMount>
-                            <BlocksContainer 
-                                blocks={sellerBlocks} 
-                                onAdd={handleAdd("SELLER")} 
-                                onRemove={handleRemove("SELLER")} 
+                            <BlocksContainer
+                                blocks={sellerBlocks}
+                                onAdd={handleAdd("SELLER")}
+                                onRemove={handleRemove("SELLER")}
                                 onDataChange={handleDataChange("SELLER")}
                             />
 						</TabsContent>
 						<TabsContent value="BUYER" className="pt-3 data-[state=inactive]:hidden" forceMount>
-                            <BlocksContainer 
-                                blocks={buyerBlocks} 
-                                onAdd={handleAdd("BUYER")} 
-                                onRemove={handleRemove("BUYER")} 
+                            <BlocksContainer
+                                blocks={buyerBlocks}
+                                onAdd={handleAdd("BUYER")}
+                                onRemove={handleRemove("BUYER")}
                                 onDataChange={handleDataChange("BUYER")}
                             />
 						</TabsContent>
 						<TabsContent value="MODERATOR" className="pt-3 data-[state=inactive]:hidden" forceMount>
-                            <BlocksContainer 
-                                blocks={moderatorBlocks} 
-                                onAdd={handleAdd("MODERATOR")} 
-                                onRemove={handleRemove("MODERATOR")} 
+                            <BlocksContainer
+                                blocks={moderatorBlocks}
+                                onAdd={handleAdd("MODERATOR")}
+                                onRemove={handleRemove("MODERATOR")}
                                 onDataChange={handleDataChange("MODERATOR")}
                             />
 						</TabsContent>
 					</Tabs>
-					
+
 					{/* Submit button */}
 					<div className="sticky bottom-0 bg-white pt-4 pb-4 border-t">
-						<Button 
+						<Button
 							onClick={handleSubmit}
 							disabled={isPending || !formData.title.trim()}
 							className="w-full h-12"
