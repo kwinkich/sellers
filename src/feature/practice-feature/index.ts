@@ -1,5 +1,7 @@
 export * from "./ui/PracticeCard";
 export * from "./ui/PracticeList";
+export * from "./ui/PracticePastCard";
+export * from "./ui/PracticeMineCard";
 export * from "./ui/PracticeJoinDrawer";
 export * from "./model/joinDrawer.store";
 export * from "./ui/ModeratorTermsDrawer";

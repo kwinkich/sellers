@@ -1,6 +1,6 @@
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Badge, ClientIcon, TimerIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, SuccessIcon, } from "@/shared";
+import { Badge, ClientIcon, TimerIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, SuccessIcon, CopyIcon } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import { useSuccessDrawerStore } from "../model/successDrawer.store";
 import type { PracticeCard } from "@/entities/practices";
@@ -75,7 +75,7 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
               onClick={() => navigator.clipboard.writeText(data.zoomLink!)}
               title="Скопировать"
             >
-              Копировать
+              <CopyIcon size={16} fill="#06935F" />
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { HeadText } from "@/shared/ui/head-text";
-import { PracticeList, PracticeJoinDrawer, ModeratorTermsDrawer, PracticeSuccessDrawer, CaseInfoDrawer } from "@/feature/practice-feature";
+import { PracticeList, PracticeJoinDrawer, ModeratorTermsDrawer, PracticeSuccessDrawer, CaseInfoDrawer, PracticePastCard, PracticeMineCard } from "@/feature/practice-feature";
 import { useNavigate } from "react-router-dom";
 import { practicesQueryOptions } from "@/entities/practices";
 import { useQuery } from "@tanstack/react-query";
@@ -58,10 +58,34 @@ export const PracticeHomePage = () => {
           <PracticeList items={cards} isLoading={cardsQ.isLoading} isError={!!cardsQ.error} />
         )}
         {tab === "mine" && (
-          <PracticeList items={mine} isLoading={mineQ.isLoading} isError={!!mineQ.error} />
+          mineQ.isLoading ? (
+            <div className="text-center text-sm text-base-gray">Загрузка…</div>
+          ) : mineQ.error ? (
+            <div className="text-center text-sm text-base-gray">Ошибка загрузки</div>
+          ) : !mine.length ? (
+            <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
+          ) : (
+            <div className="flex flex-col gap-3 px-2">
+              {mine.map((p) => (
+                <PracticeMineCard key={p.id} data={p} />
+              ))}
+            </div>
+          )
         )}
         {tab === "past" && (
-          <PracticeList items={past} isLoading={pastQ.isLoading} isError={!!pastQ.error} />
+          pastQ.isLoading ? (
+            <div className="text-center text-sm text-base-gray">Загрузка…</div>
+          ) : pastQ.error ? (
+            <div className="text-center text-sm text-base-gray">Ошибка загрузки</div>
+          ) : !past.length ? (
+            <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
+          ) : (
+            <div className="flex flex-col gap-3 px-2">
+              {past.map((p) => (
+                <PracticePastCard key={p.id} data={p} />
+              ))}
+            </div>
+          )
         )}
       </div>
 

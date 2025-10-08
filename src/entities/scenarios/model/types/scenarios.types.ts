@@ -1,3 +1,5 @@
+import type { PracticeType } from "@/entities/practices";
+
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
 export type BlockType = "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
 
@@ -131,10 +133,12 @@ export interface GetScenariosParams {
 	page?: number;
 	by?: "id" | "title" | "version" | "createdAt" | "updatedAt";
 	order?: "asc" | "desc";
-	title?: string;
-	createdByUserId?: number;
+    practiceType?: PracticeType;
+    title?: string;
+    createdByUserId?: number;
+    caseId?: number;
+    skillIds?: number[];
 }
-
 export interface GetScenarioOptionsParams {
 	q?: string;
 	limit?: number;

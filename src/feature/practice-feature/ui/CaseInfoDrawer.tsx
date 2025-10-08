@@ -8,6 +8,7 @@ export const CaseInfoDrawer = () => {
   const { isOpen, practice, close } = useCaseInfoStore();
   const caseId = practice?.case?.id;
   const role = practice?.myRole;
+  const showAll = practice?.status === "FINISHED";
 
   const { data } = useQuery({ ...casesQueryOptions.byId(caseId ?? 0), enabled: !!caseId });
   const detail = data?.data;
@@ -28,7 +29,7 @@ export const CaseInfoDrawer = () => {
             </div>
           )}
 
-          {role !== "BUYER" && (
+          {(showAll || role !== "BUYER") && (
             <div>
               <p className="text-base-gray mb-1">Задача продавца</p>
               <p className="whitespace-pre-wrap">{detail?.sellerTask ?? "—"}</p>
@@ -37,7 +38,7 @@ export const CaseInfoDrawer = () => {
             </div>
           )}
 
-          {role !== "SELLER" && (
+          {(showAll || role !== "SELLER") && (
             <div>
               <p className="text-base-gray mt-4 mb-1">Задача покупателя</p>
               <p className="whitespace-pre-wrap">{detail?.buyerTask ?? "—"}</p>

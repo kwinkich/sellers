@@ -5,6 +5,9 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
+import { format } from "date-fns";
+import type { Locale } from "date-fns";
+import { ru } from "date-fns/locale";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,14 +20,22 @@ function Calendar({
 	buttonVariant = "ghost",
 	formatters,
 	components,
+	locale: dayPickerLocaleProp,
 	...props
 }: React.ComponentProps<typeof DayPicker> & {
 	buttonVariant?: React.ComponentProps<typeof Button>["variant"];
 }) {
 	const defaultClassNames = getDefaultClassNames();
 
+	const ruForDayPicker: Pick<Locale, "localize" | "formatLong" | "options"> = {
+		localize: ru.localize!,
+		formatLong: ru.formatLong!,
+		options: ru.options!,
+	};
+
 	return (
 		<DayPicker
+			locale={dayPickerLocaleProp ?? ruForDayPicker}
 			showOutsideDays={showOutsideDays}
 			className={cn(
 				"bg-white p-3 [--cell-size:--spacing(8)]",
@@ -34,8 +45,7 @@ function Calendar({
 			)}
 			captionLayout={captionLayout}
 			formatters={{
-				formatMonthDropdown: (date) =>
-					date.toLocaleString("default", { month: "short" }),
+				formatMonthDropdown: (date) => format(date, "LLL", { locale: ru }),
 				...formatters,
 			}}
 			classNames={{

@@ -38,12 +38,13 @@ function SelectValue({
 }
 
 function SelectTrigger({
-	className,
-	variant = "default",
-	children,
-	...props
+    className,
+    variant = "default",
+    children,
+    showIcon = true,
+    ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> &
-	VariantProps<typeof selectTriggerVariants>) {
+    VariantProps<typeof selectTriggerVariants> & { showIcon?: boolean }) {
 	return (
 		<SelectPrimitive.Trigger
 			data-slot="select-trigger"
@@ -54,18 +55,20 @@ function SelectTrigger({
 			{...props}
 		>
 			{children}
-            <SelectPrimitive.Icon>
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
-                >
-                    <path d="M15 12L10 17L10 7L15 12Z" fill="#06935F" />
-                </svg>
-            </SelectPrimitive.Icon>
+            {showIcon && (
+                <SelectPrimitive.Icon>
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                        <path d="M15 12L10 17L10 7L15 12Z" fill="#06935F" />
+                    </svg>
+                </SelectPrimitive.Icon>
+            )}
 		</SelectPrimitive.Trigger>
 	);
 }
