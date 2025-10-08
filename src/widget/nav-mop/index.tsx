@@ -5,22 +5,22 @@ export const MopNavBar = () => {
 	const location = useLocation();
 
 	return (
-		<div className="w-full flex items-center justify-center h-16 bg-black rounded-t-3xl fixed bottom-0 left-0 right-0 z-50">
+		<div className="w-full flex items-center justify-center py-6 bg-black rounded-t-3xl fixed bottom-0">
 			<NavItem
 				data={{
-					route: "/mop/profile",
+					route: "/mop/home",
 					icon: <MainIcon />,
 					label: "Профиль",
-					isActive: location.pathname.includes("mop/profile"),
+					isActive: location.pathname.includes("mop/home"),
 				}}
 			/>
 
 			<NavItem
 				data={{
-					route: "/mop/academy",
+					route: "/mop/education/courses",
 					icon: <AcademyIcon />,
 					label: "Академия",
-					isActive: location.pathname.includes("mop/academy"),
+					isActive: location.pathname.includes("mop/education/courses"),
 				}}
 			/>
 
