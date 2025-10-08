@@ -53,7 +53,6 @@ export interface FormBlock {
 	id?: number;
 	type: BlockType;
 	title: string;
-	helpText: string;
 	required: boolean;
 	position: number;
 	scale: Scale;
