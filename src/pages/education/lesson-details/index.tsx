@@ -1,52 +1,9 @@
 import { Button } from "@/components/ui/button";
-import {
-	lessonsQueryOptions,
-	type ContentBlock,
-	type Lesson,
-} from "@/entities";
+import { lessonsQueryOptions, type ContentBlock } from "@/entities";
 import { ArrowIcon, HeadText } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
-
-const MOCK_LESSON: Lesson = {
-	id: 1,
-	moduleId: 1,
-	quizId: 1,
-	title: "Введение в React",
-	shortDesc: "Основные концепции и принципы React",
-	orderIndex: 1,
-	contentBlocks: [
-		{
-			orderIndex: 1,
-			type: "TEXT",
-			textContent:
-				"React - это JavaScript-библиотека для создания пользовательских интерфейсов.",
-			storageObjectId: 0,
-		},
-		{
-			orderIndex: 2,
-			type: "TEXT",
-			textContent:
-				"Основные концепции: компоненты, props, state, жизненный цикл.",
-			storageObjectId: 0,
-		},
-		{
-			orderIndex: 3,
-			type: "IMAGE",
-			textContent: "Структура компонента React",
-			storageObjectId: 1,
-		},
-		{
-			orderIndex: 4,
-			type: "VIDEO",
-			textContent: "Видео о создании первого компонента",
-			storageObjectId: 2,
-		},
-	],
-};
-
-const USE_MOCK_DATA = true;
 
 export const LessonDetailsPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -57,9 +14,7 @@ export const LessonDetailsPage = () => {
 		error,
 	} = useQuery(lessonsQueryOptions.byId(parseInt(id!)));
 
-	const lesson = USE_MOCK_DATA ? MOCK_LESSON : lessonResponse?.data;
-
-	if (!USE_MOCK_DATA && isLoading) {
+	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen">
 				<Loader2 className="h-8 w-8 animate-spin" />
@@ -67,18 +22,18 @@ export const LessonDetailsPage = () => {
 		);
 	}
 
-	if (!USE_MOCK_DATA && (error || !lessonResponse)) {
+	if (error || !lessonResponse) {
 		return (
 			<div className="flex justify-center items-center min-h-screen">
 				<div className="text-center">
 					<h2 className="text-lg font-semibold mb-2">Ошибка загрузки урока</h2>
-					<p className="text-gray-500">
-						{(error as any)?.message || "Урок не найден"}
-					</p>
+					<p className="text-gray-500">{error?.message || "Урок не найден"}</p>
 				</div>
 			</div>
 		);
 	}
+
+	const lesson = lessonResponse.data;
 
 	if (!lesson) {
 		return (
@@ -92,13 +47,17 @@ export const LessonDetailsPage = () => {
 	}
 
 	return (
-		<div className="min-h-full pb-24  ">
+		<div className="min-h-full pb-24">
 			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
-				<HeadText aligin="center" head="Название урока" label="Урок 1" />
+				<HeadText
+					aligin="center"
+					head={lesson.title}
+					label={`Урок ${lesson.orderIndex}`}
+				/>
 			</div>
 
 			{/* Контентные блоки */}
-			<div className=" px-2">
+			<div className="px-2">
 				{lesson.contentBlocks.map((block: ContentBlock) => (
 					<div key={block.orderIndex} className="py-4 border-b">
 						{block.type === "TEXT" && (
@@ -170,20 +129,10 @@ export const LessonDetailsPage = () => {
 
 			<div className="w-full px-2">
 				<Button className="w-full" size="sm">
-					Пройти завершающий текст
+					Пройти завершающий тест
 					<ArrowIcon />
 				</Button>
 			</div>
-
-			{/* Дебаг информация (можно убрать в продакшене) */}
-			{USE_MOCK_DATA && (
-				<div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mx-2">
-					<p className="text-sm text-yellow-800">
-						<strong>Режим разработки:</strong> Используются мок-данные. Для
-						перехода на реальные данные установите USE_MOCK_DATA = false
-					</p>
-				</div>
-			)}
 		</div>
 	);
 };

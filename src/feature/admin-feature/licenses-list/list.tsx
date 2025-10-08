@@ -1,21 +1,14 @@
 import { clientsQueryOptions } from "@/entities";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { MOCK_LICENSES } from "./mock";
 import { LicenseCard } from "./ui";
-
-const USE_MOCK_DATA = false;
 
 export const AdminLicencesList = () => {
 	const { clientId } = useParams<{ clientId: string }>();
 
-	const { data, isLoading, error } = USE_MOCK_DATA
-		? {
-				data: { data: MOCK_LICENSES },
-				isLoading: false,
-				error: null,
-		  }
-		: useQuery(clientsQueryOptions.licenses(parseInt(clientId!)));
+	const { data, isLoading, error } = useQuery(
+		clientsQueryOptions.licenses(parseInt(clientId!))
+	);
 
 	if (isLoading) {
 		return (
