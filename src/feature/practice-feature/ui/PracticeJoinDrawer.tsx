@@ -98,8 +98,8 @@ export const PracticeJoinDrawer = () => {
 
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
-      <DrawerContent className="bg-base-bg text-white">
-        <DrawerHeader className="items-start text-left">
+      <DrawerContent className="bg-base-bg text-white data-[vaul-drawer-direction=bottom]:max-h-[100dvh] data-[vaul-drawer-direction=top]:max-h-[100dvh]">
+        <DrawerHeader className="items-start text-left flex-1 overflow-y-auto">
           <DrawerTitle className="sr-only">Выбор роли для практики</DrawerTitle>
           <div className="flex items-center gap-2 mb-2">
             <Badge label={getPracticeTypeLabel(practice.practiceType as any)} variant="gray" size="md" />

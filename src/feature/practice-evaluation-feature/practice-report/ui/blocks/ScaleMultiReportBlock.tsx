@@ -14,13 +14,13 @@ export const ScaleMultiReportBlock = ({
 }: {
   items: { id?: number; title?: string; position: number; skillId: number | null }[];
   options: Option[];
-  answers: Array<{ scaleItemId?: number | null; selectedOptionId?: number | null }>;
+  answers: Array<{ itemId?: number | null; selectedOptionId?: number | null }>;
 }) => {
-  // Create a proper mapping: scaleItemId -> selectedOptionId
+  // Create a proper mapping: itemId -> selectedOptionId
   const answerMap = new Map<number, number>();
   answers.forEach((answer) => {
-    if (answer.scaleItemId != null && answer.selectedOptionId != null) {
-      answerMap.set(answer.scaleItemId, answer.selectedOptionId);
+    if (answer.itemId != null && answer.selectedOptionId != null) {
+      answerMap.set(answer.itemId, answer.selectedOptionId);
     }
   });
 

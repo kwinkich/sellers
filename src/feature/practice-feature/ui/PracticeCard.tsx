@@ -12,17 +12,16 @@ interface Props {
 
 export const PracticeCard = ({ data }: Props) => {
   const openJoin = usePracticeJoinStore((s) => s.open);
-  const start = new Date(data.startAt);
-  const date = start.toLocaleDateString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const time = start.toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Moscow",
-  });
+  const formatStart = (iso: string) => {
+    if (!iso) return { date: "", time: "" };
+    const [datePart, timeAndZone] = iso.split("T");
+    if (!datePart || !timeAndZone) return { date: "", time: "" };
+    const [y, m, d] = datePart.split("-");
+    const baseTime = timeAndZone.replace("Z", "").split(/[+-]/)[0] ?? "";
+    const [hh, mm] = baseTime.split(":");
+    return { date: `${d}.${m}.${y}`, time: `${hh}:${mm}` };
+  };
+  const { date, time } = formatStart(data.startAt as string);
 
   return (
     <div className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3">

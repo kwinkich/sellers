@@ -65,10 +65,11 @@ export const PracticesAPI = {
       GApiResponse<PracticeCard>
     >(),
 
-  // Download practice report (binary)
   downloadReport: async (id: number): Promise<Blob> => {
-    const res = await FILE_API.get(`v1/practice/${id}/report`);
-    return res.blob();
+    // Remove leading slash - prefixUrl handles this
+    const res = await FILE_API.get(`practices/${id}/report`);
+    const blob = await res.blob();
+    return blob;
   },
 };
 

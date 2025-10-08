@@ -7,9 +7,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { ru } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useId } from "react";
 
@@ -35,6 +34,7 @@ interface DatePickerFloatingLabelProps
 	onValueChange?: (date: Date | undefined) => void;
 	variant?: "dark" | "default";
 	disabled?: boolean;
+  className?: string;
 }
 
 const DatePickerFloatingLabel = React.forwardRef<
@@ -48,6 +48,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 			onValueChange,
 			variant = "default",
 			disabled = false,
+			className,
 		},
 		ref
 	) => {
@@ -57,7 +58,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 		const hasValue = Boolean(value);
 
 		return (
-			<div className="group relative w-full">
+			<div className={cn("group relative w-full", className)}>
 				<Popover open={isOpen} onOpenChange={setIsOpen}>
 					<PopoverTrigger asChild>
 						<Button
@@ -78,12 +79,6 @@ const DatePickerFloatingLabel = React.forwardRef<
 							>
 							{value ? format(value, "PPP", { locale: ru }) : ""}
 							</span>
-							<CalendarIcon
-								className={cn(
-									"h-4 w-4 opacity-50 absolute right-5 top-1/2 -translate-y-1/2",
-									variant === "dark" ? "text-white" : "text-muted-foreground"
-								)}
-							/>
 						</Button>
 					</PopoverTrigger>
 
@@ -111,7 +106,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 								onValueChange?.(date);
 								setIsOpen(false);
 							}}
-							disabled={(date) => date < new Date()}
+							disabled={(date) => date < startOfDay(new Date())}
 							className="bg-white rounded-2xl"
 						/>
 					</PopoverContent>

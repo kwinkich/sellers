@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import type { PracticeType } from "@/shared/types/practice.types";
 import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
+import { getUserRoleFromToken } from "@/shared";
 
 interface Props {
   data: PracticeCardType;
@@ -21,17 +22,18 @@ const roleLabel: Record<PracticeParticipantRole, string> = {
 
 export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
-  const start = new Date(data.startAt);
-  const date = start.toLocaleDateString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const time = start.toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Moscow",
-  });
+  const userRole = getUserRoleFromToken();
+
+  const formatStart = (iso: string) => {
+    if (!iso) return { date: "", time: "" };
+    const [datePart, timeAndZone] = iso.split("T");
+    if (!datePart || !timeAndZone) return { date: "", time: "" };
+    const [y, m, d] = datePart.split("-");
+    const baseTime = timeAndZone.replace("Z", "").split(/[+-]/)[0] ?? "";
+    const [hh, mm] = baseTime.split(":");
+    return { date: `${d}.${m}.${y}`, time: `${hh}:${mm}` };
+  };
+  const { date, time } = formatStart(data.startAt as string);
 
   const onLearnCase = () => {
     if (data.case) openCaseInfo(data);
@@ -44,18 +46,30 @@ export const PracticePastCard = ({ data }: Props) => {
   const onDownloadReport = async () => {
     try {
       const blob = await PracticesAPI.downloadReport(data.id);
+
+      if (blob.size === 0) {
+        return;
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `practice-${data.id}-report.pdf`;
       document.body.appendChild(a);
       a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (_) {
-      // Error is handled globally by API hooks
+
+      setTimeout(() => {
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error) {
+      console.error('Download error:', error);
     }
   };
+
+  // Determine if PDF report should be shown
+  // Hide for MOP users who were not moderators in this practice
+  const shouldShowPdfReport = !(userRole === "MOP" && data.myRole !== "MODERATOR");
 
   return (
     <div className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3">
@@ -142,14 +156,16 @@ export const PracticePastCard = ({ data }: Props) => {
           <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onWatch} disabled={!data.resultsAvailable || !data.recordingUrl}>Смотреть</Button>
         </div>
 
-        {/* PDF report */}
-        <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
-          <div className="flex flex-col">
-            <span className="text-base-gray">PDF отчёт</span>
-            <span className="text-white font-medium">{data.resultsAvailable ? "Доступен" : "Недоступен"}</span>
+        {/* PDF report - conditionally rendered */}
+        {shouldShowPdfReport && (
+          <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
+            <div className="flex flex-col">
+              <span className="text-base-gray">PDF отчёт</span>
+              <span className="text-white font-medium">{data.resultsAvailable ? "Доступен" : "Недоступен"}</span>
+            </div>
+            <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!data.resultsAvailable}>Скачать</Button>
           </div>
-          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!data.resultsAvailable}>Скачать</Button>
-        </div>
+        )}
       </div>
 
       {/* Bottom watch button */}
@@ -165,5 +181,3 @@ export const PracticePastCard = ({ data }: Props) => {
     </div>
   );
 };
-
-
