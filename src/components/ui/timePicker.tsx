@@ -3,6 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
+const { memo, useCallback, useMemo, useRef, useState, useId } = React;
+
 const timePickerVariants = cva(
 	"h-16 rounded-2xl text-sm font-medium w-full min-w-0 transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex items-center justify-between px-4",
 	{
@@ -66,21 +68,19 @@ const TimePickerFloatingLabel = React.forwardRef<
 		{ placeholder = "Выберите время", value, onValueChange, variant = "default", disabled = false },
 		ref
 	) => {
-		const id = React.useId();
-		const [isOpen, setIsOpen] = React.useState(false);
+		const id = useId();
+		const [isOpen, setIsOpen] = useState(false);
 		const { hour, minute } = parseValue(value);
 		const hasValue = Boolean(value);
-		const [isManualInput, setIsManualInput] = React.useState(false);
-		const [manualValue, setManualValue] = React.useState<string>(value || "");
-		const inputRef = React.useRef<HTMLInputElement | null>(null);
+		const [isManualInput, setIsManualInput] = useState(false);
+		const [manualValue, setManualValue] = useState<string>(value || "");
+		const inputRef = useRef<HTMLInputElement | null>(null);
 
-		// Enhanced wheel accumulator with separate tracking per wheel type
-		const wheelAccumRef = React.useRef<{ hour: number; minute: number }>({ hour: 0, minute: 0 });
-		const wheelRafRef = React.useRef<number | null>(null);
-		const SCROLL_THRESHOLD = 40; // Pixels to scroll before incrementing
+		const wheelAccumRef = useRef<{ hour: number; minute: number }>({ hour: 0, minute: 0 });
+		const wheelRafRef = useRef<number | null>(null);
+		const SCROLL_THRESHOLD = 40;
 
-		// Improved flush function
-		const flushWheel = (type: "hour" | "minute") => {
+		const flushWheel = useCallback((type: "hour" | "minute") => {
 			const isHour = type === "hour";
 			const accum = wheelAccumRef.current[type];
 			const steps = Math.floor(Math.abs(accum) / SCROLL_THRESHOLD);
@@ -95,13 +95,11 @@ const TimePickerFloatingLabel = React.forwardRef<
 				else nextMinute = clampWrap(nextMinute + dir, 59);
 			}
 
-			// Reset accumulator
 			wheelAccumRef.current[type] = accum - dir * steps * SCROLL_THRESHOLD;
 			onValueChange?.(`${pad2(nextHour)}:${pad2(nextMinute)}`);
-		};
+		}, [hour, minute, onValueChange]);
 
-		// Mouse wheel handler
-		const handleWheel = (type: "hour" | "minute", deltaY: number) => {
+		const handleWheel = useCallback((type: "hour" | "minute", deltaY: number) => {
 			wheelAccumRef.current[type] += deltaY;
 
 			if (wheelRafRef.current == null) {
@@ -111,10 +109,9 @@ const TimePickerFloatingLabel = React.forwardRef<
 					flushWheel("minute");
 				});
 			}
-		};
+		}, [flushWheel]);
 
-		// Pointer drag (mouse/touch) for mobile-like scrolling
-		const dragStateRef = React.useRef<{
+		const dragStateRef = useRef<{
 			active: boolean;
 			startY: number;
 			lastY: number;
@@ -122,11 +119,15 @@ const TimePickerFloatingLabel = React.forwardRef<
 			hasMoved: boolean;
 		}>({ active: false, startY: 0, lastY: 0, type: null, hasMoved: false });
 
-		const onPointerDown = (type: "hour" | "minute") => (e: React.PointerEvent<HTMLDivElement>) => {
-			e.preventDefault(); // Prevent text selection
-			const target = e.currentTarget as HTMLElement;
-			target.setPointerCapture(e.pointerId);
+		const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+			const target = e.target as HTMLElement;
+			const wheelContainer = target.closest('[data-wheel-type]') as HTMLElement;
+			if (!wheelContainer) return;
 
+			e.preventDefault();
+			wheelContainer.setPointerCapture(e.pointerId);
+
+			const type = wheelContainer.dataset.wheelType as "hour" | "minute";
 			dragStateRef.current = {
 				active: true,
 				startY: e.clientY,
@@ -134,33 +135,35 @@ const TimePickerFloatingLabel = React.forwardRef<
 				type,
 				hasMoved: false
 			};
-		};
+		}, []);
 
-		const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+		const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
 			const s = dragStateRef.current;
 			if (!s.active || !s.type) return;
 
 			e.preventDefault();
 
-			// Mark as moved if threshold exceeded
 			const totalDelta = Math.abs(e.clientY - s.startY);
 			if (totalDelta > 3) {
 				s.hasMoved = true;
 			}
 
-			// Calculate delta (positive = scrolling up = increment)
 			const dy = s.lastY - e.clientY;
 
 			if (Math.abs(dy) > 0) {
-				handleWheel(s.type, dy * 2); // Multiply for more sensitive touch
+				handleWheel(s.type, dy * 2);
 				s.lastY = e.clientY;
 			}
-		};
+		}, [handleWheel]);
 
-		const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-			try {
-				(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-			} catch {}
+		const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+			const target = e.target as HTMLElement;
+			const wheelContainer = target.closest('[data-wheel-type]') as HTMLElement;
+			if (wheelContainer) {
+				try {
+					wheelContainer.releasePointerCapture(e.pointerId);
+				} catch {}
+			}
 
 			dragStateRef.current = {
 				active: false,
@@ -169,20 +172,19 @@ const TimePickerFloatingLabel = React.forwardRef<
 				type: null,
 				hasMoved: false
 			};
-		};
+		}, []);
 
-		// Manual typing inside trigger on double click
-		const enableManual = () => {
+		const enableManual = useCallback(() => {
 			setIsManualInput(true);
 			setManualValue(value || "");
 			setTimeout(() => inputRef.current?.focus(), 0);
-		};
+		}, [value]);
 
-		const cancelManual = () => {
+		const cancelManual = useCallback(() => {
 			setIsManualInput(false);
-		};
+		}, []);
 
-		const applyManual = () => {
+		const applyManual = useCallback(() => {
 			const m = manualValue?.trim() || "";
 			const match = /^(\d{2}):(\d{2})$/.exec(m);
 			if (match) {
@@ -191,9 +193,9 @@ const TimePickerFloatingLabel = React.forwardRef<
 				onValueChange?.(`${pad2(hh)}:${pad2(mm)}`);
 			}
 			setIsManualInput(false);
-		};
+		}, [manualValue, onValueChange]);
 
-		const onManualKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		const onManualKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
 			if (e.key === 'Enter') {
 				e.preventDefault();
 				applyManual();
@@ -201,34 +203,53 @@ const TimePickerFloatingLabel = React.forwardRef<
 				e.preventDefault();
 				cancelManual();
 			}
-		};
+		}, [applyManual, cancelManual]);
 
-		const handlePick = (type: "hour" | "minute", v: number) => {
-			const newValue = type === "hour" ? `${pad2(v)}:${pad2(minute)}` : `${pad2(hour)}:${pad2(v)}`;
-			onValueChange?.(newValue);
-		};
+		const handleItemClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+			if (dragStateRef.current.hasMoved) return;
 
-		const renderWheel = (type: "hour" | "minute") => {
+			const target = e.target as HTMLElement;
+			const item = target.closest('[data-value]') as HTMLElement;
+			if (!item) return;
+
+			const value = Number(item.dataset.value);
+			const type = item.dataset.type as "hour" | "minute";
+			const isCenter = item.classList.contains('selected');
+
+			if (!isCenter && type) {
+				const newValue = type === "hour" ? `${pad2(value)}:${pad2(minute)}` : `${pad2(hour)}:${pad2(value)}`;
+				onValueChange?.(newValue);
+			}
+		}, [hour, minute, onValueChange]);
+
+		const hourValues = useMemo(() => getVisibleValues(hour, 23), [hour]);
+		const minuteValues = useMemo(() => getVisibleValues(minute, 59), [minute]);
+
+		const onWheelHandler = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+			const target = e.target as HTMLElement;
+			const wheelContainer = target.closest('[data-wheel-type]') as HTMLElement;
+			if (!wheelContainer) return;
+
+			const type = wheelContainer.dataset.wheelType as "hour" | "minute";
+			handleWheel(type, e.deltaY);
+		}, [handleWheel]);
+
+		const renderWheel = useCallback((type: "hour" | "minute") => {
 			const currentValue = type === "hour" ? hour : minute;
-			const maxValue = type === "hour" ? 23 : 59;
-			const visibleValues = getVisibleValues(currentValue, maxValue);
+			const visibleValues = type === "hour" ? hourValues : minuteValues;
 
 			return (
 				<div className="flex-1 relative overflow-hidden h-[168px]">
 					<div
 						className="h-full flex flex-col timepicker-wheel-container"
 						style={{ touchAction: 'none' }}
-						onWheel={(e) => {
-							handleWheel(type, e.deltaY);
-						}}
-						onPointerDown={onPointerDown(type)}
-						onPointerMove={onPointerMove}
-						onPointerUp={onPointerUp}
-						onPointerCancel={onPointerUp}
+						data-wheel-type={type}
 					>
 						{visibleValues.map((v, index) => (
 							<div
 								key={`${type}-${v}-${index}`}
+								data-value={v}
+								data-type={type}
 								className={cn(
 									"timepicker-wheel-item",
 									"h-6 flex items-center justify-center text-xs font-medium leading-[20px]",
@@ -237,12 +258,6 @@ const TimePickerFloatingLabel = React.forwardRef<
 										? 'selected text-[var(--color-base-main)] font-semibold scale-110 opacity-100'
 										: 'text-gray-900 dark:text-white opacity-70 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 hover:scale-105 hover:opacity-90'
 								)}
-								onClick={(e) => {
-									// Only trigger click if not dragging
-									if (!dragStateRef.current.hasMoved && index !== CENTER_INDEX) {
-										handlePick(type, v);
-									}
-								}}
 								style={{ willChange: 'transform, opacity' }}
 							>
 								{pad2(v)}
@@ -253,7 +268,7 @@ const TimePickerFloatingLabel = React.forwardRef<
 					<div className="absolute left-0 right-0 bottom-0 h-[60px] pointer-events-none z-10 bg-gradient-to-t from-white/95 to-white/0 dark:from-gray-800/95 dark:to-gray-800/0" />
 				</div>
 			);
-		};
+		}, [hour, minute, hourValues, minuteValues]);
 
 		return (
 			<div className="group relative w-full">
@@ -315,7 +330,15 @@ const TimePickerFloatingLabel = React.forwardRef<
 						className="w-[110px] p-0 timepicker-popover"
 						align="start"
 					>
-						<div className="relative p-1.5">
+						<div
+							className="relative p-1.5"
+							onWheel={onWheelHandler}
+							onPointerDown={onPointerDown}
+							onPointerMove={onPointerMove}
+							onPointerUp={onPointerUp}
+							onPointerCancel={onPointerUp}
+							onClick={handleItemClick}
+						>
 							<div className="flex items-center justify-center">
 								{renderWheel("hour")}
 								<div className="timepicker-separator text-xs font-bold mx-3">:</div>
