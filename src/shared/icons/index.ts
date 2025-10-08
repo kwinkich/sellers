@@ -25,3 +25,4 @@ export * from  "./calendar-icon/index";
 export * from "./practice-with-case-icon/index";
 export * from "./studio-icon/index";
 export * from "./timer-icon/index";
+export * from "./copy-icon/index";

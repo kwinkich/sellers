@@ -8,18 +8,49 @@ import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { scenariosQueryOptions } from "@/entities/scenarios/model/api/scenarios.api";
 import { casesQueryOptions } from "@/entities/case/model/api/case.api";
 import { useNavigate } from "react-router-dom";
+import type { PracticeType } from "@/shared/types/practice.types";
+import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 
 const PracticeCreatePage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
-  const { scenarioId, caseId, skillIds, startAt } = store;
+  const { scenarioId, caseId, skillIds, startAt, practiceType } = store;
 
   const [time, setTime] = React.useState<string>("15:00");
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(startAt ? new Date(startAt) : undefined);
 
   const skills = useQuery(skillsQueryOptions.list());
-  const scenarios = useQuery({ ...scenariosQueryOptions.list(), staleTime: 5 * 60 * 1000 });
-  const cases = useQuery({ ...casesQueryOptions.list({ scenarioId: scenarioId as any }), enabled: !!scenarioId });
+  const scenarios = useQuery({
+    ...scenariosQueryOptions.list({
+      caseId: caseId as any,
+      skillIds: skillIds.length ? (skillIds as any) : undefined,
+      practiceType: practiceType as any,
+    }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const cases = useQuery({
+    ...casesQueryOptions.list({
+      scenarioId: scenarioId as any,
+      skillIds: skillIds.length ? (skillIds as any) : undefined,
+    }),
+    enabled: practiceType !== "WITHOUT_CASE",
+  });
+
+  // Keep selections valid against current filters so placeholders stay visible
+  const scenarioOptions = scenarios.data?.data ?? [];
+  const caseOptions = cases.data?.data ?? [];
+
+  React.useEffect(() => {
+    if (scenarioId && !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId))) {
+      store.setScenario(undefined);
+    }
+  }, [scenarioId, scenarioOptions]);
+
+  React.useEffect(() => {
+    if (caseId && !caseOptions.some((c: any) => Number(c.id) === Number(caseId))) {
+      store.setCase(undefined);
+    }
+  }, [caseId, caseOptions]);
 
   const updateStartAt = React.useCallback(
     (date: Date | undefined, t: string) => {
@@ -44,6 +75,30 @@ const PracticeCreatePage = () => {
       <div className="space-y-3">
         <div>
           <Select
+            onValueChange={(t) => {
+              const pt = t as PracticeType;
+              store.setPracticeType(pt);
+              if (pt === "WITHOUT_CASE") {
+                store.setCase(undefined);
+              }
+            }}
+            value={practiceType as any}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Тип практики" />
+            </SelectTrigger>
+            <SelectContent side="bottom" align="start">
+              <SelectGroup>
+                {(["WITH_CASE", "WITHOUT_CASE", "MINI"] as PracticeType[]).map((t) => (
+                  <SelectItem key={t} value={t}>{getPracticeTypeLabel(t)}</SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Select
             onValueChange={(id) => {
               store.setSkills([Number(id)]);
               const item = skills.data?.data?.find((x: any) => String(x.id) === String(id));
@@ -56,41 +111,53 @@ const PracticeCreatePage = () => {
             </SelectTrigger>
             <SelectContent side="bottom" align="start">
               <SelectGroup>
-                {skills.data?.data?.map((s: any) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.name}
-                  </SelectItem>
-                ))}
+                {skills.data?.data?.length
+                  ? skills.data?.data?.map((s: any) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.name}
+                      </SelectItem>
+                    ))
+                  : (
+                    <SelectItem disabled value="__none">Нет навыков</SelectItem>
+                  )}
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Select onValueChange={(id) => { const s = scenarios.data?.data?.find((x:any)=> String(x.id)===String(id)); store.setScenario(Number(id), s?.title); }} value={scenarioId ? String(scenarioId) : undefined}>
+          <Select onValueChange={(id) => { const s = scenarios.data?.data?.find((x:any)=> String(x.id)===String(id)); store.setScenario(Number(id), s?.title); if (s?.practiceType) store.setPracticeType(s.practiceType); }} value={scenarioId ? String(scenarioId) : undefined}>
             <SelectTrigger>
               <SelectValue placeholder="Выберите сценарий практики" />
             </SelectTrigger>
             <SelectContent side="bottom" align="start">
               <SelectGroup>
-                {scenarios.data?.data?.map((s: any) => (
-                  <SelectItem key={s.id} value={String(s.id)}>{s.title}</SelectItem>
-                ))}
+                {scenarios.data?.data?.length
+                  ? scenarios.data?.data?.map((s: any) => (
+                      <SelectItem key={s.id} value={String(s.id)}>{s.title}</SelectItem>
+                    ))
+                  : (
+                    <SelectItem disabled value="__none">Нет сценариев по текущим выбранному навыку и кейсу</SelectItem>
+                  )}
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Select onValueChange={(id) => { const c = cases.data?.data?.find((x:any)=> String(x.id)===String(id)); store.setCase(Number(id), c?.title); }} disabled={!scenarioId} value={caseId ? String(caseId) : undefined}>
+          <Select onValueChange={(id) => { const c = cases.data?.data?.find((x:any)=> String(x.id)===String(id)); store.setCase(Number(id), c?.title); }} disabled={practiceType === "WITHOUT_CASE"} value={caseId ? String(caseId) : undefined}>
             <SelectTrigger>
-              <SelectValue placeholder={!scenarioId ? "Сначала выберите сценарий" : "Выберите кейс практики"} />
+              <SelectValue placeholder={practiceType === "WITHOUT_CASE" ? "Тип без кейса — выбор не требуется" : (!scenarioId ? "Сначала выберите сценарий" : "Выберите кейс практики")} />
             </SelectTrigger>
             <SelectContent side="bottom" align="start">
               <SelectGroup>
-                {cases.data?.data?.map((c: any) => (
-                  <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
-                ))}
+                {cases.data?.data?.length
+                  ? cases.data?.data?.map((c: any) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
+                    ))
+                  : (
+                    <SelectItem disabled value="__none">Нет сценариев по текущим выбранному навыку и кейсу</SelectItem>
+                  )}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -124,10 +191,10 @@ const PracticeCreatePage = () => {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 p-4 bg-white">
+      <div className="fixed inset-x-0 bottom-24 p-4 pb-0 bg-white z-[60]">
         <Button
           className="w-full"
-          disabled={!scenarioId || !caseId || skillIds.length === 0 || !startAt}
+          disabled={!practiceType || !scenarioId || ((practiceType === "WITH_CASE") && !caseId) || skillIds.length === 0 || !startAt}
           onClick={() => navigate("/practice/preview")}
         >
           Следующий шаг

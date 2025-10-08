@@ -61,14 +61,16 @@ export interface GetCasesParams {
 	page?: number;
 	by?: "id" | "title" | "createdAt" | "updatedAt";
 	order?: "asc" | "desc";
-	scenarioId?: number;
+    scenarioId?: number;
+    skillIds?: number[];
 	title?: string;
 	createdByUserId?: number;
 	recommendedSellerLevel?: string;
 }
 
 export interface GetCaseOptionsParams {
-	scenarioId?: number;
+    scenarioId?: number;
+    skillIds?: number[];
 	q?: string;
 	limit?: number;
 }

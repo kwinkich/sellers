@@ -1,4 +1,5 @@
 export type PracticeRole = "SELLER" | "BUYER" | "MODERATOR";
+export type PracticeType = "WITH_CASE" | "WITHOUT_CASE" | "MINI";
 export type PracticeParticipantRole = PracticeRole | "OBSERVER";
 export type PracticeStatus =
 	| "CREATED"
@@ -24,7 +25,7 @@ export interface Practice {
 	scenarioId: number;
 	scenarioVersion: number;
 	caseId: number | null;
-	practiceType: string;
+	practiceType: PracticeType;
 	createdByUserId: number;
 	createdByRole: string;
 	startAt: string;
@@ -41,7 +42,7 @@ export interface Practice {
 
 export interface PracticeCard {
 	id: number;
-	practiceType: string;
+	practiceType: PracticeType;
 	title: string;
 	description: string | null;
 	skills: SkillPractices[];
@@ -59,6 +60,7 @@ export interface PracticeCard {
 
 export interface CreatePracticeRequest {
 	scenarioId: number;
+    practiceType: PracticeType;
 	caseId?: number | null;
 	skillIds: number[];
 	startAt: string;
@@ -107,7 +109,7 @@ export interface GetPracticesParams {
 	scenarioId?: number | number[];
 	caseId?: number | number[];
 	status?: string | string[];
-	practiceType?: string | string[];
+	practiceType?: PracticeType | PracticeType[];
 	createdByUserId?: number | number[];
 	sellerUserId?: number | number[];
 	buyerUserId?: number | number[];

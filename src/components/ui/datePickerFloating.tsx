@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useId } from "react";
@@ -75,7 +76,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 									!value && "text-muted-foreground"
 								)}
 							>
-								{value ? format(value, "PPP") : ""}
+							{value ? format(value, "PPP", { locale: ru }) : ""}
 							</span>
 							<CalendarIcon
 								className={cn(
@@ -103,7 +104,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 					</label>
 
 					<PopoverContent className="w-auto p-0" align="start">
-						<Calendar
+							<Calendar
 							mode="single"
 							selected={value}
 							onSelect={(date) => {
@@ -111,7 +112,6 @@ const DatePickerFloatingLabel = React.forwardRef<
 								setIsOpen(false);
 							}}
 							disabled={(date) => date < new Date()}
-							initialFocus
 							className="bg-white rounded-2xl"
 						/>
 					</PopoverContent>
