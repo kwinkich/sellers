@@ -103,7 +103,7 @@ const DatePickerFloatingLabel = React.forwardRef<
 						{placeholder}
 					</label>
 
-					<PopoverContent className="w-auto p-0" align="start">
+					<PopoverContent side="top" sideOffset={8} className="w-auto p-0" align="start">
 							<Calendar
 							mode="single"
 							selected={value}

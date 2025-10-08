@@ -13,7 +13,7 @@ export const PracticeList = ({ items, isLoading, isError }: Props) => {
   if (!items?.length) return <div className="text-center text-sm text-base-gray">Ничего не найдено</div>;
 
   return (
-    <div className="flex flex-col gap-3 px-2">
+    <div className="flex flex-col gap-3 px-2 pb-6">
       {items.map((p) => (
         <PracticeCard key={p.id} data={p} />
       ))}
