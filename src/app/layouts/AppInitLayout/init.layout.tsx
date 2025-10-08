@@ -1,4 +1,6 @@
 // components/AppInitLayout.tsx
+import { useAppInit } from "@/shared";
+import { Loader2 } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import { useAppInit } from "@/shared";
 import { Loader2 } from "lucide-react";

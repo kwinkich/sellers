@@ -10,14 +10,13 @@ import {
 	LinkIcon,
 	PracticeIcon,
 } from "@/shared";
-import { AdminNavBar } from "@/widget";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const AdminHomePage = () => {
 	const { data, isLoading, error } = useQuery(adminsQueryOptions.profile());
-
+	const navigate = useNavigate();
 
 	const profileData = data?.data ?? {
 		activeClientsTotal: 0,
@@ -38,7 +37,7 @@ export const AdminHomePage = () => {
 
 	return (
 		<>
-			<div className="w-dvw h-dvh bg-white">
+			<div className="min-h-full pb-24">
 				<div className="bg-base-bg flex text-white flex-col w-full rounded-b-3xl p-2">
 					<HeadText
 						className="gap-0.5 mb-8 pl-2 pt-2"
@@ -96,19 +95,19 @@ export const AdminHomePage = () => {
 							variant="main-opacity"
 							text="main"
 							size="2s"
+							onClick={() => navigate("/practuce/create")}
 						>
 							Создать практику
 						</Button>
-						<Link to="/admin/clients/create" className="flex-1">
-							<Button
-								className="w-full"
-								variant="main-opacity"
-								text="main"
-								size="2s"
-							>
-								Добавить клиента
-							</Button>
-						</Link>
+						<Button
+							className="w-full"
+							variant="main-opacity"
+							text="main"
+							size="2s"
+							onClick={() => navigate("/admin/clients/create")}
+						>
+							Добавить клиента
+						</Button>
 					</div>
 				</div>
 
@@ -153,8 +152,6 @@ export const AdminHomePage = () => {
 						</Link>
 					</div>
 				</div>
-
-				<AdminNavBar />
 			</div>
 		</>
 	);
