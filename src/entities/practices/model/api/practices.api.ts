@@ -1,4 +1,4 @@
-import { API, createSearchParams, type GApiResponse } from "@/shared";
+import { API, FILE_API, createSearchParams, type GApiResponse } from "@/shared";
 import { queryOptions } from "@tanstack/react-query";
 import type {
 	CreatePracticeRequest,
@@ -64,6 +64,12 @@ export const PracticesAPI = {
     API.patch(`practices/${id}/switch-role`, { json: data }).json<
       GApiResponse<PracticeCard>
     >(),
+
+  // Download practice report (binary)
+  downloadReport: async (id: number): Promise<Blob> => {
+    const res = await FILE_API.get(`v1/practice/${id}/report`);
+    return res.blob();
+  },
 };
 
 export const practicesQueryOptions = {

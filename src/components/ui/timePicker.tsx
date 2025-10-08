@@ -2,8 +2,9 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import WebApp from "@twa-dev/sdk";
 
-const { useCallback, useMemo, useRef, useState, useId } = React;
+const { useCallback, useMemo, useRef, useState, useId, useEffect } = React;
 
 const timePickerVariants = cva(
 	"h-16 rounded-2xl text-sm font-medium w-full min-w-0 transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex items-center justify-between px-4",
@@ -76,6 +77,17 @@ const TimePickerFloatingLabel = React.forwardRef<
 		const [manualValue, setManualValue] = useState<string>(value || "");
 		const inputRef = useRef<HTMLInputElement | null>(null);
 
+		useEffect(() => {
+			if (isOpen && WebApp?.disableVerticalSwipes) {
+				WebApp.disableVerticalSwipes();
+				return () => {
+					if (WebApp?.enableVerticalSwipes) {
+						WebApp.enableVerticalSwipes();
+					}
+				};
+			}
+		}, [isOpen]);
+
 		const wheelAccumRef = useRef<{ hour: number; minute: number }>({ hour: 0, minute: 0 });
 		const wheelRafRef = useRef<number | null>(null);
 		const SCROLL_THRESHOLD = 40;
@@ -125,6 +137,7 @@ const TimePickerFloatingLabel = React.forwardRef<
 			if (!wheelContainer) return;
 
 			e.preventDefault();
+			e.stopPropagation();
 			wheelContainer.setPointerCapture(e.pointerId);
 
 			const type = wheelContainer.dataset.wheelType as "hour" | "minute";
@@ -142,6 +155,7 @@ const TimePickerFloatingLabel = React.forwardRef<
 			if (!s.active || !s.type) return;
 
 			e.preventDefault();
+			e.stopPropagation();
 
 			const totalDelta = Math.abs(e.clientY - s.startY);
 			if (totalDelta > 3) {
@@ -229,6 +243,9 @@ const TimePickerFloatingLabel = React.forwardRef<
 			const target = e.target as HTMLElement;
 			const wheelContainer = target.closest('[data-wheel-type]') as HTMLElement;
 			if (!wheelContainer) return;
+
+			e.preventDefault();
+			e.stopPropagation();
 
 			const type = wheelContainer.dataset.wheelType as "hour" | "minute";
 			handleWheel(type, e.deltaY);
@@ -331,6 +348,7 @@ const TimePickerFloatingLabel = React.forwardRef<
 					>
 						<div
 							className="relative p-1.5"
+							style={{ touchAction: 'none' }}
 							onWheel={onWheelHandler}
 							onPointerDown={onPointerDown}
 							onPointerMove={onPointerMove}

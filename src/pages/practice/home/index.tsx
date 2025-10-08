@@ -10,17 +10,26 @@ type TabKey = "all" | "mine" | "past";
 
 export const PracticeHomePage = () => {
   const [tab, setTab] = useState<TabKey>("all");
+  // Pagination state per tab
+  const [pageAll, setPageAll] = useState<number>(1);
+  const [pageMine, setPageMine] = useState<number>(1);
+  const [pagePast, setPagePast] = useState<number>(1);
+  const LIMIT = 20;
   const navigate = useNavigate();
-  const cardsQ = useQuery(practicesQueryOptions.cards());
-  const mineQ = useQuery(practicesQueryOptions.mine());
-  const pastQ = useQuery(practicesQueryOptions.past());
+  const cardsQ = useQuery(practicesQueryOptions.cards({ page: pageAll, limit: LIMIT }));
+  const mineQ = useQuery(practicesQueryOptions.mine({ page: pageMine, limit: LIMIT }));
+  const pastQ = useQuery(practicesQueryOptions.past({ page: pagePast, limit: LIMIT }));
 
   const cards = cardsQ.data?.data ?? [];
   const mine = mineQ.data?.data ?? [];
   const past = pastQ.data?.data ?? [];
 
+  const cardsPg = (cardsQ.data as any)?.meta?.pagination;
+  const minePg = (mineQ.data as any)?.meta?.pagination;
+  const pastPg = (pastQ.data as any)?.meta?.pagination;
+
   return (
-    <div className="bg-second-bg min-h-[dvh]">
+    <div className="bg-second-bg min-h-dvh">
       <div className="flex flex-col gap-3 px-2 pb-5">
         <div className="gap-0.5 pl-2 pt-2">
           <HeadText head="Площадка практик" label="Оттачивайте переговорные навыки"/>
@@ -55,7 +64,30 @@ export const PracticeHomePage = () => {
 
       <div className="mt-3">
         {tab === "all" && (
-          <PracticeList items={cards} isLoading={cardsQ.isLoading} isError={!!cardsQ.error} />
+          <>
+            <PracticeList items={cards} isLoading={cardsQ.isLoading} isError={!!cardsQ.error} />
+            {!!cardsPg?.totalPages && cardsPg.totalPages > 1 && (
+              <div className="flex items-center justify-between px-2 py-3">
+                <button
+                  className="text-sm text-base-main disabled:text-base-gray"
+                  disabled={cardsQ.isLoading || cardsPg.currentPage <= 1}
+                  onClick={() => setPageAll((p) => Math.max(1, p - 1))}
+                >
+                  Назад
+                </button>
+                <span className="text-xs text-base-gray">
+                  {cardsPg.currentPage} / {cardsPg.totalPages}
+                </span>
+                <button
+                  className="text-sm text-base-main disabled:text-base-gray"
+                  disabled={cardsQ.isLoading || cardsPg.currentPage >= cardsPg.totalPages}
+                  onClick={() => setPageAll((p) => p + 1)}
+                >
+                  Вперёд
+                </button>
+              </div>
+            )}
+          </>
         )}
         {tab === "mine" && (
           mineQ.isLoading ? (
@@ -65,11 +97,34 @@ export const PracticeHomePage = () => {
           ) : !mine.length ? (
             <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
           ) : (
-            <div className="flex flex-col gap-3 px-2 pb-5">
-              {mine.map((p) => (
-                <PracticeMineCard key={p.id} data={p} />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col gap-3 px-2 pb-3">
+                {mine.map((p) => (
+                  <PracticeMineCard key={p.id} data={p} />
+                ))}
+              </div>
+              {!!minePg?.totalPages && minePg.totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 pb-5">
+                  <button
+                    className="text-sm text-base-main disabled:text-base-gray"
+                    disabled={mineQ.isLoading || minePg.currentPage <= 1}
+                    onClick={() => setPageMine((p) => Math.max(1, p - 1))}
+                  >
+                    Назад
+                  </button>
+                  <span className="text-xs text-base-gray">
+                    {minePg.currentPage} / {minePg.totalPages}
+                  </span>
+                  <button
+                    className="text-sm text-base-main disabled:text-base-gray"
+                    disabled={mineQ.isLoading || minePg.currentPage >= minePg.totalPages}
+                    onClick={() => setPageMine((p) => p + 1)}
+                  >
+                    Вперёд
+                  </button>
+                </div>
+              )}
+            </>
           )
         )}
         {tab === "past" && (
@@ -80,11 +135,34 @@ export const PracticeHomePage = () => {
           ) : !past.length ? (
             <div className="text-center text-sm text-base-gray">Ничего не найдено</div>
           ) : (
-            <div className="flex flex-col gap-3 px-2 pb-5">
-              {past.map((p) => (
-                <PracticePastCard key={p.id} data={p} />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col gap-3 px-2 pb-3">
+                {past.map((p) => (
+                  <PracticePastCard key={p.id} data={p} />
+                ))}
+              </div>
+              {!!pastPg?.totalPages && pastPg.totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 pb-5">
+                  <button
+                    className="text-sm text-base-main disabled:text-base-gray"
+                    disabled={pastQ.isLoading || pastPg.currentPage <= 1}
+                    onClick={() => setPagePast((p) => Math.max(1, p - 1))}
+                  >
+                    Назад
+                  </button>
+                  <span className="text-xs text-base-gray">
+                    {pastPg.currentPage} / {pastPg.totalPages}
+                  </span>
+                  <button
+                    className="text-sm text-base-main disabled:text-base-gray"
+                    disabled={pastQ.isLoading || pastPg.currentPage >= pastPg.totalPages}
+                    onClick={() => setPagePast((p) => p + 1)}
+                  >
+                    Вперёд
+                  </button>
+                </div>
+              )}
+            </>
           )
         )}
       </div>
