@@ -8,8 +8,11 @@ import type {
 } from "../types/course.types";
 
 export const CoursesAPI = {
-	createCourse: (courseData: CreateCourseRequest) =>
-		API.post("courses", { json: courseData }).json<GApiResponse<Course>>(),
+	createCourse: (courseData: CreateCourseRequest) => {
+		return API.post("courses", { json: courseData }).json<
+			GApiResponse<Course>
+		>();
+	},
 
 	getCourses: (params?: GetCoursesParams) => {
 		const searchParams = createSearchParams(params);
@@ -18,14 +21,19 @@ export const CoursesAPI = {
 		>();
 	},
 
-	getCourseById: (id: number) =>
-		API.get(`courses/${id}`).json<GApiResponse<Course>>(),
+	getCourseById: (id: number) => {
+		return API.get(`courses/${id}`).json<GApiResponse<Course>>();
+	},
 
-	updateCourse: (id: number, courseData: UpdateCourseRequest) =>
-		API.put(`courses/${id}`, { json: courseData }).json<GApiResponse<Course>>(),
+	updateCourse: (id: number, courseData: UpdateCourseRequest) => {
+		return API.put(`courses/${id}`, { json: courseData }).json<
+			GApiResponse<Course>
+		>();
+	},
 
-	deleteCourse: (id: number) =>
-		API.delete(`courses/${id}`).json<GApiResponse<void>>(),
+	deleteCourse: (id: number) => {
+		return API.delete(`courses/${id}`).json<GApiResponse<void>>();
+	},
 };
 
 export const coursesQueryOptions = {

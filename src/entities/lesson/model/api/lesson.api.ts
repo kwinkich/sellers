@@ -8,8 +8,11 @@ import type {
 } from "../types/lesson.types";
 
 export const LessonsAPI = {
-	createLesson: (lessonData: CreateLessonRequest) =>
-		API.post("lessons", { json: lessonData }).json<GApiResponse<Lesson>>(),
+	createLesson: (lessonData: CreateLessonRequest) => {
+		return API.post("lessons", { json: lessonData }).json<
+			GApiResponse<Lesson>
+		>();
+	},
 
 	getLessons: (params?: GetLessonsParams) => {
 		const searchParams = createSearchParams(params);
@@ -25,14 +28,19 @@ export const LessonsAPI = {
 		>();
 	},
 
-	getLessonById: (id: number) =>
-		API.get(`lessons/${id}`).json<GApiResponse<Lesson>>(),
+	getLessonById: (id: number) => {
+		return API.get(`lessons/${id}`).json<GApiResponse<Lesson>>();
+	},
 
-	updateLesson: (id: number, lessonData: UpdateLessonRequest) =>
-		API.put(`lessons/${id}`, { json: lessonData }).json<GApiResponse<Lesson>>(),
+	updateLesson: (id: number, lessonData: UpdateLessonRequest) => {
+		return API.put(`lessons/${id}`, { json: lessonData }).json<
+			GApiResponse<Lesson>
+		>();
+	},
 
-	deleteLesson: (id: number) =>
-		API.delete(`lessons/${id}`).json<GApiResponse<void>>(),
+	deleteLesson: (id: number) => {
+		return API.delete(`lessons/${id}`).json<GApiResponse<void>>();
+	},
 };
 
 export const lessonsQueryOptions = {
@@ -40,7 +48,6 @@ export const lessonsQueryOptions = {
 		queryOptions({
 			queryKey: ["lessons", "list", params],
 			queryFn: () => LessonsAPI.getLessons(params),
-			retry: false, //TODO: REMOVE
 		}),
 
 	byModule: (moduleId: number, params?: GetLessonsParams) =>

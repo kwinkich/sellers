@@ -13,6 +13,7 @@ const boxVariants = cva(
 			variant: {
 				default: "bg-second-bg",
 				dark: "bg-base-bg",
+				white: "bg-white-gray",
 			},
 			direction: {
 				column: "flex-col",
