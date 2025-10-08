@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const { memo, useCallback, useMemo, useRef, useState, useId } = React;
+const { useCallback, useMemo, useRef, useState, useId } = React;
 
 const timePickerVariants = cva(
 	"h-16 rounded-2xl text-sm font-medium w-full min-w-0 transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex items-center justify-between px-4",
@@ -235,7 +235,6 @@ const TimePickerFloatingLabel = React.forwardRef<
 		}, [handleWheel]);
 
 		const renderWheel = useCallback((type: "hour" | "minute") => {
-			const currentValue = type === "hour" ? hour : minute;
 			const visibleValues = type === "hour" ? hourValues : minuteValues;
 
 			return (
