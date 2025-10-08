@@ -164,6 +164,15 @@ export const route = createBrowserRouter([
 					},
 				],
 			},
+			// {
+			// 	path: "practice",
+			// 	element: <PracticeLayout />,
+			// 	children: [
+			// 	  { index: true, element: <PracticeHomePage /> },
+			// 	  { path: "create", element: <PracticeCreatePage /> },
+			// 	  { path: "preview", element: <PracticePreviewPage /> },
+			// 	],
+			// },
 		],
 	},
 	{
@@ -176,7 +185,7 @@ export const route = createBrowserRouter([
 		],
 	},
 	{
-		path: "/evaluation",
+		path: "/evaluation/:practiceId",
 		element: <EvaluationPage />,
 	},
 ]);

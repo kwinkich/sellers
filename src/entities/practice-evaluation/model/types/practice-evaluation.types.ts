@@ -13,6 +13,7 @@ export interface EvaluationTask {
 	submissionId: number;
 }
 
+// === Base item used in some legacy places (kept for compatibility) ===
 export interface ScaleItem {
 	id: number;
 	title: string;
@@ -20,31 +21,54 @@ export interface ScaleItem {
 	skillId: number;
 }
 
-export interface EvaluationFormBlock {
-	blockId: number;
-	type: string;
+// === New schema aligned with getEvalFormsSchema ===
+export type FormBlockType = "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
+
+export interface EvalScaleOption {
+	id: number;
+	label: string;
+	value: number;
+	ord: number;
+	countsTowardsScore: boolean;
+}
+
+export interface EvalScale {
+	id: number;
+	options: EvalScaleOption[];
+}
+
+export interface EvalBlockItem {
+	id: number;
 	title: string;
-	helpText: string;
+	position: number;
+	skillId?: number | null;
+}
+
+export interface EvaluationFormBlock {
+	id: number;
+	type: FormBlockType;
+	title?: string | null;
 	required: boolean;
 	position: number;
-	skillId: number;
-	scaleId: number;
-	scaleItems: ScaleItem[];
+	scale?: EvalScale | null;
+	items: EvalBlockItem[];
 }
 
 export interface EvaluationForm {
-	formId: number;
+	id: number;
 	role: "SELLER" | "BUYER" | "MODERATOR";
-	title: string;
-	descr: string;
+	evaluatedUserId: number;
+	title?: string | null;
+	descr?: string | null;
 	blocks: EvaluationFormBlock[];
 }
 
 export interface EvaluationAnswer {
 	blockId: number;
-	scaleItemId?: number;
-	selectedOptionId?: number;
-	textAnswer?: string;
+	scaleItemId?: number | null;
+	selectedOptionId?: number | null;
+	textAnswer?: string | null;
+	targetSkillId?: number | null;
 }
 
 export interface EvaluationSubmission {
@@ -52,9 +76,24 @@ export interface EvaluationSubmission {
 	answers: EvaluationAnswer[];
 }
 
+export interface EvaluationBatchSubmission {
+	submissions: {
+		evaluatedUserId: number;
+		answers: EvaluationAnswer[];
+	}[];
+}
+
 export interface EvaluationSubmitResult {
 	taskStatus: EvaluationStatus;
 	submissionId: number;
+}
+
+export interface EvaluationBatchSubmitResult {
+	results: Array<{
+		evaluatedUserId: number;
+		taskStatus: "SUBMITTED";
+		submissionId: number;
+	}>;
 }
 
 export interface GetEvaluationFormParams {

@@ -1,6 +1,13 @@
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { practiceEvaluationMutationOptions } from "@/entities/practice-evaluation/model/api/practice-evaluation.api";
+import type {
+	EvaluationForm as ApiEvaluationForm,
+	EvaluationSubmission,
+} from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
 	EvaluationBlocks,
 	EvaluationFooter,
@@ -10,19 +17,24 @@ import {
 
 // Types for the evaluation page
 export interface EvaluationFormData {
+	id: number;
 	role: "SELLER" | "BUYER" | "MODERATOR";
-	title: string;
-	descr: string;
+	evaluatedUserId: number;
+	title?: string;
+	descr?: string;
 	blocks: EvaluationBlock[];
 }
 
 export interface EvaluationBlock {
+	id?: number;
 	type: "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
 	title?: string;
 	required: boolean;
 	position: number;
 	scale?: {
+		id?: number;
 		options: Array<{
+			id?: number;
 			ord: number;
 			label: string;
 			value: number;
@@ -30,9 +42,10 @@ export interface EvaluationBlock {
 		}>;
 	};
 	items?: Array<{
-		title: string;
+		id?: number;
+		title?: string;
 		position: number;
-		skillId: number;
+		skillId: number | null;
 	}>;
 }
 
@@ -40,163 +53,59 @@ export interface EvaluationResponse {
 	forms: EvaluationFormData[];
 }
 
-export const EvaluationForm = () => {
+export const EvaluationForm = ({
+	formsData = [],
+	practiceId,
+}: {
+	formsData?: ApiEvaluationForm[];
+	practiceId: number;
+}) => {
 	const [activeTab, setActiveTab] = useState<string>("");
 	const [touchStart, setTouchStart] = useState<number | null>(null);
 	const [touchEnd, setTouchEnd] = useState<number | null>(null);
+	// aggregated answers per role -> per block position
+	const [answers, setAnswers] = useState<Record<string, Record<number, any>>>(
+		{}
+	);
+	// per-role completion flags
+	const [roleFilled, setRoleFilled] = useState<Record<string, boolean>>({});
 
-	// Fetch evaluation forms from backend
-	const { data: evaluationData, isLoading } = useQuery({
-		queryKey: ["evaluation-forms"],
-		queryFn: async (): Promise<EvaluationResponse> => {
-			// TODO: Replace with actual API call
-			// const response = await API.get("/evaluation/forms");
-			// return response.data;
-
-			// Mock data for now
-			return {
-				forms: [
-					{
-						role: "SELLER",
-						title: "Форма продавца",
-						descr: "Оцените продавца",
-						blocks: [
-							{
-								type: "TEXT",
-								title:
-									"Краткая инструкция по оценке: \n1. Оцените продавца\n2. Оцените продавца\n3. Оцените продавца\n4. Оцените продавца\n5. Оцените продавца",
-								required: false,
-								position: 0,
-							},
-							{
-								type: "SCALE_SKILL_SINGLE",
-								required: true,
-								position: 1,
-								scale: {
-									options: [
-										{
-											ord: 0,
-											label: "Нет",
-											value: -2,
-											countsTowardsScore: true,
-										},
-										{
-											ord: 1,
-											label: "50/50",
-											value: -1,
-											countsTowardsScore: true,
-										},
-										{ ord: 2, label: "Да", value: 1, countsTowardsScore: true },
-										{ ord: 3, label: "?", value: 2, countsTowardsScore: false },
-									],
-								},
-								items: [
-									{
-										title: "Хорошо ли человек рассказал?",
-										position: 0,
-										skillId: 9,
-									},
-									{
-										title: "Хорошо ли человек рассказал?",
-										position: 1,
-										skillId: 9,
-									},
-									{
-										title: "Хорошо ли человек рассказал?",
-										position: 2,
-										skillId: 9,
-									},
-								],
-							},
-							{
-								type: "QA",
-								title: "Ваш комментарий про покупателя:",
-								required: true,
-								position: 2,
-							},
-						],
-					},
-					{
-						role: "BUYER",
-						title: "Форма покупателя",
-						descr: "Оцените покупателя",
-						blocks: [
-							{
-								type: "TEXT",
-								title:
-									"Краткая инструкция по оценке: \n1. Оцените покупателя\n2. Оцените покупателя\n3. Оцените покупателя",
-								required: false,
-								position: 0,
-							},
-							{
-								type: "QA",
-								title: "Какой-то вопрос про покупателя?",
-								required: true,
-								position: 1,
-							},
-							{
-								type: "QA",
-								title: "Ваш комментарий про покупателя:",
-								required: false,
-								position: 2,
-							},
-						],
-					},
-					{
-						role: "MODERATOR",
-						title: "Форма модератора",
-						descr: "Оцените модератора",
-						blocks: [
-							{
-								type: "TEXT",
-								title: "Краткая инструкция по оценке",
-								required: false,
-								position: 0,
-							},
-							{
-								type: "SCALE_SKILL_MULTI",
-								required: true,
-								position: 1,
-								scale: {
-									options: [
-										{
-											ord: 0,
-											label: "Плохо",
-											value: -1,
-											countsTowardsScore: true,
-										},
-										{
-											ord: 1,
-											label: "Хорошо",
-											value: 0,
-											countsTowardsScore: true,
-										},
-										{
-											ord: 2,
-											label: "Отлично",
-											value: 1,
-											countsTowardsScore: true,
-										},
-									],
-								},
-								items: [
-									{ title: "Понимание ресурсов", position: 0, skillId: 9 },
-									{ title: "Понимание приоритетов", position: 1, skillId: 10 },
-									{ title: "Выявление боли", position: 2, skillId: 11 },
-								],
-							},
-							{
-								type: "QA",
-								title: "Ваш комментарий про модератора:",
-								required: true,
-								position: 2,
-							},
-						],
-					},
-				],
-			};
-		},
-	});
+	// Build evaluation data from real forms
+	const evaluationData: EvaluationResponse = {
+		forms: formsData.map((f) => ({
+			id: f.id,
+			role: f.role,
+			evaluatedUserId: f.evaluatedUserId,
+			title: f.title ?? undefined,
+			descr: f.descr ?? undefined,
+			blocks: (f.blocks || []).map((b) => ({
+				id: b.id,
+				type: (b.type as any) ?? "TEXT",
+				title: b.title ?? undefined,
+				required: b.required,
+				position: b.position,
+				scale: b.scale?.options
+					? {
+							id: b.scale!.id,
+							options: b.scale!.options.map((opt) => ({
+								id: opt.id,
+								ord: opt.ord,
+								label: opt.label,
+								value: opt.value,
+								countsTowardsScore: opt.countsTowardsScore,
+							})),
+					  }
+					: undefined,
+				items: (b.items || []).map((it) => ({
+					id: it.id,
+					title: it.title,
+					position: it.position,
+					skillId: it.skillId ?? null,
+				})),
+			})),
+		})),
+	};
+	const isLoading = false;
 
 	// Set initial active tab when data loads
 	useEffect(() => {
@@ -264,6 +173,65 @@ export const EvaluationForm = () => {
 		);
 	}
 
+	// Build single-form submission from collected answers
+	const buildSubmissionForForm = (
+		form: EvaluationFormData
+	): EvaluationSubmission => {
+		const roleAns = answers[form.role] || {};
+		const answersArr: any[] = [];
+		for (const block of form.blocks) {
+			if (block.type === "SCALE_SKILL_SINGLE") {
+				const vals =
+					(roleAns[block.position]?.values as Record<number, number>) || {};
+				const optByValue: Record<number, number | undefined> = {};
+				(block.scale?.options || []).forEach((opt) => {
+					if (opt?.id != null) optByValue[opt.value] = opt.id;
+				});
+				(block.items || []).forEach((it, idx) => {
+					const value = vals[idx];
+					if (value == null) return;
+					answersArr.push({
+						blockId: block.id!,
+						scaleItemId: it.id!,
+						selectedOptionId: optByValue[value]!,
+						targetSkillId: it.skillId ?? null,
+					});
+				});
+			} else if (block.type === "SCALE_SKILL_MULTI") {
+				const vals =
+					(roleAns[block.position]?.values as Record<number, number>) || {};
+				const optByValue: Record<number, number | undefined> = {};
+				(block.scale?.options || []).forEach((opt) => {
+					if (opt?.id != null) optByValue[opt.value] = opt.id;
+				});
+				(block.items || []).forEach((it) => {
+					const chosen = vals[it.skillId ?? 0];
+					if (chosen == null) return;
+					answersArr.push({
+						blockId: block.id!,
+						scaleItemId: it.id!,
+						selectedOptionId: optByValue[chosen]!,
+						targetSkillId: it.skillId ?? null,
+					});
+				});
+			} else if (block.type === "QA") {
+				const txt = roleAns[block.position]?.value as string | undefined;
+				if (txt && txt.trim().length > 0) {
+					answersArr.push({
+						blockId: block.id!,
+						textAnswer: txt,
+					});
+				}
+			}
+		}
+		return { evaluatedUserId: form.evaluatedUserId, answers: answersArr };
+	};
+
+	// no actual submit yet; we will log built payloads to console on Finish
+	const navigate = useNavigate();
+	const { mutateAsync: submitEvaluation, isPending: isSubmitting } =
+		useMutation(practiceEvaluationMutationOptions.submit());
+
 	return (
 		<div className="min-h-screen bg-white flex flex-col">
 			{/* Header */}
@@ -279,30 +247,115 @@ export const EvaluationForm = () => {
 					<EvaluationTabs forms={evaluationData.forms} activeTab={activeTab} />
 
 					{/* Tab Contents */}
-					{evaluationData.forms.map((form) => (
-						<TabsContent
-							key={form.role}
-							value={form.role}
-							className="mt-0 data-[state=inactive]:hidden"
-							forceMount
-						>
-							<div
-								className="h-full max-h-[calc(100vh-330px)] overflow-y-auto"
-								onTouchStart={handleTouchStart}
-								onTouchMove={handleTouchMove}
-								onTouchEnd={handleTouchEnd}
+					{evaluationData.forms.map((form) => {
+						const handleAnswersChange = useCallback(
+							(payload: any) => {
+								setAnswers((prev) => {
+									const byRole = prev[form.role] ? { ...prev[form.role] } : {};
+									byRole[payload.position] = payload;
+									const next = { ...prev, [form.role]: byRole };
+
+									// Recompute filled flag for this role immediately
+									const currentForm = evaluationData.forms.find(
+										(f) => f.role === form.role
+									);
+									const computeFilled = () => {
+										if (!currentForm) return false;
+										const roleAns = next[form.role] || {};
+										for (const block of currentForm.blocks) {
+											if (block.type === "QA") {
+												const a = roleAns[block.position]?.value ?? "";
+												if (!a || !String(a).trim()) return false;
+											} else if (block.type === "SCALE_SKILL_SINGLE") {
+												const vals =
+													(roleAns[block.position]?.values as Record<
+														number,
+														number
+													>) || {};
+												const itemsCount = block.items?.length ?? 0;
+												if (Object.keys(vals).length !== itemsCount)
+													return false;
+											} else if (block.type === "SCALE_SKILL_MULTI") {
+												const vals =
+													(roleAns[block.position]?.values as Record<
+														number,
+														number
+													>) || {};
+												const itemsCount = block.items?.length ?? 0;
+												if (Object.keys(vals).length !== itemsCount)
+													return false;
+											}
+										}
+										return true;
+									};
+									setRoleFilled((prevFlags) => ({
+										...prevFlags,
+										[form.role]: computeFilled(),
+									}));
+
+									return next;
+								});
+							},
+							[evaluationData.forms, form.role]
+						);
+
+						return (
+							<TabsContent
+								key={form.role}
+								value={form.role}
+								className="mt-0 data-[state=inactive]:hidden"
+								forceMount
 							>
-								<div className="p-2 space-y-4">
-									<EvaluationBlocks blocks={form.blocks} formRole={form.role} />
+								<div
+									className="h-full max-h-[calc(100vh-330px)] overflow-y-auto"
+									onTouchStart={handleTouchStart}
+									onTouchMove={handleTouchMove}
+									onTouchEnd={handleTouchEnd}
+								>
+									<div className="p-2 space-y-4">
+										<EvaluationBlocks
+											blocks={form.blocks}
+											formRole={form.role}
+											onAnswersChange={handleAnswersChange}
+										/>
+									</div>
 								</div>
-							</div>
-						</TabsContent>
-					))}
+							</TabsContent>
+						);
+					})}
 				</Tabs>
 			</div>
 
 			{/* Footer CTA */}
-			<EvaluationFooter />
+			<EvaluationFooter
+				isLastTab={
+					activeTab ===
+					evaluationData.forms[evaluationData.forms.length - 1].role
+				}
+				canFinish={evaluationData.forms.every((f) => roleFilled[f.role])}
+				loading={isSubmitting}
+				onNext={() => {
+					const currentIndex = evaluationData.forms.findIndex(
+						(f) => f.role === activeTab
+					);
+					const next = evaluationData.forms[currentIndex + 1];
+					if (next) setActiveTab(next.role);
+				}}
+				onFinish={() => {
+					(async () => {
+						try {
+							for (const form of evaluationData.forms) {
+								const submission = buildSubmissionForForm(form);
+								await submitEvaluation({ practiceId, data: submission });
+							}
+							toast.success("Оценка отправлена");
+							navigate(`/practice`);
+						} catch (e) {
+							toast.error("Не удалось отправить оценку");
+						}
+					})();
+				}}
+			/>
 		</div>
 	);
 };
