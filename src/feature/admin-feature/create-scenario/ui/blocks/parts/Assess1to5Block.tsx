@@ -8,37 +8,111 @@ import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { useMemo, useState } from "react";
 import { Plus, Minus, X, Trash2 } from "lucide-react";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import { create1to5Scale } from "@/shared/lib/scaleUtils";
+import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
 
-export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; onDelete?: () => void; prebuiltSkills?: number[] }) {
+interface Assess1to5BlockProps {
+  id: string;
+  onDelete?: () => void;
+  prebuiltSkills?: number[];
+  selectedSkills?: number[];
+  scaleOptionsMulti?: ScaleOption[];
+  onDataChange?: (data: {
+    selectedSkills: number[];
+    scaleOptionsMulti: ScaleOption[];
+  }) => void;
+}
+
+export function Assess1to5Block({ 
+  id, 
+  onDelete, 
+  prebuiltSkills, 
+  selectedSkills: initialSelectedSkills = [], 
+  scaleOptionsMulti: initialScaleOptions = create1to5Scale(["плохо", "хорошо", "отлично"]),
+  onDataChange 
+}: Assess1to5BlockProps) {
   const isPrebuilt = id.includes('prebuilt');
-  // editable scale labels
-  const [scale, setScale] = useState<string[]>(["плохо", "хорошо", "отлично"]); // up to 5
-
-  const addScalePoint = () => {
-    setScale((prev) => (prev.length < 5 ? [...prev, String(prev.length + 1)] : prev));
-  };
-  const updateScalePoint = (idx: number, v: string) => {
-    setScale((prev) => prev.map((s, i) => (i === idx ? v : s)));
-  };
-
-  // unique skills selection list
+  
+  // Scale options with normalized values
+  const [scaleOptions, setScaleOptions] = useState<ScaleOption[]>(initialScaleOptions);
+  
+  // Skills selection
   const { data } = useQuery(skillsQueryOptions.list());
-  const options = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
+  const skillOptions = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
   
   // Initialize with prebuilt skills if provided
   const [selectedSkills, setSelectedSkills] = useState<string[]>(() => {
     if (prebuiltSkills && prebuiltSkills.length > 0) {
       return prebuiltSkills.map(id => String(id));
     }
+    if (initialSelectedSkills.length > 0) {
+      return initialSelectedSkills.map(id => String(id));
+    }
     return [];
   });
 
-  const addSkill = () => setSelectedSkills((prev) => [...prev, ""]);
-  const removeSkill = (idx: number) => setSelectedSkills((prev) => prev.filter((_, i) => i !== idx));
-  const updateSkill = (idx: number, value: string) =>
-    setSelectedSkills((prev) => prev.map((v, i) => (i === idx ? value : v)));
+  const addSkill = () => {
+    const updatedSkills = [...selectedSkills, ""];
+    setSelectedSkills(updatedSkills);
+    onDataChange?.({
+      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
+      scaleOptionsMulti: scaleOptions
+    });
+  };
+
+  const removeSkill = (idx: number) => {
+    const updatedSkills = selectedSkills.filter((_, i) => i !== idx);
+    setSelectedSkills(updatedSkills);
+    onDataChange?.({
+      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
+      scaleOptionsMulti: scaleOptions
+    });
+  };
+
+  const updateSkill = (idx: number, value: string) => {
+    const updatedSkills = selectedSkills.map((v, i) => (i === idx ? value : v));
+    setSelectedSkills(updatedSkills);
+    onDataChange?.({
+      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
+      scaleOptionsMulti: scaleOptions
+    });
+  };
 
   const taken = new Set(selectedSkills.filter(Boolean));
+
+  const addScalePoint = () => {
+    if (scaleOptions.length < 5) {
+      const newLabel = `Опция ${scaleOptions.length + 1}`;
+      const newScale = create1to5Scale([...scaleOptions.map(opt => opt.label), newLabel]);
+      setScaleOptions(newScale);
+      onDataChange?.({
+        selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
+        scaleOptionsMulti: newScale
+      });
+    }
+  };
+
+  const removeScalePoint = () => {
+    if (scaleOptions.length > 1) {
+      const newScale = scaleOptions.slice(0, -1);
+      setScaleOptions(newScale);
+      onDataChange?.({
+        selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
+        scaleOptionsMulti: newScale
+      });
+    }
+  };
+
+  const updateScaleLabel = (index: number, label: string) => {
+    const updatedScale = scaleOptions.map((opt, i) => 
+      i === index ? { ...opt, label } : opt
+    );
+    setScaleOptions(updatedScale);
+    onDataChange?.({
+      selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
+      scaleOptionsMulti: updatedScale
+    });
+  };
 
   return (
     <Card>
@@ -52,17 +126,18 @@ export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; 
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* 1) Scale editor (1..5, default 1..3) */}
+          {/* 1) Scale editor */}
           <div className="space-y-2">
             <Label className="text-sm">Система оценивания</Label>
             <div className="space-y-2">
-              {scale.map((s, idx) => (
-                <div key={`${idx}-${id}`} className="flex items-center gap-2">
+              {scaleOptions.map((option, idx) => (
+                <div key={idx} className="flex items-center gap-2">
                   <span className="w-[20px] text-xs text-muted-foreground">{idx + 1}.</span>
                   <Input
-                    value={s}
-                    onChange={(e) => updateScalePoint(idx, e.target.value)}
+                    value={option.label}
+                    onChange={(e) => updateScaleLabel(idx, e.target.value)}
                     className="h-10 flex-1"
+                    placeholder="Название опции"
                   />
                 </div>
               ))}
@@ -72,7 +147,8 @@ export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; 
                 <Button
                   variant="ghost"
                   size="2s"
-                  onClick={() => setScale((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev))}
+                  onClick={removeScalePoint}
+                  disabled={scaleOptions.length <= 1}
                   aria-label="Уменьшить шкалу"
                   className="h-6"
                 >
@@ -83,7 +159,7 @@ export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; 
                   variant="ghost"
                   size="2s"
                   onClick={addScalePoint}
-                  disabled={scale.length >= 5}
+                  disabled={scaleOptions.length >= 5}
                   aria-label="Увеличить шкалу"
                   className="h-6"
                 >
@@ -103,7 +179,7 @@ export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; 
                     placeholder="Выберите навык"
                     value={val}
                     onValueChange={(v) => updateSkill(idx, v)}
-                    options={options.filter((o) => o.value === val || !taken.has(o.value))}
+                    options={skillOptions.filter((o) => o.value === val || !taken.has(o.value))}
                   />
                   <Button size="2s" variant="ghost" onClick={() => removeSkill(idx)} aria-label="Удалить">
                     <Trash2 className="h-4 w-4 text-black" />
@@ -120,6 +196,3 @@ export function Assess1to5Block({ id, onDelete, prebuiltSkills }: { id: string; 
     </Card>
   );
 }
-
-
-

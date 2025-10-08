@@ -11,24 +11,18 @@ import {
 import { casesQueryOptions } from "@/entities";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import {
-	createScenarioSchema,
-	type ScenarioType,
-	type ScenarioType as ScenarioTypeEnum,
-	type CreateScenarioFormData,
-	scenarioTypeOptions,
-} from "../../model";
+import { createScenarioSchema, type CreateScenarioFormData } from "../../model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
-export function CreateScenarioForm() {
+interface CreateScenarioFormProps {
+	onFormDataChange?: (data: { title: string; caseIds: number[] }) => void;
+}
+
+export function CreateScenarioForm({ onFormDataChange }: CreateScenarioFormProps) {
 	const form = useForm<CreateScenarioFormData>({
 		resolver: zodResolver(createScenarioSchema),
-		defaultValues: {
-			title: "",
-			type: "WITHOUT_CASE" as ScenarioType,
-			caseId: undefined,
-		},
+		defaultValues: { title: "", caseIds: [] },
 	});
 
 	const { data: casesData } = useQuery(casesQueryOptions.list());
@@ -39,8 +33,21 @@ export function CreateScenarioForm() {
 		[casesData]
 	);
 
-	const selectedType = form.watch("type");
-	const isCaseRequired = selectedType === "WITH_CASE" || selectedType === "MINI";
+	// Multi-case selection state (dynamic selectors)
+	const [caseSelects, setCaseSelects] = useState<Array<number | null>>([null]);
+
+	// Build final selected ids (non-null)
+	const selectedCaseIds = useMemo(
+		() => caseSelects.filter((v): v is number => typeof v === "number"),
+		[caseSelects]
+	);
+
+	// Watch form values and notify parent
+	const title = form.watch("title");
+	
+	useEffect(() => {
+		onFormDataChange?.({ title, caseIds: selectedCaseIds });
+	}, [title, selectedCaseIds, onFormDataChange]);
 
 	return (
 		<Form {...form}>
@@ -64,44 +71,40 @@ export function CreateScenarioForm() {
 					)}
 				/>
 
-				{/* Type select */}
-				<FormField
-					control={form.control}
-					name="type"
-					render={({ field }) => (
-						<FormItem>
-							<SelectFloatingLabel
-								variant="default"
-								className="bg-second-bg "
-								placeholder="Выберите тип сценария"
-								value={field.value}
-								onValueChange={(v) => field.onChange(v as ScenarioTypeEnum)}
-								options={scenarioTypeOptions.map((o) => ({ value: o.value, label: o.label }))}
-							/>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+                {/* Type select removed per new spec */}
 
-				{/* Case select (enabled conditionally) */}
-				<FormField
-					control={form.control}
-					name="caseId"
-					render={({ field }) => (
-						<FormItem>
+				{/* Case select (multiple) */}
+				<div className="space-y-2">
+					{caseSelects.map((val, idx) => (
+						<div key={idx}>
 							<SelectFloatingLabel
 								variant="default"
-								className="bg-second-bg disabled:bg-[#2A2A2A]"
-								placeholder="Выберите кейс"
-								value={field.value ? String(field.value) : ""}
-								onValueChange={(v) => field.onChange(parseInt(v))}
-								options={caseOptions}
-								disabled={!isCaseRequired}
+								className="bg-second-bg"
+								placeholder={idx === 0 ? "Выберите кейс (опционально)" : "Добавьте ещё один кейс (опционально)"}
+								value={val ? String(val) : ""}
+								onValueChange={(value) => {
+									const num = parseInt(value);
+									setCaseSelects((prev) => {
+										const next = [...prev];
+										next[idx] = Number.isNaN(num) ? null : num;
+										// If this is the last selector and user selected a value, append a new empty selector
+										if (idx === prev.length - 1 && !Number.isNaN(num)) {
+											next.push(null);
+										}
+										return next;
+									});
+								}}
+								options={caseOptions.filter((o) => {
+									// allow currently selected value for this selector
+									if (val && String(val) === o.value) return true;
+									// otherwise filter out already taken ids
+									const id = parseInt(o.value);
+									return !selectedCaseIds.includes(id);
+								})}
 							/>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+						</div>
+					))}
+				</div>
 
 				{/* Tabs were moved outside, below the form on the page container */}
 

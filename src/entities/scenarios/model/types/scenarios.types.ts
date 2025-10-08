@@ -1,13 +1,12 @@
 import type { PracticeType } from "@/entities/practices";
 
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
-export type BlockType = "TEXT" | "SCALE" | "RADIO" | "CHECKBOX" | "SELECT";
+export type BlockType = "TEXT" | "QA" | "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
 
 export interface ScenarioListItem {
 	id: number;
 	title: string;
-	version: number;
-	practiceType: PracticeType;
+    version: number;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -25,7 +24,6 @@ export interface Scenario {
 	id: number;
 	title: string;
 	version: number;
-	practiceType: PracticeType;
 	createdAt: string;
 	updatedAt: string;
 	createdByUserId: number;
@@ -39,6 +37,17 @@ export interface FormBlockItem {
 	skillId: number;
 }
 
+export interface ScaleOption {
+	ord: number;
+	label: string;
+	value: number;
+	countsTowardsScore: boolean;
+}
+
+export interface Scale {
+	options: ScaleOption[];
+}
+
 export interface FormBlock {
 	id?: number;
 	type: BlockType;
@@ -46,8 +55,7 @@ export interface FormBlock {
 	helpText: string;
 	required: boolean;
 	position: number;
-	skillId: number;
-	scaleId: number;
+	scale: Scale;
 	items: FormBlockItem[];
 }
 
@@ -58,8 +66,7 @@ export interface ScenarioOption {
 
 export interface CreateScenarioRequest {
 	title: string;
-	practiceType: PracticeType;
-	seedPresets: boolean;
+	caseIds?: number[];
 	forms: {
 		role: FormRole;
 		title: string;
@@ -70,7 +77,6 @@ export interface CreateScenarioRequest {
 
 export interface UpdateScenarioRequest {
 	title?: string;
-	practiceType?: PracticeType;
 }
 
 export interface UpdateFormMetaRequest {
@@ -84,8 +90,7 @@ export interface CreateBlockRequest {
 	helpText: string;
 	required: boolean;
 	position: number;
-	skillId: number;
-	scaleId: number;
+	scale: Scale;
 	items: FormBlockItem[];
 }
 
@@ -95,8 +100,7 @@ export interface UpdateBlockRequest {
 	helpText?: string;
 	required?: boolean;
 	position?: number;
-	skillId?: number;
-	scaleId?: number;
+	scale?: Scale;
 }
 
 export interface CreateBlockItemRequest {
@@ -136,9 +140,7 @@ export interface GetScenariosParams {
     caseId?: number;
     skillIds?: number[];
 }
-
 export interface GetScenarioOptionsParams {
-	practiceType?: PracticeType;
 	q?: string;
 	limit?: number;
 }

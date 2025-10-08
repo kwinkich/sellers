@@ -100,13 +100,6 @@ export const QuizPage = () => {
 		}
 	};
 
-	// Переход к предыдущему вопросу
-	const handlePrevQuestion = () => {
-		if (currentQuestionIndex > 0) {
-			setCurrentQuestionIndex((prev) => prev - 1);
-		}
-	};
-
 	// Отправка результатов квиза
 	const handleSubmitQuiz = async () => {
 		if (!quiz) return;

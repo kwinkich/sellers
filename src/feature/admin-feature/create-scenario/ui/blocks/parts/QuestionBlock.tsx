@@ -4,8 +4,21 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-export function QuestionBlock({ id, onDelete }: { id: string; onDelete?: () => void }) {
-  const [question, setQuestion] = useState("");
+interface QuestionBlockProps {
+  id: string;
+  onDelete?: () => void;
+  questionContent?: string;
+  onQuestionChange?: (question: string) => void;
+}
+
+export function QuestionBlock({ onDelete, questionContent = "", onQuestionChange }: QuestionBlockProps) {
+  const [question, setQuestion] = useState(questionContent);
+
+  const handleQuestionChange = (value: string) => {
+    setQuestion(value);
+    onQuestionChange?.(value);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -25,7 +38,7 @@ export function QuestionBlock({ id, onDelete }: { id: string; onDelete?: () => v
           <InputFloatingLabel
             placeholder="Введите вопрос...."
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            onChange={(e) => handleQuestionChange(e.target.value)}
           />
         </div>
       </CardContent>

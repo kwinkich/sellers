@@ -1,7 +1,7 @@
 import type { AuthUserRole } from "../types/user.types";
 
 export const getAuthToken = (): string => {
-	const token = localStorage.getItem("authToken");
+	const token = localStorage.getItem("accessToken");
 	if (token) return token;
 
 	return "";
@@ -11,7 +11,7 @@ export const updateAuthToken = (t: string): boolean => {
 	if (!t) return false;
 
 
-	localStorage.setItem("authToken", t);
+	localStorage.setItem("accessToken", t);
 
 	return true;
 };

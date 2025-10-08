@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MOCK_ADMINS } from "../mock";
 import { AdminCard } from "./card";
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 export const AdminsList = () => {
 	const admins = USE_MOCK_DATA ? MOCK_ADMINS : [];
