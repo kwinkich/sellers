@@ -62,6 +62,7 @@ export const AdminHomePage = () => {
 								className="justify-between"
 								text="main"
 								size="link"
+								onClick={() => navigate("/practice")}
 							>
 								Открыть список <LinkIcon />
 							</Button>
@@ -83,6 +84,7 @@ export const AdminHomePage = () => {
 								className="justify-between"
 								text="main"
 								size="link"
+								onClick={() => navigate("/admin/clients")}
 							>
 								Открыть список <LinkIcon />
 							</Button>
@@ -95,12 +97,12 @@ export const AdminHomePage = () => {
 							variant="main-opacity"
 							text="main"
 							size="2s"
-							onClick={() => navigate("/practuce/create")}
+							onClick={() => navigate("/practice/create")}
 						>
 							Создать практику
 						</Button>
 						<Button
-							className="w-full"
+							className="flex-1"
 							variant="main-opacity"
 							text="main"
 							size="2s"
@@ -137,7 +139,7 @@ export const AdminHomePage = () => {
 							</Box>
 						</Link>
 
-						<Link to="/admin/admins" className="col-span-2">
+						<Link to="/admin/list" className="col-span-2">
 							<Box
 								variant={"dark"}
 								rounded="3xl"

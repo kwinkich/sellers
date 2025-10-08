@@ -24,9 +24,9 @@ export function CreateCaseForm() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	// Fetch scenarios for dropdown
+	// Fetch scenarios for dropdown with pagination
 	const { data: scenariosData, isLoading: scenariosLoading } = useQuery(
-		scenariosQueryOptions.options()
+		scenariosQueryOptions.list({ limit: 100 })
 	);
 
 	// Multi-scenario selection state (dynamic selectors)
