@@ -123,15 +123,24 @@ export const route = createBrowserRouter([
 					},
 				],
 			},
+      {
+        path: "practice",
+        element: <PracticeLayout />,
+        children: [
+          {
+            index: true,
+            element: <PracticeHomePage />
+          },
+          {
+            path: "create",
+            element: <PracticeCreatePage />
+          },
+          {
+            path: "preview",
+            element: <PracticePreviewPage />
+          },
+        ],
+      },
 		],
 	},
-  {
-    path: "/practice",
-    element: <PracticeLayout />,
-    children: [
-      { index: true, element: <PracticeHomePage /> },
-      { path: "create", element: <PracticeCreatePage /> },
-      { path: "preview", element: <PracticePreviewPage /> },
-    ],
-  },
 ]);

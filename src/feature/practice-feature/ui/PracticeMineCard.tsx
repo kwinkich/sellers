@@ -34,9 +34,16 @@ export const PracticeMineCard = ({ data }: Props) => {
     },
   });
 
-  const start = new Date(data.startAt);
-  const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" });
+  const formatStart = (iso: string) => {
+    if (!iso) return { date: "", time: "" };
+    const [datePart, timeAndZone] = iso.split("T");
+    if (!datePart || !timeAndZone) return { date: "", time: "" };
+    const [y, m, d] = datePart.split("-");
+    const baseTime = timeAndZone.replace("Z", "").split(/[+-]/)[0] ?? "";
+    const [hh, mm] = baseTime.split(":");
+    return { date: `${d}.${m}.${y}`, time: `${hh}:${mm}` };
+  };
+  const { date, time } = formatStart(data.startAt as string);
 
   const onLearnCase = () => {
     if (data.case) openCaseInfo(data);

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { practicesQueryOptions } from "@/entities/practices";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { getUserRoleFromToken } from "@/shared";
 
 type TabKey = "all" | "mine" | "past";
 
@@ -16,6 +17,8 @@ export const PracticeHomePage = () => {
   const [pagePast, setPagePast] = useState<number>(1);
   const LIMIT = 20;
   const navigate = useNavigate();
+  const role = getUserRoleFromToken();
+
   const cardsQ = useQuery(practicesQueryOptions.cards({ page: pageAll, limit: LIMIT }));
   const mineQ = useQuery(practicesQueryOptions.mine({ page: pageMine, limit: LIMIT }));
   const pastQ = useQuery(practicesQueryOptions.past({ page: pagePast, limit: LIMIT }));
@@ -56,7 +59,7 @@ export const PracticeHomePage = () => {
             );
           })}
         </div>
-          {tab === "all" && (
+          {tab === "all" && role !== "CLIENT" && (
           <Button size="xs" rounded="3xl" className="w-full" onClick={() => navigate("/practice/create")}>Создать практику</Button>
           )}
         </div>
@@ -176,5 +179,3 @@ export const PracticeHomePage = () => {
 };
 
 export default PracticeHomePage;
-
-

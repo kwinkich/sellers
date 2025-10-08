@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { ScenarioIcon, PracticeTypeIcon, SkillsIcon, CalendarIcon } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
+import { getUserRoleFromToken } from "@/shared";
+import { useEffect } from "react";
 
 const PracticePreviewPage = () => {
   const store = useCreatePracticeStore();
@@ -14,6 +16,15 @@ const PracticePreviewPage = () => {
   const qc = useQueryClient();
   const { scenarioId, caseId, skillIds, startAt, zoomLink, initialRole, scenarioTitle, skillNames, practiceType } = store;
   const practiceTypeLabel = practiceType ? getPracticeTypeLabel(practiceType as PracticeType) : undefined;
+
+  const role = getUserRoleFromToken();
+
+  // Auto-set role to MODERATOR for ADMIN users
+  useEffect(() => {
+    if (role === "ADMIN" && initialRole !== "MODERATOR") {
+      store.setRole("MODERATOR");
+    }
+  }, [role, initialRole, store]);
 
   const create = useMutation({
     ...practicesMutationOptions.create(),
@@ -54,7 +65,7 @@ const PracticePreviewPage = () => {
         <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
           <CalendarIcon size={24} cn="ml-1.5 text-base-main" />
           <div className="flex flex-col gap-1">
-            <span className="text-base-gray">Дата/время</span> {startAt ? new Date(startAt).toLocaleString("ru-RU", { timeZone: "Europe/Moscow" }) : "—"}
+            <span className="text-base-gray">Дата/время</span> {startAt ? startAt.replace("T", " ").slice(0, 16) : "—"}
           </div>
         </div>
       </div>
@@ -70,18 +81,24 @@ const PracticePreviewPage = () => {
         </div>
 
         <div>
-          <Select onValueChange={(v) => store.setRole(v as any)} value={initialRole as any}>
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите свою роль" />
-            </SelectTrigger>
-            <SelectContent side="bottom" align="start">
-              <SelectGroup>
-                <SelectItem value="SELLER">Продавец</SelectItem>
-                <SelectItem value="BUYER">Покупатель</SelectItem>
-                <SelectItem value="MODERATOR">Модератор</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          {role === "ADMIN" ? (
+            <div className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium flex items-center text-gray-700">
+              Роль: Модератор
+            </div>
+          ) : (
+            <Select onValueChange={(v) => store.setRole(v as any)} value={initialRole as any}>
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите свою роль" />
+              </SelectTrigger>
+              <SelectContent side="bottom" align="start">
+                <SelectGroup>
+                  <SelectItem value="SELLER">Продавец</SelectItem>
+                  <SelectItem value="BUYER">Покупатель</SelectItem>
+                  <SelectItem value="MODERATOR">Модератор</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
@@ -110,5 +127,3 @@ const PracticePreviewPage = () => {
 };
 
 export default PracticePreviewPage;
-
-

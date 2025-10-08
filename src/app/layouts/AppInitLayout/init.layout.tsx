@@ -2,9 +2,43 @@
 import { useAppInit } from "@/shared";
 import { Loader2 } from "lucide-react";
 import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { sseClient } from "@/shared/lib/sse";
+import { useQueryClient } from "@tanstack/react-query";
+import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
+import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
+import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
 
 export const AppInitLayout = () => {
 	const { isLoading, isError, error } = useAppInit();
+  const qc = useQueryClient();
+  const show = useActivePracticeStore((s) => s.show);
+  const hide = useActivePracticeStore((s) => s.hide);
+
+  useEffect(() => {
+    const off = sseClient.on(async (e) => {
+      if (e.event === "practice-started") {
+        try {
+          const res = await PracticesAPI.getPracticeById(e.practiceId);
+          const practice = res?.data;
+          if (practice?.myRole) {
+            show(practice);
+          }
+        } catch {
+          // ignore fetch errors
+        }
+      }
+
+      if (e.event === "practice-finished") {
+        hide();
+        qc.invalidateQueries({ queryKey: ["practices", "cards"] });
+        qc.invalidateQueries({ queryKey: ["practices", "mine"] });
+        qc.invalidateQueries({ queryKey: ["practices", "past"] });
+        qc.invalidateQueries({ queryKey: ["practices", "detail", e.practiceId] });
+      }
+    });
+    return () => off();
+  }, [qc, show, hide]);
 
 	if (isLoading) {
 		return (
@@ -44,5 +78,10 @@ export const AppInitLayout = () => {
 		);
 	}
 
-	return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <PracticeActiveModal />
+    </>
+  );
 };
