@@ -95,17 +95,17 @@ export const EvaluationReportPage = () => {
       {
         evaluatedUserId: 16,
         answers: [
-          { blockId: 73, scaleItemId: 84, selectedOptionId: 25, targetSkillId: 6 },
-          { blockId: 73, scaleItemId: 85, selectedOptionId: 27, targetSkillId: 6 },
+          { blockId: 73, itemId: 84, selectedOptionId: 25, targetSkillId: 6 },
+          { blockId: 73, itemId: 85, selectedOptionId: 27, targetSkillId: 6 },
           { blockId: 74, textAnswer: "Отличн" },
         ],
       },
       {
         evaluatedUserId: 18,
         answers: [
-          { blockId: 75, scaleItemId: 86, selectedOptionId: 31, targetSkillId: 11 },
-          { blockId: 75, scaleItemId: 87, selectedOptionId: 30, targetSkillId: 10 },
-          { blockId: 75, scaleItemId: 88, selectedOptionId: 31, targetSkillId: 9 },
+          { blockId: 75, itemId: 86, selectedOptionId: 31, targetSkillId: 11 },
+          { blockId: 75, itemId: 87, selectedOptionId: 30, targetSkillId: 10 },
+          { blockId: 75, itemId: 88, selectedOptionId: 31, targetSkillId: 9 },
           { blockId: 76, textAnswer: "Пойдет" },
         ],
       },

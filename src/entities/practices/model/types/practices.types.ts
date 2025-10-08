@@ -83,7 +83,7 @@ export interface PracticeFinishResult {
 
 export interface EvalAnswer {
 	blockId: number;
-	scaleItemId?: number | null;
+	itemId?: number | null;
 	selectedOptionId?: number | null;
 	textAnswer?: string | null;
 }

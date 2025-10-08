@@ -173,7 +173,7 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
           if (value == null) return;
           answersArr.push({
             blockId: block.id!,
-            scaleItemId: it.id!,
+            itemId: it.id!,
             selectedOptionId: optByValue[value]!,
             targetSkillId: it.skillId ?? null,
           });
@@ -189,7 +189,7 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
           if (chosen == null) return;
           answersArr.push({
             blockId: block.id!,
-            scaleItemId: it.id!,
+            itemId: it.id!,
             selectedOptionId: optByValue[chosen]!,
             targetSkillId: it.skillId ?? null,
           });

@@ -65,7 +65,7 @@ export interface EvaluationForm {
 
 export interface EvaluationAnswer {
 	blockId: number;
-	scaleItemId?: number | null;
+	itemId?: number | null;
 	selectedOptionId?: number | null;
 	textAnswer?: string | null;
 	targetSkillId?: number | null;
