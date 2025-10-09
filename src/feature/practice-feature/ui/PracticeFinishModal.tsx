@@ -91,7 +91,7 @@ function PracticeInfoCardSimple({
               <div className="text-base-gray">Название кейса</div>
               <div className="text-black font-medium">{data.case.title}</div>
             </div>
-            <Button className="w-full bg-base-main" size="2s"
+            <Button className="bg-base-main" size="2s"
               onClick={() => useCaseInfoStore.getState().open(data)}
             >
               Изучить
@@ -157,14 +157,14 @@ export const PracticeFinishModal = () => {
         <Button 
           className="w-full h-12" 
           onClick={handleConnect}
-          variant="bordered"
         >
-          Подключиться к встрече
+          Подключиться
         </Button>
         <Button 
-          className="w-full h-12" 
+          className="w-full h-12 bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500" 
           onClick={handleFinish}
           disabled={finishMutation.isPending}
+          text="white"
         >
           {finishMutation.isPending ? "Завершение..." : "Завершить практику"}
         </Button>

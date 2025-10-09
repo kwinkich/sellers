@@ -37,7 +37,7 @@ export const PracticeUploadRecordingModal = () => {
         throw new Error("Не удалось получить URL для загрузки");
       }
 
-      const { url, publicUrl } = presignResult.data;
+      const { url, publicUrl, key } = presignResult.data;
 
       const uploadResponse = await fetch(url, {
         method: "PUT",
@@ -51,7 +51,10 @@ export const PracticeUploadRecordingModal = () => {
         throw new Error("Не удалось загрузить файл на сервер");
       }
 
-      await PracticesAPI.finalizeRecording(practiceId);
+      await PracticesAPI.finalizeRecording(practiceId, {
+        key,
+        contentType: file.type,
+      });
 
       setUploadedUrl(publicUrl);
       toast.success("Запись встречи успешно загружена");

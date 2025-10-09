@@ -52,8 +52,13 @@ export const PracticesAPI = {
 	getPracticeById: (id: number) =>
 		API.get(`practices/${id}`).json<GApiResponse<PracticeCard>>(),
 
-	getCurrentPractice: () =>
-		SILENT_API.get("practices/current").json<GApiResponse<PracticeCard>>(),
+    getCurrentPractice: () =>
+        SILENT_API.get("practices/current").json<GApiResponse<PracticeCard>>(),
+
+    getCurrentPracticeState: () =>
+        SILENT_API.get("practices/current/state").json<
+            GApiResponse<{ practice: PracticeCard | null; state: "OPEN_IN_PROGRESS_MODAL" | "OPEN_EVAL_MODAL" | "OPEN_VIDEO_MODAL" | null; isModalOpen: boolean }>
+        >(),
 
 	joinPractice: (id: number, data: JoinPracticeRequest) =>
 		API.post(`practices/${id}/join`, { json: data }).json<
@@ -75,8 +80,8 @@ export const PracticesAPI = {
       GApiResponse<RecordingPresignResponse>
     >(),
 
-  finalizeRecording: (id: number) =>
-    API.post(`practices/${id}/recording/finalize`).json<
+  finalizeRecording: (id: number, body: { key: string; contentType?: string }) =>
+    API.post(`practices/${id}/recording/finalize`, { json: body }).json<
       GApiResponse<Practice>
     >(),
 
@@ -124,6 +129,12 @@ export const practicesQueryOptions = {
 			queryKey: ["practices", "current"],
 			queryFn: () => PracticesAPI.getCurrentPractice(),
 		}),
+
+    currentState: () =>
+        queryOptions({
+            queryKey: ["practices", "current", "state"],
+            queryFn: () => PracticesAPI.getCurrentPracticeState(),
+        }),
 };
 
 export const practicesMutationOptions = {

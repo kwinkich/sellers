@@ -55,6 +55,7 @@ export interface PracticeCard {
 	zoomLink: string | null;
 	case: CaseInfo | null;
 	resultsAvailable: boolean;
+  	recordingObjectId?: number | null;
 	recordingUrl: string | null;
 }
 

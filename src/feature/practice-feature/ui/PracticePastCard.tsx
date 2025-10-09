@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import type { PracticeType } from "@/shared/types/practice.types";
 import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
+import { useNavigate } from "react-router-dom";
 import { getUserRoleFromToken } from "@/shared";
 
 interface Props {
@@ -23,6 +24,7 @@ const roleLabel: Record<PracticeParticipantRole, string> = {
 export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
   const userRole = getUserRoleFromToken();
+  const navigate = useNavigate();
 
   const formatStart = (iso: string) => {
     if (!iso) return { date: "", time: "" };
@@ -39,9 +41,11 @@ export const PracticePastCard = ({ data }: Props) => {
     if (data.case) openCaseInfo(data);
   };
 
-  const onWatch = () => {
-    if (data.recordingUrl) window.open(data.recordingUrl, "_blank", "noopener,noreferrer");
-  };
+  const hasRecording = Boolean(data.recordingObjectId) || Boolean(data.recordingUrl);
+  // const onWatch = () => {
+  //   // legacy open direct recording if maintained elsewhere
+  //   if (data.recordingUrl) window.open(data.recordingUrl, "_blank", "noopener,noreferrer");
+  // };
 
   const onDownloadReport = async () => {
     try {
@@ -151,9 +155,9 @@ export const PracticePastCard = ({ data }: Props) => {
         <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
           <div className="flex flex-col">
             <span className="text-base-gray">Запись встречи</span>
-            <span className="text-white font-medium">{data.resultsAvailable && data.recordingUrl ? "Доступна" : "Недоступна"}</span>
+            <span className="text-white font-medium">{hasRecording ? "Доступна" : "Недоступна"}</span>
           </div>
-          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onWatch} disabled={!data.resultsAvailable || !data.recordingUrl}>Смотреть</Button>
+          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={() => navigate(`/practice/replay/${data.id}`)} disabled={!hasRecording}>Смотреть</Button>
         </div>
 
         {/* PDF report - conditionally rendered */}
@@ -161,9 +165,9 @@ export const PracticePastCard = ({ data }: Props) => {
           <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
             <div className="flex flex-col">
               <span className="text-base-gray">PDF отчёт</span>
-              <span className="text-white font-medium">{data.resultsAvailable ? "Доступен" : "Недоступен"}</span>
+              <span className="text-white font-medium">{shouldShowPdfReport ? "Доступен" : "Недоступен"}</span>
             </div>
-            <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!data.resultsAvailable}>Скачать</Button>
+            <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!shouldShowPdfReport}>Скачать</Button>
           </div>
         )}
       </div>
@@ -173,10 +177,9 @@ export const PracticePastCard = ({ data }: Props) => {
         size="xs"
         rounded="3xl"
         className="flex items-center justify-center max-h-[40px]"
-        onClick={onWatch}
-        disabled={!data.resultsAvailable || !data.recordingUrl}
+        onClick={() => navigate(`/evaluation/report/${data.id}`)}
       >
-        Смотреть <ArrowIcon size={30} cn="inline-block" />
+        Отчёт <ArrowIcon size={30} cn="inline-block" />
       </Button>
     </div>
   );

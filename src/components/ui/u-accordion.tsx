@@ -28,6 +28,7 @@ interface UniversalAccordionProps {
 export const UniversalAccordion = ({
 	items,
 	type = "single",
+	defaultValue,
 	className,
 	itemClassName,
 	triggerClassName,
@@ -37,6 +38,7 @@ export const UniversalAccordion = ({
 	return (
 		<Accordion
 			type={type}
+			defaultValue={defaultValue as any}
 			collapsible={type === "single" ? collapsible : undefined}
 			className={cn(
 				"w-full space-y-2 bg-base-bg px-3 py-3 rounded-2xl",
