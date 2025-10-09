@@ -8,9 +8,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
 import { useFinishedPracticeStore } from "@/feature/practice-feature/model/finishedPractice.store";
+import { useFinishPracticeStore } from "@/feature/practice-feature/model/finishPractice.store";
 import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
 import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
+import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { getUserRoleFromToken } from "@/shared";
 
 export const AppInitLayout = () => {
@@ -19,6 +21,7 @@ export const AppInitLayout = () => {
   const showActive = useActivePracticeStore((s) => s.show);
   const hideActive = useActivePracticeStore((s) => s.hide);
   const showFinished = useFinishedPracticeStore((s) => s.show);
+  const showFinish = useFinishPracticeStore((s) => s.show);
   const currentRole = getUserRoleFromToken();
 
   useEffect(() => {
@@ -30,14 +33,19 @@ export const AppInitLayout = () => {
         const practice = res?.data;
 
         if (practice?.myRole) {
-          showActive(practice);
+          // Show finish modal only to moderators
+          if (practice.myRole === "MODERATOR") {
+            showFinish(practice.id);
+          } else {
+            showActive(practice);
+          }
         }
       } catch {
       }
     };
 
     checkCurrentPractice();
-  }, [currentRole, showActive]);
+  }, [currentRole, showActive, showFinish]);
 
   useEffect(() => {
     if (currentRole === "CLIENT") return;
@@ -49,7 +57,12 @@ export const AppInitLayout = () => {
           const practice = res?.data;
 
           if (practice?.myRole) {
-            showActive(practice);
+            // Show finish modal only to moderators
+            if (practice.myRole === "MODERATOR") {
+              showFinish(e.practiceId);
+            } else {
+              showActive(practice);
+            }
           }
         } catch {
         }
@@ -66,7 +79,7 @@ export const AppInitLayout = () => {
     });
 
     return () => off();
-  }, [currentRole, qc, showActive, hideActive, showFinished]);
+  }, [currentRole, qc, showActive, hideActive, showFinished, showFinish]);
 
 	if (isLoading) {
 		return (
@@ -112,6 +125,7 @@ export const AppInitLayout = () => {
       <PracticeActiveModal />
       <PracticeFinishedModal />
       <PracticeUploadRecordingModal />
+      <PracticeFinishModal />
     </>
   );
 };
