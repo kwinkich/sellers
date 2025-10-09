@@ -1,5 +1,6 @@
 import { API, type GResponse } from "@/shared";
 import { getTelegramInitData } from "@/shared/lib/telegram";
+import { pTimeout } from "@/shared/lib/pTimeout";
 import type { AuthResponse } from "../types/auth.types";
 
 export const AuthAPI = {
@@ -12,11 +13,19 @@ export const AuthAPI = {
       );
     }
 
-    return API.post("auth/telegram", {
-      json: { initData },
-    }).json<GResponse<AuthResponse>>();
+    return pTimeout(
+      API.post("auth/telegram", {
+        json: { initData },
+      }).json<GResponse<AuthResponse>>(),
+      8000,
+      "auth timeout"
+    );
   },
 
   refreshTelegram: () =>
-    API.post("auth/refresh").json<GResponse<AuthResponse>>(),
+    pTimeout(
+      API.post("auth/refresh").json<GResponse<AuthResponse>>(),
+      8000,
+      "refresh timeout"
+    ),
 };

@@ -1,4 +1,13 @@
-import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon } from "@/shared";
+import {
+  Badge,
+  TimerIcon,
+  ClientIcon,
+  ArrowIcon,
+  PracticeWithCaseIcon,
+  MiniGameIcon,
+  PracticeNoCaseIcon,
+  useUserRole,
+} from "@/shared";
 import { PracticesAPI } from "@/entities/practices";
 import { Button } from "@/components/ui/button";
 import type { PracticeCard as PracticeCardType } from "@/entities/practices";
@@ -8,7 +17,6 @@ import type { PracticeType } from "@/shared/types/practice.types";
 import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
 import { useNavigate } from "react-router-dom";
-import { getUserRoleFromToken } from "@/shared";
 
 interface Props {
   data: PracticeCardType;
@@ -23,7 +31,7 @@ const roleLabel: Record<PracticeParticipantRole, string> = {
 
 export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
-  const userRole = getUserRoleFromToken();
+  const { role: userRole } = useUserRole();
   const navigate = useNavigate();
 
   const formatStart = (iso: string) => {
@@ -40,7 +48,8 @@ export const PracticePastCard = ({ data }: Props) => {
     if (data.case) openCaseInfo(data);
   };
 
-  const hasRecording = Boolean(data.recordingObjectId) || Boolean(data.recordingUrl);
+  const hasRecording =
+    Boolean(data.recordingObjectId) || Boolean(data.recordingUrl);
   // const onWatch = () => {
   //   // legacy open direct recording if maintained elsewhere
   //   if (data.recordingUrl) window.open(data.recordingUrl, "_blank", "noopener,noreferrer");
@@ -66,13 +75,15 @@ export const PracticePastCard = ({ data }: Props) => {
         window.URL.revokeObjectURL(url);
       }, 100);
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
     }
   };
 
   // Determine if PDF report should be shown
   // Hide for MOP users who were not moderators in this practice
-  const shouldShowPdfReport = !(userRole === "MOP" && data.myRole !== "MODERATOR");
+  const shouldShowPdfReport = !(
+    userRole === "MOP" && data.myRole !== "MODERATOR"
+  );
 
   return (
     <div className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3">
@@ -83,13 +94,17 @@ export const PracticePastCard = ({ data }: Props) => {
             WITH_CASE: <PracticeWithCaseIcon size={64} cn="text-base-main" />,
             WITHOUT_CASE: <PracticeNoCaseIcon size={64} cn="text-base-main" />,
           };
-          return iconByType[(data.practiceType as PracticeType)] ?? (
-            <PracticeWithCaseIcon size={64} cn="text-base-main" />
+          return (
+            iconByType[data.practiceType as PracticeType] ?? (
+              <PracticeWithCaseIcon size={64} cn="text-base-main" />
+            )
           );
         })()}
         <div className="flex flex-col gap-2">
           <div className="flex p-2 rounded-lg bg-second-bg items-center justify-center w-fit">
-            <span className="text-base-gray text-xs">{getPracticeTypeLabel(data.practiceType as PracticeType)}</span>
+            <span className="text-base-gray text-xs">
+              {getPracticeTypeLabel(data.practiceType as PracticeType)}
+            </span>
           </div>
           <p className="text-white text-lg font-semibold">{data.title}</p>
         </div>
@@ -113,18 +128,16 @@ export const PracticePastCard = ({ data }: Props) => {
         <div className="flex flex-col gap-2 text-xs">
           <div className="flex items-center gap-2">
             <ClientIcon size={16} fill="#A2A2A2" />
-            <span className="text-base-gray font-bold text-white">{data.participantsCount}</span>
+            <span className="text-base-gray font-bold text-white">
+              {data.participantsCount}
+            </span>
             <span className="text-base-gray">Участвовали</span>
           </div>
           <div className="flex items-center gap-1 text-base-gray">
             <TimerIcon size={16} fill="#A2A2A2" />
-            <span className="text-white font-medium">
-              {date}
-            </span>
+            <span className="text-white font-medium">{date}</span>
             <span>в</span>
-            <span className="text-white font-medium">
-                {time}
-            </span>
+            <span className="text-white font-medium">{time}</span>
           </div>
         </div>
       </div>
@@ -133,7 +146,9 @@ export const PracticePastCard = ({ data }: Props) => {
       <div className="bg-second-bg rounded-2xl p-3 text-sm flex items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <span className="text-base-gray text-xs">Ваша роль</span>
-          <span className="text-white font-medium">{data.myRole ? roleLabel[data.myRole] : "\u00A0\u00A0—"}</span>
+          <span className="text-white font-medium">
+            {data.myRole ? roleLabel[data.myRole] : "\u00A0\u00A0—"}
+          </span>
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -141,22 +156,42 @@ export const PracticePastCard = ({ data }: Props) => {
 
         {/* Additional materials: Case */}
         {data.case && data.practiceType !== "WITHOUT_CASE" && (
-            <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
-              <div className="flex flex-col">
-                <span className="text-base-gray">Название кейса</span>
-                <span className="text-white font-medium truncate max-w-[220px]">{data.case.title}</span>
-              </div>
-              <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" variant="second" onClick={onLearnCase}>Изучить</Button>
+          <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
+            <div className="flex flex-col">
+              <span className="text-base-gray">Название кейса</span>
+              <span className="text-white font-medium truncate max-w-[220px]">
+                {data.case.title}
+              </span>
             </div>
+            <Button
+              className="bg-transparent text-md text-base-main"
+              size="xs"
+              rounded="3xl"
+              variant="second"
+              onClick={onLearnCase}
+            >
+              Изучить
+            </Button>
+          </div>
         )}
 
         {/* Meeting recording */}
         <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
           <div className="flex flex-col">
             <span className="text-base-gray">Запись встречи</span>
-            <span className="text-white font-medium">{hasRecording ? "Доступна" : "Недоступна"}</span>
+            <span className="text-white font-medium">
+              {hasRecording ? "Доступна" : "Недоступна"}
+            </span>
           </div>
-          <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={() => navigate(`/practice/replay/${data.id}`)} disabled={!hasRecording}>Смотреть</Button>
+          <Button
+            className="bg-transparent text-md text-base-main"
+            size="xs"
+            rounded="3xl"
+            onClick={() => navigate(`/practice/replay/${data.id}`)}
+            disabled={!hasRecording}
+          >
+            Смотреть
+          </Button>
         </div>
 
         {/* PDF report - conditionally rendered */}
@@ -164,9 +199,19 @@ export const PracticePastCard = ({ data }: Props) => {
           <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
             <div className="flex flex-col">
               <span className="text-base-gray">PDF отчёт</span>
-              <span className="text-white font-medium">{shouldShowPdfReport ? "Доступен" : "Недоступен"}</span>
+              <span className="text-white font-medium">
+                {shouldShowPdfReport ? "Доступен" : "Недоступен"}
+              </span>
             </div>
-            <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" onClick={onDownloadReport} disabled={!shouldShowPdfReport}>Скачать</Button>
+            <Button
+              className="bg-transparent text-md text-base-main"
+              size="xs"
+              rounded="3xl"
+              onClick={onDownloadReport}
+              disabled={!shouldShowPdfReport}
+            >
+              Скачать
+            </Button>
           </div>
         )}
       </div>

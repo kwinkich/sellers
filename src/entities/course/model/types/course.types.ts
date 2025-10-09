@@ -12,7 +12,6 @@ export interface CreateCourseRequest {
 	title: string;
 	shortDesc: string;
 	accessScope: "ALL" | "SELECTED";
-	isIntro: boolean;
 	clientIds: number[];
 }
 
@@ -20,7 +19,6 @@ export interface UpdateCourseRequest {
 	title?: string;
 	shortDesc?: string;
 	accessScope?: "ALL" | "SELECTED";
-	isIntro?: boolean;
 	clientIds?: number[];
 }
 
