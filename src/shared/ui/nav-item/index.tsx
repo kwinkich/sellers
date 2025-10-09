@@ -19,7 +19,7 @@ export const NavItem: FC<{ data: Props }> = ({ data }) => {
 		>
 			{data.icon}
 			<p
-				className={`text-[10px] font-medium leading-[100%] ${
+				className={`text-[12px] font-medium leading-[100%] ${
 					!data.isActive ? "text-base-gray" : "text-base-main"
 				}`}
 			>

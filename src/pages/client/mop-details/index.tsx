@@ -243,7 +243,7 @@ export const MopDetailsPage = () => {
 
 			<div className="flex flex-col gap-2 px-2">
 				<HeadText
-					className="mb-2 px-2"
+					className="mb-4 px-2"
 					head="Навыки и компетенции"
 					label="Навыки и компетенции МОП"
 					headSize="lg"

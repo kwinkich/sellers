@@ -9,7 +9,7 @@ export const MopNavBar = () => {
 			<NavItem
 				data={{
 					route: "/mop/home",
-					icon: <MainIcon />,
+					icon: <MainIcon size={18} />,
 					label: "Профиль",
 					isActive: location.pathname.includes("mop/home"),
 				}}
@@ -18,7 +18,7 @@ export const MopNavBar = () => {
 			<NavItem
 				data={{
 					route: "/mop/education/courses",
-					icon: <AcademyIcon />,
+					icon: <AcademyIcon size={18} />,
 					label: "Академия",
 					isActive: location.pathname.includes("mop/education/courses"),
 				}}
@@ -27,7 +27,7 @@ export const MopNavBar = () => {
 			<NavItem
 				data={{
 					route: "/practice",
-					icon: <PracticeIcon />,
+					icon: <PracticeIcon size={18} />,
 					label: "Практика",
 					isActive: location.pathname.includes("practice"),
 				}}

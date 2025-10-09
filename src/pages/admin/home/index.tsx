@@ -115,7 +115,7 @@ export const AdminHomePage = () => {
 
 				<div className="px-2">
 					<HeadText
-						className="gap-0.5 mb-8 pl-2 pt-2"
+						className="gap-0.5 mb-4 pl-2 pt-2"
 						head="Дополнительные действия"
 						label="Управление системой и контентом"
 						variant="black-gray"
@@ -124,12 +124,12 @@ export const AdminHomePage = () => {
 
 					<div className="grid grid-cols-2 grid-rows-2 gap-2">
 						<Link to="/admin/course/create">
-						<Box variant={"dark"} rounded="3xl">
-							<CreateCourseIcon size={36} fill="#06935F" />
-							<p className="font-medium text-white leading-[100%]">
-								Создать курс
-							</p>
-						</Box>
+							<Box variant={"dark"} rounded="3xl">
+								<CreateCourseIcon size={36} fill="#06935F" />
+								<p className="font-medium text-white leading-[100%]">
+									Создать курс
+								</p>
+							</Box>
 						</Link>
 
 						<Link to="/admin/cases/create">
