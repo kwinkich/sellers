@@ -155,7 +155,7 @@ export const MopDetailsPage = () => {
 									<p className="text-lg font-medium text-white">{p.title}</p>
 								</div>
 								<div className="flex flex-col items-center justify-between">
-									<span className="text-[10px] text-base-gray">{p.myRole}</span>
+									<span className="text-[10px] text-base-gray">{p.role}</span>
 									<span className="text-[10px] text-base-main">{p.status}</span>
 								</div>
 							</Box>
