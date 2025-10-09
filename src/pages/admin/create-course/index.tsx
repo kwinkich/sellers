@@ -16,7 +16,6 @@ export const CreateCoursePage = () => {
 		title: "",
 		shortDesc: "",
 		accessScope: "ALL" as "ALL" | "SELECTED",
-		isIntro: true,
 		clientIds: [] as number[],
 	});
 
@@ -42,10 +41,16 @@ export const CreateCoursePage = () => {
 			.map((id) => parseInt(id.trim()))
 			.filter((id) => !isNaN(id) && id > 0);
 
-		const submitData = {
-			...formData,
-			clientIds: formData.accessScope === "SELECTED" ? parsedClientIds : [],
+		// Создаем объект для отправки
+		const submitData: any = {
+			title: formData.title,
+			shortDesc: formData.shortDesc,
+			accessScope: formData.accessScope,
 		};
+
+		if (formData.accessScope === "SELECTED") {
+			submitData.clientIds = parsedClientIds;
+		}
 
 		createCourseMutation.mutate(submitData);
 	};
@@ -72,7 +77,8 @@ export const CreateCoursePage = () => {
 		formData.title.trim() &&
 		formData.shortDesc.trim() &&
 		formData.shortDesc.length <= 120 &&
-		(formData.accessScope === "ALL" || clientIdsInput.trim() !== "");
+		(formData.accessScope === "ALL" ||
+			(formData.accessScope === "SELECTED" && clientIdsInput.trim() !== ""));
 
 	const remainingChars = 120 - formData.shortDesc.length;
 	const isNearLimit = remainingChars <= 20;
@@ -149,6 +155,7 @@ export const CreateCoursePage = () => {
 								onChange={(e) => handleClientIdsChange(e.target.value)}
 								placeholder="ID клиентов через запятую (например: 1, 2, 3)"
 								className="w-full"
+								required
 							/>
 							<p className="text-xs text-gray-500 mt-1">
 								Введите числовые ID клиентов, разделенные запятыми

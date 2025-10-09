@@ -26,7 +26,7 @@ export const CreateModulePage = () => {
 	const [formData, setFormData] = useState({
 		title: "",
 		shortDesc: "",
-		testVariant: "NONE" as "NONE" | "QUIZ" | "PRACTICE",
+		testVariant: "NONE" as "NONE" | "QUIZ",
 		unlockRule: "ALL" as "ALL" | "PREVIOUS" | "TEST",
 	});
 
@@ -70,7 +70,6 @@ export const CreateModulePage = () => {
 	const testVariantOptions = [
 		{ value: "NONE", label: "Нет тестирования" },
 		{ value: "QUIZ", label: "Тест (квиз)" },
-		{ value: "PRACTICE", label: "Практика" },
 	];
 
 	const unlockRuleOptions = [
