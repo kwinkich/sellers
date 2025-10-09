@@ -29,6 +29,7 @@ const buttonVariants = cva(
 				default: "rounded-2xl",
 				"3xl": "rounded-3xl",
 				bottom: "rounded-t-2xl rounded-b-[40px]",
+				full: "rounded-full",
 			},
 			text: {
 				white: "text-white",
