@@ -23,10 +23,12 @@ export const AdminNavBar = () => {
 
 			<NavItem
 				data={{
-					route: "/admin/content",
+					route: "/admin/courses/list",
 					icon: <ContentIcon />,
 					label: "Контент",
-					isActive: location.pathname.includes("admin/content"),
+					isActive: ["course", "cases", "lessons", "modukes", "scenarios"].some(
+						(path) => location.pathname.includes(path)
+					),
 				}}
 			/>
 
@@ -35,7 +37,7 @@ export const AdminNavBar = () => {
 					route: "/admin/clients",
 					icon: <ClientIcon />,
 					label: "Клиенты",
-					isActive: location.pathname.includes("admin/clients"),
+					isActive: location.pathname.includes("clients"),
 				}}
 			/>
 

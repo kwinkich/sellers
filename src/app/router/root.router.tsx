@@ -25,6 +25,7 @@ import {
 	QuizPage,
 } from "@/pages";
 import { CourseEditPage } from "@/pages/admin/course-edit";
+import { AdminCourseListPage } from "@/pages/admin/course-list";
 import { ModuleEditPage } from "@/pages/admin/module-edit";
 import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeCreatePage from "@/pages/practice/create";
@@ -107,6 +108,10 @@ export const route = createBrowserRouter([
 						element: <AdminClientsListPage />,
 					},
 					{
+						path: "courses/list",
+						element: <AdminCourseListPage />,
+					},
+					{
 						path: "clients/create",
 						element: <AdminAddClientPage />,
 					},
@@ -164,25 +169,25 @@ export const route = createBrowserRouter([
 					},
 				],
 			},
-      		{
+			{
 				path: "practice",
 				element: <PracticeLayout />,
 				children: [
 					{
 						index: true,
-						element: <PracticeHomePage />
+						element: <PracticeHomePage />,
 					},
 					{
 						path: "create",
-						element: <PracticeCreatePage />
+						element: <PracticeCreatePage />,
 					},
 					{
 						path: "preview",
-						element: <PracticePreviewPage />
+						element: <PracticePreviewPage />,
 					},
 					{
 						path: "replay/:practiceId",
-						element: <PracticeReplayPage />
+						element: <PracticeReplayPage />,
 					},
 				],
 			},
@@ -196,7 +201,7 @@ export const route = createBrowserRouter([
 					{
 						path: "report/:practiceId",
 						element: <EvaluationReportPage />,
-					}
+					},
 				],
 			},
 		],
