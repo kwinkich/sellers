@@ -126,7 +126,7 @@ export const MopProfilePage = () => {
 				</p>
 			),
 			content: (
-				<div className="flex flex-col gap-3 pt-2">
+				<div className="flex flex-col gap-3 pt-2 pb-16">
 					{practices.length === 0 ? (
 						<p className="text-xs text-base-gray">Практик пока нет</p>
 					) : (

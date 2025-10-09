@@ -3,10 +3,13 @@ import { RoleNavBar } from "@/widget";
 
 export const PracticeLayout = () => {
   const location = useLocation();
-  const isCreatePage = location.pathname.startsWith("/practice/create");
+
+  const shouldApplySecondBg = 
+		location.pathname.includes("/practice/create") || 
+		location.pathname.includes("/practice/preview");
   return (
 		<div className="bg-white relative">
-			<div className={`w-full h-full ${isCreatePage ? "pb-0" : "pb-16"} bg-second-bg`}>
+			<div className={`w-full h-full ${shouldApplySecondBg ? "pb-0" : "pb-16"} bg-second-bg`}>
 				<Outlet />
 			</div>
 			{<RoleNavBar />}

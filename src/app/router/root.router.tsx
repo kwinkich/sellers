@@ -25,6 +25,7 @@ import {
   QuizPage,
 } from "@/pages";
 import { CourseEditPage } from "@/pages/admin/course-edit";
+import { AdminCourseListPage } from "@/pages/admin/course-list";
 import { ModuleEditPage } from "@/pages/admin/module-edit";
 import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeCreatePage from "@/pages/practice/create";
@@ -105,6 +106,10 @@ export const route = createBrowserRouter([
           {
             path: "clients",
             element: <AdminClientsListPage />,
+          },
+          {
+            path: "courses/list",
+            element: <AdminCourseListPage />,
           },
           {
             path: "clients/create",

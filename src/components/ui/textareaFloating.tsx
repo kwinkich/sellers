@@ -40,6 +40,7 @@ const TextareaFloatingLabel: FC<TextareaFloatingLabelProps> = ({
 			<textarea
 				id={id}
 				data-slot="textarea"
+					wrap="soft"
 				placeholder={placeholder}
 				value={value}
 				onChange={onChange}
@@ -47,7 +48,7 @@ const TextareaFloatingLabel: FC<TextareaFloatingLabelProps> = ({
 				maxLength={maxLength}
 				className={cn(
 					// shadcn/ui base textarea styles
-					"flex field-sizing-content min-h-[100px] w-full rounded-md border px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 text-sm",
+						"flex min-w-0 min-h-[100px] w-full max-w-full resize-y overflow-x-hidden whitespace-pre-wrap break-words rounded-md border px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 text-sm",
 					getVariantClasses(),
 					className
 				)}

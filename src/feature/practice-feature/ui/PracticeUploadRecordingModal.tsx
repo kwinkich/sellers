@@ -1,6 +1,7 @@
 import { BlockingModal } from "@/components/ui/blocking-modal";
 import { useUploadRecordingStore } from "../model/uploadRecording.store";
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trophy, Loader2, Upload } from "lucide-react";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ export const PracticeUploadRecordingModal = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   if (!practiceId) return null;
 
@@ -58,10 +60,9 @@ export const PracticeUploadRecordingModal = () => {
 
       setUploadedUrl(publicUrl);
       toast.success("Запись встречи успешно загружена");
-      setTimeout(() => {
-        hide();
-        setUploadedUrl(null);
-      }, 1000);
+      hide();
+      setUploadedUrl(null);
+      navigate("/practice");
     } catch (error) {
       console.error("Error uploading recording:", error);
       toast.error(error instanceof Error ? error.message : "Ошибка загрузки");

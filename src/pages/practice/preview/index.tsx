@@ -99,8 +99,7 @@ const PracticePreviewPage = () => {
         <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
           <CalendarIcon size={24} cn="ml-1.5 text-base-main" />
           <div className="flex flex-col gap-1">
-            <span className="text-base-gray">Дата/время</span>{" "}
-            {startAt ? startAt.replace("T", " ").slice(0, 16) : "—"}
+            <span className="text-base-gray">Дата/время</span> {startAt ? new Date(startAt).toLocaleString("ru-RU") : "—"}
           </div>
         </div>
       </div>

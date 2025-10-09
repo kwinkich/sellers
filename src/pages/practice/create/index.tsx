@@ -121,9 +121,18 @@ const PracticeCreatePage = () => {
       const y = date.getFullYear();
       const m = date.getMonth() + 1; // month is 0-based
       const d = date.getDate();
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const localIsoWithoutTz = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
-      store.setStartAt(localIsoWithoutTz);
+      // Construct a LOCAL datetime and convert to UTC ISO for backend storage
+      const localDateTime = new Date(
+        Number(y),
+        Number(m) - 1,
+        Number(d),
+        Number(hh),
+        Number(mm),
+        0,
+        0
+      );
+      const utcIso = localDateTime.toISOString();
+      store.setStartAt(utcIso);
     },
     [store]
   );
@@ -226,7 +235,7 @@ const PracticeCreatePage = () => {
         <div className="flex flex-row gap-2">
           <DatePickerFloatingLabel
             className="w-3/5"
-            placeholder="Дата проведения (МСК)"
+            placeholder="Дата проведения (локальная)"
             value={selectedDate}
             onValueChange={(d) => {
               setSelectedDate(d);
@@ -241,7 +250,7 @@ const PracticeCreatePage = () => {
               updateStartAt(selectedDate, e.target.value);
             }}
             className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
-            placeholder="Время (МСК)"
+            placeholder="Время (локальное)"
             step={300}
             min="00:00"
             max="23:59"
