@@ -10,7 +10,13 @@ interface FinishedPracticeState {
 export const useFinishedPracticeStore = create<FinishedPracticeState>((set) => ({
   isOpen: false,
   practiceId: undefined,
-  show: (practiceId) => set({ isOpen: true, practiceId }),
-  hide: () => set({ isOpen: false, practiceId: undefined }),
+  show: (practiceId) => {
+    console.log("FinishedPracticeStore.show called with practiceId:", practiceId);
+    set({ isOpen: true, practiceId });
+  },
+  hide: () => {
+    console.log("FinishedPracticeStore.hide called");
+    set({ isOpen: false, practiceId: undefined });
+  },
 }));
 

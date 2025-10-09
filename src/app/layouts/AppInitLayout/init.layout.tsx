@@ -71,24 +71,35 @@ export const AppInitLayout = () => {
     sseBound.current = true;
 
     const off = sseClient.on(async (e) => {
+      console.log("SSE Event received:", e);
+      
       if (e.event === "practice-started") {
+        console.log("Processing practice-started event for practiceId:", e.practiceId);
         try {
           const res = await PracticesAPI.getPracticeById(e.practiceId);
           const practice = res?.data;
+          console.log("Fetched practice data:", practice);
 
           if (practice?.myRole) {
+            console.log("User role in practice:", practice.myRole);
             // Show finish modal only to moderators
             if (practice.myRole === "MODERATOR") {
+              console.log("Showing finish modal for moderator");
               showFinish(e.practiceId);
             } else {
+              console.log("Showing active modal for non-moderator");
               showActive(practice);
             }
+          } else {
+            console.log("No myRole found in practice data");
           }
-        } catch {
+        } catch (error) {
+          console.error("Error fetching practice data:", error);
         }
       }
 
       if (e.event === "practice-finished") {
+        console.log("Processing practice-finished event for practiceId:", e.practiceId);
         hideActive();
         showFinished(e.practiceId);
         qc.invalidateQueries({ queryKey: ["practices", "cards"] });

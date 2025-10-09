@@ -11,8 +11,14 @@ interface ActivePracticeState {
 export const useActivePracticeStore = create<ActivePracticeState>((set) => ({
   blocking: false,
   practice: undefined,
-  show: (practice) => set({ blocking: true, practice }),
-  hide: () => set({ blocking: false, practice: undefined }),
+  show: (practice) => {
+    console.log("ActivePracticeStore.show called with practice:", practice);
+    set({ blocking: true, practice });
+  },
+  hide: () => {
+    console.log("ActivePracticeStore.hide called");
+    set({ blocking: false, practice: undefined });
+  },
 }));
 
 
