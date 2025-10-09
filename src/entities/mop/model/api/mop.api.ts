@@ -15,26 +15,15 @@ export const MopProfilesAPI = {
       GApiResponse<MopProfile>
     >(),
 
-  // getMopProfiles: (p?: GetMopProfilesParams) => {
-  // 	const params = createSearchParams(p);
-  // 	return API.get("mop-profiles", { searchParams: params }).json<
-  // 		GApiResponse<MopProfile, true>
-  // 	>();
-  // },
-
-  // getMopProfileById: (id: number) =>
-  // 	API.get(`mop-profiles/${id}`).json<GApiResponse<MopProfile>>(),
-
-  // updateMopProfile: (
-  // 	id: number,
-  // 	profileData: Partial<CreateMopProfileRequest>
-  // ) =>
-  // 	API.patch(`mop-profiles/${id}`, { json: profileData }).json<
-  // 		GApiResponse<MopProfile>
-  // 	>(),
-
-  deleteMopProfile: (id: number) =>
-    API.delete(`mop-profiles/${id}`).json<GApiResponse<void>>(),
+  blockMopProfile: (id: number) =>
+    API.patch(`mop-profiles/${id}/block`).json<
+      GApiResponse<{
+        id: number;
+        telegramUsername: string;
+        role: string;
+        hasAccess: boolean;
+      }>
+    >(),
 
   getMopProfileInfo: () =>
     API.get("mop-profiles/profile/info").json<GApiResponse<MopProfileInfo>>(),
@@ -72,18 +61,6 @@ export const MopProfilesAPI = {
 };
 
 export const mopProfilesQueryOptions = {
-  // list: (params?: GetMopProfilesParams) =>
-  // 	queryOptions({
-  // 		queryKey: ["mop-profiles", "list", params],
-  // 		queryFn: () => MopProfilesAPI.getMopProfiles(params),
-  // 	}),
-
-  // byId: (id: number) =>
-  // 	queryOptions({
-  // 		queryKey: ["mop-profiles", "detail", id],
-  // 		queryFn: () => MopProfilesAPI.getMopProfileById(id),
-  // 	}),
-
   profileInfo: () =>
     queryOptions({
       queryKey: ["mop-profiles", "profile", "info"],
@@ -126,17 +103,7 @@ export const mopProfilesMutationOptions = {
     mutationFn: MopProfilesAPI.createMopProfile,
   }),
 
-  // update: () => ({
-  // 	mutationFn: ({
-  // 		id,
-  // 		data,
-  // 	}: {
-  // 		id: number;
-  // 		data: Partial<CreateMopProfileRequest>;
-  // 	}) => MopProfilesAPI.updateMopProfile(id, data),
-  // }),
-
-  delete: () => ({
-    mutationFn: MopProfilesAPI.deleteMopProfile,
+  block: () => ({
+    mutationFn: MopProfilesAPI.blockMopProfile,
   }),
 };
