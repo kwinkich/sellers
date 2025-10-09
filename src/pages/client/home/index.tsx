@@ -43,12 +43,12 @@ export const ClientHomePage = () => {
 	};
 
 	const profileData = getProfileData();
-	const availableLicenses = (profileData.totalLicenses ?? 0) - (profileData.activeLicenses ?? 0);
-	const expirationDate = format(
-		new Date(profileData.closestExpirationDate ?? ""),
-		"dd.MM.yyyy",
-		{ locale: ru }
-	);
+	const availableLicenses = profileData.notActiveLicenses ?? 0;
+	
+	const hasExpirationDate = profileData.closestExpirationDate && !profileData.isLoading;
+	const expirationDate = hasExpirationDate 
+		? format(new Date(profileData.closestExpirationDate!), "dd.MM.yyyy", { locale: ru })
+		: null;
 
 	return (
 		<>
@@ -72,7 +72,7 @@ export const ClientHomePage = () => {
 									<span className="h-6 w-16 bg-white/20 rounded animate-pulse block" />
 								) : (
 									<>
-										{profileData.activeLicenses}{" "}
+										{availableLicenses}{" "}
 										<span className="font-normal text-base text-base-gray">
 											из
 										</span>{" "}
@@ -84,19 +84,17 @@ export const ClientHomePage = () => {
 						<p className="text-base-gray">Доступно лицензий</p>
 					</Box>
 
-					<Box>
-						<div className="w-full flex items-center gap-4">
-							<TimerIcon size={32} />
-							<p className="text-xl font-medium leading-[100%]">
-								{profileData.isLoading ? (
-									<span className="h-6 w-24 bg-white/20 rounded animate-pulse block" />
-								) : (
-									expirationDate
-								)}
-							</p>
-						</div>
-						<p className="w-max text-base-gray">Окончание лицензии</p>
-					</Box>
+					{hasExpirationDate && (
+						<Box>
+							<div className="w-full flex items-center gap-4">
+								<TimerIcon size={32} />
+								<p className="text-xl font-medium leading-[100%]">
+									{expirationDate}
+								</p>
+							</div>
+							<p className="w-max text-base-gray">Окончание лицензии</p>
+						</Box>
+					)}
 				</div>
 
 				<Button

@@ -1,6 +1,7 @@
 import { AuthAPI, type AuthResponse } from "@/entities";
 import { updateAuthToken } from "@/shared/lib/getAuthToken";
-import { useMutation } from "@tanstack/react-query";
+import { getTelegramInitData } from "@/shared/lib/telegram";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,19 +18,20 @@ export const useAppInit = (): UseAppInitReturn => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<AuthResponse["user"] | null>(null);
 
-  const authMutation = useMutation({
-    mutationFn: AuthAPI.authTelegram,
-    onSuccess: (data) => {
-      if (data.data) {
-        // persist access token on initial auth
-        updateAuthToken(data.data.accessToken);
-        setUserData(data.data.user);
-        redirectByRole(data.data.user.role as UserAppRole);
-      }
-    },
-    onError: (error) => {
-      console.error("Auth error:", error);
-    },
+  const hasToken = !!localStorage.getItem("accessToken");
+
+  const refreshQ = useQuery({
+    queryKey: ["auth", "refresh"],
+    queryFn: AuthAPI.refreshTelegram,
+    enabled: hasToken,
+    retry: false,
+  });
+
+  const authQ = useQuery({
+    queryKey: ["auth", "telegram"],
+    queryFn: AuthAPI.authTelegram,
+    enabled: !hasToken && !!getTelegramInitData(),
+    retry: false,
   });
 
   const redirectByRole = (role: UserAppRole) => {
@@ -47,37 +49,19 @@ export const useAppInit = (): UseAppInitReturn => {
     }
   };
 
-  const refreshMutation = useMutation({
-    mutationFn: AuthAPI.refreshTelegram,
-    onSuccess: (data) => {
-      if (data.data) {
-        // persist refreshed access token
-        updateAuthToken(data.data.accessToken);
-        setUserData(data.data.user);
-        redirectByRole(data.data.user.role as UserAppRole);
-      } else {
-        authMutation.mutate();
-      }
-    },
-    onError: () => {
-      authMutation.mutate();
-    },
-  });
-
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-
-    if (token) {
-      refreshMutation.mutate();
-    } else {
-      authMutation.mutate();
+    const ok = refreshQ.data ?? authQ.data;
+    if (ok?.data) {
+      updateAuthToken(ok.data.accessToken);
+      setUserData(ok.data.user);
+      redirectByRole(ok.data.user.role as UserAppRole);
     }
-  }, []);
+  }, [refreshQ.data, authQ.data]);
 
   return {
-    isLoading: authMutation.isPending || refreshMutation.isPending,
-    isError: authMutation.isError || refreshMutation.isError,
-    error: authMutation.error || refreshMutation.error,
+    isLoading: refreshQ.isLoading || authQ.isLoading,
+    isError: refreshQ.isError || authQ.isError,
+    error: refreshQ.error || authQ.error,
     userData,
   };
 };
