@@ -1,9 +1,12 @@
+import { UniversalAccordion } from "@/components/ui/u-accordion";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { MopPractice, MopSkill } from "@/entities";
 import { mopProfilesQueryOptions } from "@/entities";
-import { ArrowIcon, Box, HeadText } from "@/shared";
+import { ArrowIcon, Box, HeadText, StudioIcon, PracticeWithCaseIcon, PracticeNoCaseIcon, MiniGameIcon } from "@/shared";
 import { MopNavBar } from "@/widget";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 export const MopProfilePage = () => {
 	const {
@@ -34,13 +37,151 @@ export const MopProfilePage = () => {
 	const getSkillClasses = (status: MopSkill["status"]) => {
 		switch (status) {
 			case "FULL":
-				return "bg-base-opacity10-main text-base-main";
+				return "bg-base-opacity10-main font-medium text-base-main";
 			case "HALF":
-				return "bg-[#FFC1071A] text-[#FFC107]";
+				return "bg-[#FFFFFF14] text-gray-400";
 			default:
-				return "bg-[#FFFFFF14] text-[#E3E3E3]";
+				return "bg-[#f44f471a] bg-opacity-10 font-medium text-[#F44F47]" ;
 		}
 	};
+
+	const getPracticeIcon = (practiceType: string): ReactNode => {
+		switch (practiceType) {
+			case "WITH_CASE":
+				return <PracticeWithCaseIcon size={45} fill="#06935F" />;
+			case "WITHOUT_CASE":
+				return <PracticeNoCaseIcon size={45} fill="#06935F" />;
+			case "MINI":
+				return <MiniGameIcon size={45} fill="#06935F" />;
+			default:
+				return <StudioIcon size={45} fill="#06935F" />;
+		}
+	};
+
+	const getRoleLabel = (role: MopPractice["role"]) => {
+		switch (role) {
+			case "SELLER":
+				return "Продавец";
+			case "BUYER":
+				return "Покупатель";
+			case "OBSERVER":
+				return "Наблюдатель";
+			default:
+				return role;
+		}
+	};
+
+	const getPracticeTypeLabel = (practiceType: string) => {
+		switch (practiceType) {
+			case "WITH_CASE":
+				return "Игра с кейсом";
+			case "WITHOUT_CASE":
+				return "Игра без кейса";
+			case "MINI":
+				return "Мини-игра";
+			default:
+				return practiceType;
+		}
+	};
+
+	const skillsAccordionItems = [
+		{
+			id: "skills",
+			title: (
+				<p className="text-lg py-0 font-medium leading-[100%] text-white">
+					Список навыков
+				</p>
+			),
+			content: (
+				<div className="flex flex-col gap-2 pt-2">
+					{skills.length === 0 ? (
+						<p className="text-xs text-white">Навыков пока нет</p>
+					) : (
+						skills.map((s) => (
+							<div key={s.id} className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]">
+								<p className="text-white">{s.name}</p>
+								<div
+									className={`px-[18px] py-[4.5px] rounded-[8px] ${getSkillClasses(
+										s.status
+									)}`}
+								>
+									<p className="text-xs leading-[100%]">
+										{s.status === "FULL" ? "Да" : s.status === "HALF" ? "50/50" : "Нет"}
+									</p>
+								</div>
+							</div>
+						))
+					)}
+				</div>
+			),
+		},
+	];
+
+	const practicesAccordionItems = [
+		{
+			id: "practices",
+			title: (
+				<p className="text-lg py-0 font-medium leading-[100%] text-white">
+					История практик
+				</p>
+			),
+			content: (
+				<div className="flex flex-col gap-3 pt-2">
+					{practices.length === 0 ? (
+						<p className="text-xs text-base-gray">Практик пока нет</p>
+					) : (
+						practices.map((practice: MopPractice) => (
+							<Card key={practice.id} className="bg-second-bg border-none">
+								<CardHeader className="py-2 px-2">
+									<div className="flex items-start gap-3">
+										{getPracticeIcon(practice.practiceType)}
+										<div className="flex flex-col flex-1 gap-0">
+											<div className="flex items-center justify-between">
+												<span className="text-xs w-max rounded-md bg-base-bg px-3 py-1 text-base-gray">
+													{getPracticeTypeLabel(practice.practiceType)}
+												</span>
+												<span className={`text-sm ${
+													practice.repChanged
+														? practice.repDelta > 0
+															? "text-green-500"
+															: "text-red-400"
+														: "text-base-gray"
+												}`}>
+													{practice.repChanged
+														? practice.repDelta > 0
+															? `+${practice.repDelta} rep`
+															: `${practice.repDelta} rep`
+														: "rep"
+													}
+												</span>
+											</div>
+											<p className="text-lg font-medium text-white">{practice.title}</p>
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent className="p-2 pt-0">
+									<div className="bg-[#0A0C0E] rounded-md p-2">
+										<div className="flex items-center justify-between">
+											<div className="flex flex-col gap-1">
+												<span className="text-xs text-base-gray">Ваша роль:</span>
+												<span className="text-md font-medium text-white">{getRoleLabel(practice.role)}</span>
+											</div>
+											<div className="flex flex-col gap-1">
+												<span className="text-xs text-base-gray">Дата игры:</span>
+												<span className="text-md font-medium text-white">
+													{new Date(practice.startAt).toLocaleDateString("ru-RU")}
+												</span>
+											</div>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						))
+					)}
+				</div>
+			),
+		},
+	];
 
 	if (isLoading) {
 		return (
@@ -106,7 +247,7 @@ export const MopProfilePage = () => {
 
 				<Box className="px-3 py-2">
 					<div className=" w-full flex items-center gap-3">
-						<div className="bg-[#FFFFFF0D] p-2 rounded-[8px]">
+						<div className="bg-[#FFFFFF0D] px-3 py-1 rounded-[8px]">
 							<p className="font-medium text-white">{learningProgress}%</p>
 						</div>
 
@@ -142,60 +283,33 @@ export const MopProfilePage = () => {
 				</Box>
 			</div>
 
-			<HeadText
-				className="gap-0.5 pl-2 pt-2"
-				head="Навыки и компетенции"
-				label="Следите за прогрессом и улучшайте результат"
-			/>
+			<div className="flex flex-col gap-2 px-2">
+				<HeadText
+					className="mb-2 px-2"
+					head="Навыки и компетенции"
+					label="Следите за прогрессом и улучшайте результат"
+					headSize="lg"
+					labelSize="xs"
+				/>
+				<UniversalAccordion
+					items={skillsAccordionItems}
+					className="pb-2 pt-3"
+					type="single"
+					defaultValue="skills"
+					itemClassName="border-none bg-transparent"
+					triggerClassName="px-0 pb-2 pt-0  hover:no-underline"
+					contentClassName="px-0"
+				/>
 
-			<div className="px-2 pt-2 flex flex-wrap gap-2">
-				{skills.length === 0 ? (
-					<p className="text-xs text-base-gray font-medium">Навыков пока нет</p>
-				) : (
-					skills.map((s) => (
-						<span
-							key={s.id}
-							className={`text-xs font-medium px-3 py-1 rounded-full ${getSkillClasses(
-								s.status
-							)}`}
-						>
-							{s.name}
-						</span>
-					))
-				)}
-			</div>
-
-			<HeadText
-				className="gap-0.5 pl-2 pt-3"
-				head="Практики"
-				label="Ваши запланированные и прошедшие практики"
-			/>
-
-			<div className="px-2 flex flex-col gap-2">
-				{practices.length === 0 ? (
-					<p className="text-xs text-base-gray font-medium pt-2">Практик пока нет</p>
-				) : (
-					practices.map((p: MopPractice) => (
-						<Box key={p.id} className="px-3 py-2" rounded="xl">
-							<div className="flex items-center justify-between">
-								<p className="text-sm font-medium text-white">{p.title}</p>
-								<span className="text-[10px] text-base-gray uppercase">
-									{p.practiceType}
-								</span>
-							</div>
-							<div className="flex items-center justify-between mt-1.5">
-								<p className="text-xs text-base-gray">
-									{new Date(p.startAt).toLocaleString("ru-RU")} —{" "}
-									{new Date(p.endAt).toLocaleString("ru-RU")}
-								</p>
-								<div className="flex items-center gap-2">
-									<span className="text-[10px] text-base-gray">{p.myRole}</span>
-									<span className="text-[10px] text-base-main">{p.status}</span>
-								</div>
-							</div>
-						</Box>
-					))
-				)}
+				<UniversalAccordion
+					items={practicesAccordionItems}
+					className="pb-2 pt-3"
+					type="single"
+					defaultValue="practices"
+					itemClassName="border-none bg-transparent"
+					triggerClassName="px-0 pb-2 pt-0 hover:no-underline"
+					contentClassName="px-0"
+				/>
 			</div>
 
 			<MopNavBar />

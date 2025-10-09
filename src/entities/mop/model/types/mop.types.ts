@@ -77,7 +77,9 @@ export interface MopPractice {
 	startAt: string;
 	endAt: string;
 	status: string;
-	myRole: "SELLER" | "BUYER" | "OBSERVER";
+	role: "SELLER" | "BUYER" | "OBSERVER";
+	repChanged: boolean;
+	repDelta: number;
 }
 
 export interface GetMopProfileParams {
