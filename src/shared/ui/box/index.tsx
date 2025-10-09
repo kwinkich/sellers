@@ -55,12 +55,13 @@ export const Box: FC<
 		VariantProps<typeof boxVariants> & {
 			asChild?: boolean;
 		}
-> = ({ children, variant, direction, align, justify, rounded, className }) => {
+> = ({ children, variant, direction, align, justify, rounded, className, ...props }) => {
 	return (
 		<div
 			className={cn(
 				boxVariants({ variant, direction, align, justify, rounded, className })
 			)}
+			{...props}
 		>
 			{children}
 		</div>

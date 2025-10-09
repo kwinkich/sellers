@@ -33,8 +33,7 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
 		...mopProfilesMutationOptions.create(),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["clients", "profile"] });
-			queryClient.invalidateQueries({ queryKey: ["mop-profiles"] });
-			queryClient.invalidateQueries({ queryKey: ["clients", "mops"] });
+			queryClient.invalidateQueries({ queryKey: ["clients", "mop-profiles"] });
 
 			toast.success("МОП успешно добавлен", {
 				description: `Участник ${mopName} подключен к системе`,

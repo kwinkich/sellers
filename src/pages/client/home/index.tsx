@@ -124,7 +124,12 @@ export const ClientHomePage = () => {
 				/>
 
 				<div className="grid grid-cols-2 grid-rows-2 gap-2">
-					<Box variant={"dark"} rounded="3xl">
+					<Box 
+						variant={"dark"} 
+						rounded="3xl"
+						onClick={() => navigate("/practice")}
+						className="cursor-pointer hover:opacity-80 transition-opacity"
+					>
 						<PracticeListIcon size={36} fill="#06935F" />
 						<p className="font-medium text-white leading-[100%]">
 							Список практик
@@ -135,6 +140,7 @@ export const ClientHomePage = () => {
 						variant={"dark"}
 						rounded="3xl"
 						onClick={() => navigate("/client/list-mop")}
+						className="cursor-pointer hover:opacity-80 transition-opacity"
 					>
 						<ListIcon size={36} fill="#06935F" />
 						<p className="font-medium text-white leading-[100%]">Список МОП</p>
