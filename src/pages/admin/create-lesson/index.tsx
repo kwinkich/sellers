@@ -328,18 +328,19 @@ export const CreateLessonPage = () => {
 								return (
 									<Button
 										key={item.type}
+										variant="ghost"
 										className="w-full justify-start h-16 px-4"
 										onClick={() => handleContentTypeSelect(item.type)}
 									>
 										<div className="flex items-center gap-3 w-full">
-											<div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-												<IconComponent className="h-5 w-5 text-blue-600" />
+											<div className="w-10 h-10 bg-base-opacity10-main rounded-lg flex items-center justify-center">
+												<IconComponent className="h-5 w-5 text-base-main" />
 											</div>
 											<div className="flex flex-col items-start">
-												<span className="text-sm font-medium">
+												<span className="text-sm font-medium text-black">
 													{item.label}
 												</span>
-												<span className="text-xs text-gray-500">
+												<span className="text-xs text-base-gray">
 													{item.description}
 												</span>
 											</div>

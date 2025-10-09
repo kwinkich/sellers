@@ -26,7 +26,7 @@ export const AdminsControlPage = () => {
 	});
 
 	return (
-		<div className="bg-second-bg min-h-full ">
+		<div className="bg-second-bg min-h-full pb-24">
 			<div className="bg-base-bg flex text-white flex-col  w-full rounded-b-3xl p-2 mb-6">
 				<HeadText
 					className="gap-0.5 mb-8 pl-2 pt-2"
