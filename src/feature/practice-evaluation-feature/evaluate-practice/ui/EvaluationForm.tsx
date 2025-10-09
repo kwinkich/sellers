@@ -309,7 +309,7 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
               const payload: EvaluationBatchSubmission = { submissions };
               console.log(payload);
               await submitEvaluation({ practiceId, data: payload });
-              toast.success("Оценка отправлена");
+              toast.success("Оценка отправленаf");
 
               const userRole = practiceData?.data?.myRole;
               if (userRole === "MODERATOR") {

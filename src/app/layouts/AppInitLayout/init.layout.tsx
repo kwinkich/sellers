@@ -12,6 +12,7 @@ import { useFinishPracticeStore } from "@/feature/practice-feature/model/finishP
 import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
 import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
+import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
 import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { getUserRoleFromToken } from "@/shared";
 import { TelegramBackSync } from "@/app/telegram";
@@ -23,6 +24,7 @@ export const AppInitLayout = () => {
   const hideActive = useActivePracticeStore((s) => s.hide);
   const showFinished = useFinishedPracticeStore((s) => s.show);
   const showFinish = useFinishPracticeStore((s) => s.show);
+  const showUpload = useUploadRecordingStore((s) => s.show);
   const currentRole = getUserRoleFromToken();
 
   useEffect(() => {
@@ -30,15 +32,31 @@ export const AppInitLayout = () => {
 
     const checkCurrentPractice = async () => {
       try {
-        const res = await PracticesAPI.getCurrentPractice();
-        const practice = res?.data;
+        const res = await PracticesAPI.getCurrentPracticeState();
+        const stateData = res?.data;
 
-        if (practice?.myRole) {
-          // Show finish modal only to moderators
-          if (practice.myRole === "MODERATOR") {
+        if (!stateData || !stateData.isModalOpen) return; // nothing to do
+
+        const practice = stateData.practice;
+        const modalState = stateData.state;
+
+        if (modalState === "OPEN_IN_PROGRESS_MODAL") {
+          if (practice?.myRole === "MODERATOR") {
             showFinish(practice.id);
-          } else {
+          } else if (practice) {
             showActive(practice);
+          }
+        }
+
+        if (modalState === "OPEN_EVAL_MODAL") {
+          if (practice?.id) {
+            showFinished(practice.id);
+          }
+        }
+
+        if (modalState === "OPEN_VIDEO_MODAL") {
+          if (practice?.id) {
+            showUpload(practice.id);
           }
         }
       } catch {
@@ -46,7 +64,7 @@ export const AppInitLayout = () => {
     };
 
     checkCurrentPractice();
-  }, [currentRole, showActive, showFinish]);
+  }, [currentRole, showActive, showFinish, showFinished, showUpload]);
 
   useEffect(() => {
     if (currentRole === "CLIENT") return;

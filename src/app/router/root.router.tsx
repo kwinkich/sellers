@@ -30,6 +30,7 @@ import { MopCourseDetailPage } from "@/pages/mop/mop-profile/course-detail";
 import PracticeCreatePage from "@/pages/practice/create";
 import PracticeHomePage from "@/pages/practice/home";
 import PracticePreviewPage from "@/pages/practice/preview";
+import PracticeReplayPage from "@/pages/practice/replay";
 import { createBrowserRouter } from "react-router-dom";
 import { AppInitLayout, MopLayout, PracticeLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
@@ -178,6 +179,10 @@ export const route = createBrowserRouter([
 					{
 						path: "preview",
 						element: <PracticePreviewPage />
+					},
+					{
+						path: "replay/:practiceId",
+						element: <PracticeReplayPage />
 					},
 				],
 			},
