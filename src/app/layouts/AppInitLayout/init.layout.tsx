@@ -1,8 +1,7 @@
-// components/AppInitLayout.tsx
 import { useAppInit } from "@/shared";
 import { Loader2 } from "lucide-react";
 import { Outlet } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { sseClient } from "@/shared/lib/sse";
 import { useQueryClient } from "@tanstack/react-query";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
@@ -24,6 +23,7 @@ export const AppInitLayout = () => {
   const showFinished = useFinishedPracticeStore((s) => s.show);
   const showFinish = useFinishPracticeStore((s) => s.show);
   const currentRole = getUserRoleFromToken();
+  const sseBound = useRef(false);
 
   useEffect(() => {
     if (currentRole === "CLIENT") return;
@@ -49,7 +49,8 @@ export const AppInitLayout = () => {
   }, [currentRole, showActive, showFinish]);
 
   useEffect(() => {
-    if (currentRole === "CLIENT") return;
+    if (currentRole === "CLIENT" || sseBound.current) return;
+    sseBound.current = true;
 
     const off = sseClient.on(async (e) => {
       if (e.event === "practice-started") {
@@ -79,7 +80,10 @@ export const AppInitLayout = () => {
       }
     });
 
-    return () => off();
+    return () => { 
+      off(); 
+      sseBound.current = false; 
+    };
   }, [currentRole, qc, showActive, hideActive, showFinished, showFinish]);
 
 	if (isLoading) {
