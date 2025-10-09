@@ -14,6 +14,7 @@ import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFin
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
 import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { getUserRoleFromToken } from "@/shared";
+import { TelegramBackSync } from "@/app/telegram";
 
 export const AppInitLayout = () => {
 	const { isLoading, isError, error } = useAppInit();
@@ -121,6 +122,7 @@ export const AppInitLayout = () => {
 
   return (
     <>
+      <TelegramBackSync closeOnRootBack={false} />
       <Outlet />
       <PracticeActiveModal />
       <PracticeFinishedModal />

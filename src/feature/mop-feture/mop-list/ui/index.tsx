@@ -1,8 +1,8 @@
 import {
-	MopCard,
+	ClientMopCard,
+	clientsQueryOptions,
 	mopProfilesMutationOptions,
-	mopProfilesQueryOptions,
-	type MopProfile,
+	type ClientMop,
 } from "@/entities";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,12 +10,12 @@ import { toast } from "sonner";
 export const ClientMopsList = () => {
 	const queryClient = useQueryClient();
 
-	const { data, isLoading, error } = useQuery(mopProfilesQueryOptions.list());
+	const { data, isLoading, error } = useQuery(clientsQueryOptions.mopProfiles());
 
 	const { mutate: deleteMop, isPending: isDeleting } = useMutation({
 		...mopProfilesMutationOptions.delete(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["mop-profiles"] });
+			queryClient.invalidateQueries({ queryKey: ["clients", "mop-profiles"] });
 			queryClient.invalidateQueries({ queryKey: ["clients", "profile"] });
 			toast.success("МОП успешно удален");
 		},
@@ -25,9 +25,9 @@ export const ClientMopsList = () => {
 		},
 	});
 
-	const handleDeleteMop = (mop: MopProfile) => {
+	const handleDeleteMop = (mop: ClientMop) => {
 		if (
-			confirm(`Вы уверены, что хотите удалить МОП ${mop.mopUser?.displayName}?`)
+			confirm(`Вы уверены, что хотите удалить МОП ${mop.displayName}?`)
 		) {
 			deleteMop(mop.id);
 		}
@@ -58,7 +58,7 @@ export const ClientMopsList = () => {
 	return (
 		<div className="flex flex-col gap-2">
 			{mops.map((mop) => (
-				<MopCard
+				<ClientMopCard
 					key={mop.id}
 					data={mop}
 					onDelete={handleDeleteMop}

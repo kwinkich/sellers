@@ -4,7 +4,7 @@ import { RoleNavBar } from "@/widget";
 export const PracticeLayout = () => {
   return (
 		<div className="bg-white relative">
-			<div className="w-full h-full pb-16">
+			<div className="w-full h-full pb-16 bg-second-bg">
 				<Outlet />
 			</div>
 			<RoleNavBar />

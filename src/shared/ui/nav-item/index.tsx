@@ -15,7 +15,7 @@ export const NavItem: FC<{ data: Props }> = ({ data }) => {
 			className={`flex flex-col items-center gap-1 w-[72px] ${
 				data.isActive ? "text-base-main  " : "text-base-gray"
 			}`}
-			onClick={() => navigate(data.route)}
+			onClick={() => navigate(data.route, { replace: data.isActive })}
 		>
 			{data.icon}
 			<p
