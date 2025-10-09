@@ -20,6 +20,7 @@ interface BlockConfirmationDialogProps {
   cancelText?: string;
   isLoading?: boolean;
   userName?: string;
+  showCancelButton?: boolean;
 }
 
 export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
@@ -32,6 +33,7 @@ export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
   cancelText = "Отмена",
   isLoading = false,
   userName,
+  showCancelButton = true,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -57,10 +59,10 @@ export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
           overflow-hidden
         "
       >
-        {/* панель: flex-колонка, футер липкий внизу; авто-высота до 90svh */}
-        <div className="flex flex-col h-auto max-h-[90svh]">
+        {/* панель: flex-колонка, футер липкий внизу; авто-высота по контенту */}
+        <div className="flex flex-col min-h-0 max-h-[90svh]">
           {/* header + body: скроллится при переполнении */}
-          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-3">
+          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-3 min-h-0">
             <DialogHeader className="space-y-3 text-center">
               <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                 {title}
@@ -107,15 +109,17 @@ export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
               backdrop-blur supports-[backdrop-filter]:bg-white/60
             "
           >
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              disabled={isLoading}
-              size="sm"
-              className="w-full sm:w-auto order-2 sm:order-1"
-            >
-              {cancelText}
-            </Button>
+            {showCancelButton && (
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                disabled={isLoading}
+                size="sm"
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
+                {cancelText}
+              </Button>
+            )}
 
             {/* менее яркая кнопка подтверждения */}
             <Button
@@ -123,12 +127,12 @@ export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
               onClick={onConfirm}
               disabled={isLoading}
               size="sm"
-              className="
+              className={`
                 w-full sm:w-auto order-1 sm:order-2
-                bg-rose-500 hover:bg-rose-600
+                bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500
                 text-white
-                border border-rose-500 hover:border-rose-600
-              "
+                ${!showCancelButton ? "sm:w-full" : ""}
+              `}
             >
               {isLoading ? "Загрузка..." : confirmText}
             </Button>
