@@ -1,48 +1,25 @@
-import type { AuthUserRole } from "../types/user.types";
-
 export const getAuthToken = (): string => {
-	const token = localStorage.getItem("accessToken");
-	if (token) return token;
+  const token = localStorage.getItem("accessToken");
+  if (token) return token;
 
-	return "";
+  return "";
 };
 
 export const updateAuthToken = (t: string): boolean => {
-	if (!t) return false;
+  if (!t) return false;
 
+  localStorage.setItem("accessToken", t);
 
-	localStorage.setItem("accessToken", t);
-
-	return true;
+  return true;
 };
 
-// Function to decode JWT token and extract user ID
-export const getUserIdFromToken = (): number | null => {
-	try {
-		const token = getAuthToken();
-		if (!token) return null;
-
-		// Decode JWT token (simple base64 decode for payload)
-		const payload = JSON.parse(atob(token.split('.')[1]));
-		return payload.userId || payload.id || payload.sub || null;
-	} catch (error) {
-		console.error("Error decoding JWT token:", error);
-		return null;
-	}
-};
-
-export const getUserRoleFromToken = (): AuthUserRole | null => {
-	try {
-		const token = getAuthToken();
-		if (!token) return null;
-
-		// Decode JWT token (simple base64 decode for payload)
-		const payload = JSON.parse(atob(token.split('.')[1]));
-		const r = payload.role as string | undefined;
-		if (r === "ADMIN" || r === "CLIENT" || r === "MOP") return r;
-		return null;
-	} catch (error) {
-		console.error("Error decoding JWT token:", error);
-		return null;
-	}
+// Функция для полной очистки всех токенов
+export const clearAllTokens = (): void => {
+  console.log("🧹 clearAllTokens: Очищаем все токены");
+  localStorage.removeItem("accessToken");
+  // Очищаем все cookies, связанные с авторизацией
+  document.cookie =
+    "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie =
+    "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 };

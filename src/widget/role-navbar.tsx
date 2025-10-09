@@ -1,8 +1,8 @@
-import { getUserRoleFromToken } from "@/shared";
+import { useUserRole } from "@/shared";
 import { AdminNavBar, ClientNavBar, MopNavBar } from "@/widget";
 
 export const RoleNavBar = () => {
-  const role = getUserRoleFromToken();
+  const { role } = useUserRole();
 
   switch (role) {
     case "ADMIN":

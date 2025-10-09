@@ -1,4 +1,13 @@
-import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, getUserRoleFromToken } from "@/shared";
+import {
+  Badge,
+  TimerIcon,
+  ClientIcon,
+  ArrowIcon,
+  PracticeWithCaseIcon,
+  MiniGameIcon,
+  PracticeNoCaseIcon,
+  useUserRole,
+} from "@/shared";
 import { Button } from "@/components/ui/button";
 import type { PracticeCard as PracticeCardType } from "@/entities/practices";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
@@ -12,7 +21,7 @@ interface Props {
 
 export const PracticeCard = ({ data }: Props) => {
   const openJoin = usePracticeJoinStore((s) => s.open);
-  const role = getUserRoleFromToken();
+  const { role } = useUserRole();
   const formatStart = (iso: string) => {
     if (!iso) return { date: "", time: "" };
     const [datePart, timeAndZone] = iso.split("T");
@@ -33,13 +42,17 @@ export const PracticeCard = ({ data }: Props) => {
             WITH_CASE: <PracticeWithCaseIcon size={64} cn="text-base-main" />,
             WITHOUT_CASE: <PracticeNoCaseIcon size={64} cn="text-base-main" />,
           };
-          return iconByType[(data.practiceType as PracticeType)] ?? (
-            <PracticeWithCaseIcon size={64} cn="text-base-main" />
+          return (
+            iconByType[data.practiceType as PracticeType] ?? (
+              <PracticeWithCaseIcon size={64} cn="text-base-main" />
+            )
           );
         })()}
         <div className="flex flex-col gap-2">
           <div className="flex p-2 rounded-lg bg-second-bg items-center justify-center w-fit">
-            <span className="text-base-gray text-xs">{getPracticeTypeLabel(data.practiceType as PracticeType)}</span>
+            <span className="text-base-gray text-xs">
+              {getPracticeTypeLabel(data.practiceType as PracticeType)}
+            </span>
           </div>
           <p className="text-white text-lg font-semibold">{data.title}</p>
         </div>
@@ -63,18 +76,16 @@ export const PracticeCard = ({ data }: Props) => {
         <div className="flex flex-col gap-2 text-xs">
           <div className="flex items-center gap-2">
             <ClientIcon size={16} fill="#A2A2A2" />
-            <span className="text-base-gray font-bold text-white">{data.participantsCount}</span>
+            <span className="text-base-gray font-bold text-white">
+              {data.participantsCount}
+            </span>
             <span className="text-base-gray">Участвуют</span>
           </div>
           <div className="flex items-center gap-1 text-base-gray">
             <TimerIcon size={16} fill="#A2A2A2" />
-            <span className="text-white font-medium">
-              {date}
-            </span>
+            <span className="text-white font-medium">{date}</span>
             <span>в</span>
-            <span className="text-white font-medium">
-                {time}
-            </span>
+            <span className="text-white font-medium">{time}</span>
           </div>
         </div>
         {role !== "CLIENT" && (
@@ -91,5 +102,3 @@ export const PracticeCard = ({ data }: Props) => {
     </div>
   );
 };
-
-

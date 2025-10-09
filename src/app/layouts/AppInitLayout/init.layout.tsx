@@ -1,5 +1,4 @@
 import { useAppInit } from "@/shared";
-import { Loader2 } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { sseClient } from "@/shared/lib/sse";
@@ -13,22 +12,22 @@ import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFin
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
 import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
 import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
-import { getUserRoleFromToken } from "@/shared";
 import { TelegramBackSync } from "@/app/telegram";
+import { UserRoleProvider } from "@/shared/contexts/UserRoleContext";
 
 export const AppInitLayout = () => {
-	const { isLoading, isError, error } = useAppInit();
+  const { isLoading, isError, userData } = useAppInit();
   const qc = useQueryClient();
   const showActive = useActivePracticeStore((s) => s.show);
   const hideActive = useActivePracticeStore((s) => s.hide);
   const showFinished = useFinishedPracticeStore((s) => s.show);
   const showFinish = useFinishPracticeStore((s) => s.show);
   const showUpload = useUploadRecordingStore((s) => s.show);
-  const currentRole = getUserRoleFromToken();
+  const currentRole = userData?.role;
   const sseBound = useRef(false);
 
   useEffect(() => {
-    if (currentRole === "CLIENT") return;
+    if (currentRole === "CLIENT" || isLoading || !userData) return;
 
     const checkCurrentPractice = async () => {
       try {
@@ -59,15 +58,23 @@ export const AppInitLayout = () => {
             showUpload(practice.id);
           }
         }
-      } catch {
-      }
+      } catch {}
     };
 
     checkCurrentPractice();
-  }, [currentRole, showActive, showFinish, showFinished, showUpload]);
+  }, [
+    currentRole,
+    isLoading,
+    userData,
+    showActive,
+    showFinish,
+    showFinished,
+    showUpload,
+  ]);
 
   useEffect(() => {
-    if (currentRole === "CLIENT" || sseBound.current) return;
+    if (currentRole === "CLIENT" || sseBound.current || isLoading || !userData)
+      return;
     sseBound.current = true;
 
     const off = sseClient.on(async (e) => {
@@ -84,8 +91,7 @@ export const AppInitLayout = () => {
               showActive(practice);
             }
           }
-        } catch {
-        }
+        } catch {}
       }
 
       if (e.event === "practice-finished") {
@@ -94,58 +100,66 @@ export const AppInitLayout = () => {
         qc.invalidateQueries({ queryKey: ["practices", "cards"] });
         qc.invalidateQueries({ queryKey: ["practices", "mine"] });
         qc.invalidateQueries({ queryKey: ["practices", "past"] });
-        qc.invalidateQueries({ queryKey: ["practices", "detail", e.practiceId] });
+        qc.invalidateQueries({
+          queryKey: ["practices", "detail", e.practiceId],
+        });
       }
     });
 
-    return () => { 
-      off(); 
-      sseBound.current = false; 
+    return () => {
+      off();
+      sseBound.current = false;
     };
-  }, [currentRole, qc, showActive, hideActive, showFinished, showFinish]);
+  }, [
+    currentRole,
+    isLoading,
+    userData,
+    qc,
+    showActive,
+    hideActive,
+    showFinished,
+    showFinish,
+  ]);
 
-	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-					<h2 className="text-lg font-semibold text-gray-900 mb-2">
-						Инициализация приложения
-					</h2>
-					<p className="text-sm text-gray-500">Проверка авторизации...</p>
-				</div>
-			</div>
-		);
-	}
+  // Индикатор загрузки
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
 
-	if (isError) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="text-center max-w-md mx-4">
-					<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-						<span className="text-2xl">⚠️</span>
-					</div>
-					<h2 className="text-lg font-semibold text-gray-900 mb-2">
-						Ошибка инициализации
-					</h2>
-					<p className="text-sm text-gray-500 mb-4">
-						{error?.message || "Не удалось загрузить приложение"}
-					</p>
-					<button
-						onClick={() => window.location.reload()}
-						className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-					>
-						Попробовать снова
-					</button>
-				</div>
-			</div>
-		);
-	}
+  // Обработка ошибок авторизации
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Ошибка авторизации</h2>
+          <p className="text-gray-600 mb-4">Не удалось войти в систему</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Перезагрузить
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <TelegramBackSync closeOnRootBack={false} />
-      <Outlet />
+      <UserRoleProvider
+        role={currentRole as "CLIENT" | "ADMIN" | "MOP" | null}
+        userId={userData?.sub || null}
+      >
+        <Outlet />
+      </UserRoleProvider>
       <PracticeActiveModal />
       <PracticeFinishedModal />
       <PracticeUploadRecordingModal />
