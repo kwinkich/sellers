@@ -61,6 +61,16 @@ export const ClientsAPI = {
       GApiResponse<ClientMop[], false>
     >();
   },
+
+  blockMopProfile: (id: number) =>
+    API.patch(`mop-profiles/${id}/block`).json<
+      GApiResponse<{
+        id: number;
+        telegramUsername: string;
+        role: string;
+        hasAccess: boolean;
+      }>
+    >(),
 };
 
 export const clientsQueryOptions = {
@@ -120,6 +130,10 @@ export const clientsMutationOptions = {
   addLicenses: () => ({
     mutationFn: ({ id, data }: { id: number; data: AddLicensesRequest }) =>
       ClientsAPI.addClientLicenses(id, data),
+  }),
+
+  blockMopProfile: () => ({
+    mutationFn: ClientsAPI.blockMopProfile,
   }),
 };
 
