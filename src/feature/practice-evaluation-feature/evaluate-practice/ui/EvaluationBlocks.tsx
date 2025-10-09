@@ -13,7 +13,7 @@ interface EvaluationBlocksProps {
 export const EvaluationBlocks = ({ blocks, formRole, onAnswersChange }: EvaluationBlocksProps) => {
   return (
     <>
-      {blocks.map((block, index) => (
+      {blocks.map((block) => (
         <EvaluationBlockRenderer 
           key={`${formRole}-${block.position}`}
           block={block}
