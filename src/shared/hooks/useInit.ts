@@ -33,15 +33,17 @@ export const useAppInit = (): UseAppInitReturn => {
 	});
 
 	const redirectByRole = (role: UserAppRole) => {
-		const routes = {
-			CLIENT: "/client/home",
-			ADMIN: "/admin/home",
-			MOP: "/mop/home",
-		};
-
-		const route = routes[role];
-		if (route) {
-			navigate(route);
+		// Only redirect if on root path
+		if (window.location.pathname === '/') {
+			const routes = {
+				CLIENT: "/client/home",
+				ADMIN: "/admin/home", 
+				MOP: "/mop/home",
+			};
+			const route = routes[role];
+			if (route) {
+				navigate(route);
+			}
 		}
 	};
 

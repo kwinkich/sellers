@@ -48,7 +48,6 @@ export const route = createBrowserRouter([
 						path: "home",
 						element: <ClientHomePage />,
 					},
-
 					{
 						path: "list-mop",
 						element: <ClientListMopPage />,
@@ -94,7 +93,6 @@ export const route = createBrowserRouter([
 					},
 				],
 			},
-
 			{
 				path: "admin",
 				element: <AdminLayout />,
@@ -165,37 +163,37 @@ export const route = createBrowserRouter([
 					},
 				],
 			},
-      {
-        path: "practice",
-        element: <PracticeLayout />,
-        children: [
-          {
-            index: true,
-            element: <PracticeHomePage />
-          },
-          {
-            path: "create",
-            element: <PracticeCreatePage />
-          },
-          {
-            path: "preview",
-            element: <PracticePreviewPage />
-          },
-        ],
-      },
-      {
-        path: "evaluation",
-        children: [
-          {
-            path: "evaluate/:practiceId",
-            element: <EvaluationPage />,
-          },
-        ],
-      },
-      {
-        path: "report/:practiceId",
-        element: <EvaluationReportPage />,
-      }
+      		{
+				path: "practice",
+				element: <PracticeLayout />,
+				children: [
+					{
+						index: true,
+						element: <PracticeHomePage />
+					},
+					{
+						path: "create",
+						element: <PracticeCreatePage />
+					},
+					{
+						path: "preview",
+						element: <PracticePreviewPage />
+					},
+				],
+			},
+			{
+				path: "evaluation",
+				children: [
+					{
+						path: "evaluate/:practiceId",
+						element: <EvaluationPage />,
+					},
+					{
+						path: "report/:practiceId",
+						element: <EvaluationReportPage />,
+					}
+				],
+			},
 		],
 	},
 ]);

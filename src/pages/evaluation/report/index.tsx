@@ -1,123 +1,45 @@
 import { ReportForm } from "@/feature/practice-evaluation-feature/practice-report/ui/ReportForm";
+import { practiceEvaluationQueryOptions } from "@/entities/practice-evaluation";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+
 
 export const EvaluationReportPage = () => {
-  // MOCK: forms (as from backend) + submissions (answers)
-  const mockForms = [
-    {
-      id: 67,
-      role: "SELLER" as const,
-      evaluatedUserId: 16,
-      blocks: [
-        {
-          id: 72,
-          type: "TEXT" as const,
-          required: true,
-          position: 0,
-          title: "Форма для продавца",
-          scale: null,
-          items: [] as any[],
-        },
-        {
-          id: 73,
-          type: "SCALE_SKILL_SINGLE" as const,
-          required: true,
-          position: 1,
-          title: "",
-          scale: {
-            id: 7,
-            options: [
-              { id: 25, label: "НЕТ", value: -2, ord: 0, countsTowardsScore: true },
-              { id: 26, label: "50/50", value: -1, ord: 1, countsTowardsScore: true },
-              { id: 27, label: "ДА", value: 1, ord: 2, countsTowardsScore: true },
-              { id: 28, label: "?", value: 2, ord: 3, countsTowardsScore: false },
-            ],
-          },
-          items: [
-            { id: 84, title: "Проявляет интерес", position: 0, skillId: 6 },
-            { id: 85, title: "Уважает покупателя", position: 1, skillId: 6 },
-          ],
-        },
-        {
-          id: 74,
-          type: "QA" as const,
-          required: true,
-          position: 2,
-          title: "Как вам этот продавец",
-          scale: null,
-          items: [] as any[],
-        },
-      ],
-      title: "Форма продавца",
-      descr: "Сценарий для продавца",
-    },
-    {
-      id: 68,
-      role: "BUYER" as const,
-      evaluatedUserId: 18,
-      blocks: [
-        {
-          id: 75,
-          type: "SCALE_SKILL_MULTI" as const,
-          required: true,
-          position: 0,
-          title: "",
-          scale: {
-            id: 8,
-            options: [
-              { id: 29, label: "плохо", value: -1, ord: 0, countsTowardsScore: true },
-              { id: 30, label: "хорошо", value: 0, ord: 1, countsTowardsScore: true },
-              { id: 31, label: "отлично", value: 1, ord: 2, countsTowardsScore: true },
-            ],
-          },
-          items: [
-            { id: 86, title: "Выявление боли", position: 0, skillId: 11 },
-            { id: 87, title: "Понимание приоритетов", position: 1, skillId: 10 },
-            { id: 88, title: "Понимание ресурсов", position: 2, skillId: 9 },
-          ],
-        },
-        {
-          id: 76,
-          type: "QA" as const,
-          required: true,
-          position: 1,
-          title: "Ваши комментарии по поводу работы покупателя",
-          scale: null,
-          items: [] as any[],
-        },
-      ],
-      title: "Форма покупателя",
-      descr: "Сценарий для покупателя",
-    },
-  ];
+  
+  const {practiceId} = useParams<{practiceId: string}>();
+  const id = Number(practiceId);
+  
+  const {
+    data: formsRes,
+    isLoading,
+    error,
+  } = useQuery(practiceEvaluationQueryOptions.formsFinal(id));
 
-  const mockSubmissions = {
-    submissions: [
-      {
-        evaluatedUserId: 16,
-        answers: [
-          { blockId: 73, itemId: 84, selectedOptionId: 25, targetSkillId: 6 },
-          { blockId: 73, itemId: 85, selectedOptionId: 27, targetSkillId: 6 },
-          { blockId: 74, textAnswer: "Отличн" },
-        ],
-      },
-      {
-        evaluatedUserId: 18,
-        answers: [
-          { blockId: 75, itemId: 86, selectedOptionId: 31, targetSkillId: 11 },
-          { blockId: 75, itemId: 87, selectedOptionId: 30, targetSkillId: 10 },
-          { blockId: 75, itemId: 88, selectedOptionId: 31, targetSkillId: 9 },
-          { blockId: 76, textAnswer: "Пойдет" },
-        ],
-      },
-    ],
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
-  const formsWithAnswers = mockForms.map((f) => ({
-    ...f,
-    answers: mockSubmissions.submissions.find((s) => s.evaluatedUserId === f.evaluatedUserId)?.answers || [],
-  }));
+  if (error || !formsRes?.data) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-500">Ошибка загрузки отчета</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {error?.message || "Не удалось загрузить данные отчета"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  return <ReportForm formsData={formsWithAnswers as any} />;
+  const formsData = formsRes.data;
+
+  return <ReportForm formsData={formsData} />;
 };
 
 

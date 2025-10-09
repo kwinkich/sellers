@@ -99,3 +99,81 @@ export interface EvaluationBatchSubmitResult {
 export interface GetEvaluationFormParams {
 	evaluatedUserId: number;
 }
+
+// === Final Evaluation Forms Types (getEvalFormsFinalSchema) ===
+
+export interface FinalEvalBlockItem {
+	id: number;
+	title: string;
+	position: number;
+	skillId?: number | null;
+	result?: {
+		avgValue: number;
+		closestOptionId: number;
+		n: number;
+	} | null;
+}
+
+export interface FinalEvalScaleOption {
+	id: number;
+	label: string;
+	value: number;
+	ord: number;
+	countsTowardsScore: boolean;
+}
+
+export interface FinalEvalScale {
+	id: number;
+	options: FinalEvalScaleOption[];
+}
+
+// QA block with final answer
+export interface FinalQABlock {
+	id: number;
+	type: "QA";
+	title?: string | null;
+	required: boolean;
+	position: number;
+	qaAnswer?: string | null;
+}
+
+// SCALE_SKILL_SINGLE block with final results
+export interface FinalScaleSingleBlock {
+	id: number;
+	type: "SCALE_SKILL_SINGLE";
+	title?: string | null;
+	required: boolean;
+	position: number;
+	scale: FinalEvalScale;
+	items: FinalEvalBlockItem[];
+}
+
+// SCALE_SKILL_MULTI block with final results
+export interface FinalScaleMultiBlock {
+	id: number;
+	type: "SCALE_SKILL_MULTI";
+	title?: string | null;
+	required: boolean;
+	position: number;
+	scale: FinalEvalScale;
+	items: FinalEvalBlockItem[];
+}
+
+export type FinalEvaluationFormBlock = FinalQABlock | FinalScaleSingleBlock | FinalScaleMultiBlock;
+
+export interface FinalEvaluationForm {
+	id: number;
+	role: "SELLER" | "BUYER" | "MODERATOR";
+	evaluatedUserId: number;
+	title?: string | null;
+	descr?: string | null;
+	blocks: FinalEvaluationFormBlock[];
+	meta: {
+		preview: boolean;
+	};
+}
+
+export interface GetEvaluationFormsFinalResponse {
+	success: boolean;
+	data: FinalEvaluationForm[];
+}

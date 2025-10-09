@@ -285,7 +285,7 @@ export const AdminScenariosCreatePage = () => {
 				<CreateScenarioForm onFormDataChange={setFormData} />
 			</div>
 			<div className="flex-1 overflow-y-auto">
-				<div className="flex flex-col gap-6 px-2 pb-32 min-h-full">
+				<div className="flex flex-col gap-6 px-2 min-h-full">
 					<Tabs defaultValue="SELLER">
 						<TabsList variant="second" className="grid grid-cols-3 w-full">
 							<TabsTrigger variant="second" value="SELLER" >Продавец</TabsTrigger>

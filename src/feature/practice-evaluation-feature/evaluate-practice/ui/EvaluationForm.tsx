@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { EvaluationForm as ApiEvaluationForm } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { EvaluationHeader } from "./index";

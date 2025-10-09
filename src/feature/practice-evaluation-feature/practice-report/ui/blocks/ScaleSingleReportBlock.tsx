@@ -12,20 +12,12 @@ interface Option {
 export const ScaleSingleReportBlock = ({
   items,
   options,
-  answers,
+  results,
 }: {
   items: { id?: number; title?: string; position: number; skillId: number | null }[];
   options: Option[];
-  answers: Array<{ itemId?: number | null; selectedOptionId?: number | null }>;
+  results: Array<{ avgValue: number; closestOptionId: number; n: number } | null | undefined>;
 }) => {
-  // Create a proper mapping: itemId -> selectedOptionId
-  const answerMap = new Map<number, number>();
-  answers.forEach((answer) => {
-    if (answer.itemId != null && answer.selectedOptionId != null) {
-      answerMap.set(answer.itemId, answer.selectedOptionId);
-    }
-  });
-
   // Create option lookup by ID for efficient matching
   const optionById = new Map<number, Option>();
   options.forEach((opt) => {
@@ -62,14 +54,15 @@ export const ScaleSingleReportBlock = ({
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">Навык: {skillName}</h3>
         <div className="space-y-3">
-          {items.map((item) => {
+          {items.map((item, index) => {
             // Only process items that have valid IDs
             if (item.id == null) {
               console.warn('Item missing ID:', item);
               return null;
             }
 
-            const selectedOptionId = answerMap.get(item.id);
+            const result = results[index];
+            const selectedOptionId = result?.closestOptionId;
 
             return (
               <div key={item.id} className="flex flex-col gap-2">
@@ -90,6 +83,11 @@ export const ScaleSingleReportBlock = ({
                     );
                   })}
                 </div>
+                {result && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    Среднее: {result.avgValue.toFixed(1)} (ответов: {result.n})
+                  </div>
+                )}
               </div>
             );
           })}
