@@ -141,14 +141,14 @@ export const MopProfilePage = () => {
 													{getPracticeTypeLabel(practice.practiceType)}
 												</span>
 												<span className={`text-sm ${
-													practice.repChanged 
-														? practice.repDelta > 0 
-															? "text-green-500" 
+													practice.repChanged
+														? practice.repDelta > 0
+															? "text-green-500"
 															: "text-red-400"
 														: "text-base-gray"
 												}`}>
-													{practice.repChanged 
-														? practice.repDelta > 0 
+													{practice.repChanged
+														? practice.repDelta > 0
 															? `+${practice.repDelta} rep`
 															: `${practice.repDelta} rep`
 														: "rep"

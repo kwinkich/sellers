@@ -7,38 +7,66 @@ import { sseClient } from "@/shared/lib/sse";
 import { useQueryClient } from "@tanstack/react-query";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
+import { useFinishedPracticeStore } from "@/feature/practice-feature/model/finishedPractice.store";
 import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
+import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
+import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
+import { getUserRoleFromToken } from "@/shared";
 
 export const AppInitLayout = () => {
 	const { isLoading, isError, error } = useAppInit();
   const qc = useQueryClient();
-  const show = useActivePracticeStore((s) => s.show);
-  const hide = useActivePracticeStore((s) => s.hide);
+  const showActive = useActivePracticeStore((s) => s.show);
+  const hideActive = useActivePracticeStore((s) => s.hide);
+  const showFinished = useFinishedPracticeStore((s) => s.show);
+  const currentRole = getUserRoleFromToken();
 
   useEffect(() => {
+    if (currentRole === "CLIENT") return;
+
+    const checkCurrentPractice = async () => {
+      try {
+        const res = await PracticesAPI.getCurrentPractice();
+        const practice = res?.data;
+
+        if (practice?.myRole) {
+          showActive(practice);
+        }
+      } catch {
+      }
+    };
+
+    checkCurrentPractice();
+  }, [currentRole, showActive]);
+
+  useEffect(() => {
+    if (currentRole === "CLIENT") return;
+
     const off = sseClient.on(async (e) => {
       if (e.event === "practice-started") {
         try {
           const res = await PracticesAPI.getPracticeById(e.practiceId);
           const practice = res?.data;
+
           if (practice?.myRole) {
-            show(practice);
+            showActive(practice);
           }
         } catch {
-          // ignore fetch errors
         }
       }
 
       if (e.event === "practice-finished") {
-        hide();
+        hideActive();
+        showFinished(e.practiceId);
         qc.invalidateQueries({ queryKey: ["practices", "cards"] });
         qc.invalidateQueries({ queryKey: ["practices", "mine"] });
         qc.invalidateQueries({ queryKey: ["practices", "past"] });
         qc.invalidateQueries({ queryKey: ["practices", "detail", e.practiceId] });
       }
     });
+
     return () => off();
-  }, [qc, show, hide]);
+  }, [currentRole, qc, showActive, hideActive, showFinished]);
 
 	if (isLoading) {
 		return (
@@ -82,6 +110,8 @@ export const AppInitLayout = () => {
     <>
       <Outlet />
       <PracticeActiveModal />
+      <PracticeFinishedModal />
+      <PracticeUploadRecordingModal />
     </>
   );
 };

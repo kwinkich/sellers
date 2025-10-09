@@ -11,4 +11,6 @@ export * from "./model/successDrawer.store";
 export * from "./ui/CaseInfoDrawer";
 export * from "./model/caseInfo.store";
 export * from "./model/createPractice.store";
+export * from "./ui/PracticeUploadRecordingModal";
+export * from "./model/uploadRecording.store";
 

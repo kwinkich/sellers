@@ -136,3 +136,15 @@ export interface GetPastPracticesParams {
 export interface GetEvalFormParams {
 	evaluatedUserId: number;
 }
+
+export interface RecordingPresignRequest {
+	filename: string;
+	contentType: string;
+}
+
+export interface RecordingPresignResponse {
+	url: string;
+	key: string;
+	publicUrl: string;
+	expiresAt: string;
+}
