@@ -44,10 +44,13 @@ export const ClientHomePage = () => {
 
 	const profileData = getProfileData();
 	const availableLicenses = profileData.notActiveLicenses ?? 0;
-	
-	const hasExpirationDate = profileData.closestExpirationDate && !profileData.isLoading;
-	const expirationDate = hasExpirationDate 
-		? format(new Date(profileData.closestExpirationDate!), "dd.MM.yyyy", { locale: ru })
+
+	const hasExpirationDate =
+		profileData.closestExpirationDate && !profileData.isLoading;
+	const expirationDate = hasExpirationDate
+		? format(new Date(profileData.closestExpirationDate!), "dd.MM.yyyy", {
+				locale: ru,
+		  })
 		: null;
 
 	return (
@@ -114,7 +117,7 @@ export const ClientHomePage = () => {
 
 			<div className="px-2">
 				<HeadText
-					className="gap-0.5 mb-8 pl-2 pt-2"
+					className="gap-0.5 mb-4 pl-2 pt-2"
 					head="Дополнительные действия"
 					label="Управление практиками и курсами"
 					variant="black-gray"
@@ -122,8 +125,8 @@ export const ClientHomePage = () => {
 				/>
 
 				<div className="grid grid-cols-2 grid-rows-2 gap-2">
-					<Box 
-						variant={"dark"} 
+					<Box
+						variant={"dark"}
 						rounded="3xl"
 						onClick={() => navigate("/practice")}
 						className="cursor-pointer hover:opacity-80 transition-opacity"

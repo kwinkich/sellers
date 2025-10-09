@@ -15,7 +15,7 @@ export const AdminNavBar = () => {
 			<NavItem
 				data={{
 					route: "/admin/home",
-					icon: <MainIcon />,
+					icon: <MainIcon size={18} />,
 					label: "Главная",
 					isActive: location.pathname.includes("admin/home"),
 				}}
@@ -24,7 +24,7 @@ export const AdminNavBar = () => {
 			<NavItem
 				data={{
 					route: "/admin/courses/list",
-					icon: <ContentIcon />,
+					icon: <ContentIcon size={18} />,
 					label: "Контент",
 					isActive: ["course", "cases", "lessons", "modukes", "scenarios"].some(
 						(path) => location.pathname.includes(path)
@@ -35,7 +35,7 @@ export const AdminNavBar = () => {
 			<NavItem
 				data={{
 					route: "/admin/clients",
-					icon: <ClientIcon />,
+					icon: <ClientIcon size={18} />,
 					label: "Клиенты",
 					isActive: location.pathname.includes("clients"),
 				}}
@@ -44,7 +44,7 @@ export const AdminNavBar = () => {
 			<NavItem
 				data={{
 					route: "/practice",
-					icon: <PracticeIcon />,
+					icon: <PracticeIcon size={18} />,
 					label: "Практика",
 					isActive: location.pathname.includes("practice"),
 				}}

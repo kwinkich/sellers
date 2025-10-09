@@ -1,8 +1,16 @@
-import { UniversalAccordion } from "@/components/ui/u-accordion";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { UniversalAccordion } from "@/components/ui/u-accordion";
 import type { MopPractice, MopSkill } from "@/entities";
 import { mopProfilesQueryOptions } from "@/entities";
-import { ArrowIcon, Box, HeadText, StudioIcon, PracticeWithCaseIcon, PracticeNoCaseIcon, MiniGameIcon } from "@/shared";
+import {
+	ArrowIcon,
+	Box,
+	HeadText,
+	MiniGameIcon,
+	PracticeNoCaseIcon,
+	PracticeWithCaseIcon,
+	StudioIcon,
+} from "@/shared";
 import { MopNavBar } from "@/widget";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -41,7 +49,7 @@ export const MopProfilePage = () => {
 			case "HALF":
 				return "bg-[#FFFFFF14] text-gray-400";
 			default:
-				return "bg-[#f44f471a] bg-opacity-10 font-medium text-[#F44F47]" ;
+				return "bg-[#f44f471a] bg-opacity-10 font-medium text-[#F44F47]";
 		}
 	};
 
@@ -98,7 +106,10 @@ export const MopProfilePage = () => {
 						<p className="text-xs text-white">Навыков пока нет</p>
 					) : (
 						skills.map((s) => (
-							<div key={s.id} className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]">
+							<div
+								key={s.id}
+								className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]"
+							>
 								<p className="text-white">{s.name}</p>
 								<div
 									className={`px-[18px] py-[4.5px] rounded-[8px] ${getSkillClasses(
@@ -106,7 +117,11 @@ export const MopProfilePage = () => {
 									)}`}
 								>
 									<p className="text-xs leading-[100%]">
-										{s.status === "FULL" ? "Да" : s.status === "HALF" ? "50/50" : "Нет"}
+										{s.status === "FULL"
+											? "Да"
+											: s.status === "HALF"
+											? "50/50"
+											: "Нет"}
 									</p>
 								</div>
 							</div>
@@ -140,22 +155,25 @@ export const MopProfilePage = () => {
 												<span className="text-xs w-max rounded-md bg-base-bg px-3 py-1 text-base-gray">
 													{getPracticeTypeLabel(practice.practiceType)}
 												</span>
-												<span className={`text-sm ${
-													practice.repChanged
-														? practice.repDelta > 0
-															? "text-green-500"
-															: "text-red-400"
-														: "text-base-gray"
-												}`}>
+												<span
+													className={`text-sm ${
+														practice.repChanged
+															? practice.repDelta > 0
+																? "text-green-500"
+																: "text-red-400"
+															: "text-base-gray"
+													}`}
+												>
 													{practice.repChanged
 														? practice.repDelta > 0
 															? `+${practice.repDelta} rep`
 															: `${practice.repDelta} rep`
-														: "rep"
-													}
+														: "rep"}
 												</span>
 											</div>
-											<p className="text-lg font-medium text-white">{practice.title}</p>
+											<p className="text-lg font-medium text-white">
+												{practice.title}
+											</p>
 										</div>
 									</div>
 								</CardHeader>
@@ -163,13 +181,21 @@ export const MopProfilePage = () => {
 									<div className="bg-[#0A0C0E] rounded-md p-2">
 										<div className="flex items-center justify-between">
 											<div className="flex flex-col gap-1">
-												<span className="text-xs text-base-gray">Ваша роль:</span>
-												<span className="text-md font-medium text-white">{getRoleLabel(practice.role)}</span>
+												<span className="text-xs text-base-gray">
+													Ваша роль:
+												</span>
+												<span className="text-md font-medium text-white">
+													{getRoleLabel(practice.role)}
+												</span>
 											</div>
 											<div className="flex flex-col gap-1">
-												<span className="text-xs text-base-gray">Дата игры:</span>
+												<span className="text-xs text-base-gray">
+													Дата игры:
+												</span>
 												<span className="text-md font-medium text-white">
-													{new Date(practice.startAt).toLocaleDateString("ru-RU")}
+													{new Date(practice.startAt).toLocaleDateString(
+														"ru-RU"
+													)}
 												</span>
 											</div>
 										</div>
@@ -285,7 +311,7 @@ export const MopProfilePage = () => {
 
 			<div className="flex flex-col gap-2 px-2">
 				<HeadText
-					className="mb-2 px-2"
+					className="mb-4 px-2"
 					head="Навыки и компетенции"
 					label="Следите за прогрессом и улучшайте результат"
 					headSize="lg"

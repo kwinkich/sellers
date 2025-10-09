@@ -191,7 +191,7 @@ export const CreateLessonPage = () => {
 				<HeadText
 					head="Создание урока"
 					label={`Для модуля: ${module?.title}`}
-					className="px-2 mb-6"
+					className="px-2 mb-4"
 				/>
 
 				<div className="flex flex-col gap-4">
