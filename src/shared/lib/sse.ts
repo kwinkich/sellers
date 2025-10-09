@@ -1,6 +1,3 @@
-// Simple SSE client singleton that auto-connects once a listener is attached.
-// Exposes a single on(listener) API and emits parsed JSON events.
-
 type PracticeStartedEvent = {
   event: "practice-started";
   practiceId: number;
@@ -32,6 +29,7 @@ class SSEClient {
 
   private connect(): void {
     if (this.connected || this.source) return;
+
     const api = import.meta.env.VITE_API_URL;
     const origin = (() => {
       try {
@@ -41,15 +39,24 @@ class SSEClient {
       }
     })();
     const url = `${origin}/sse`;
+
     const src = new EventSource(url, { withCredentials: false });
     this.source = src;
 
     const dispatch = (ev: MessageEvent) => {
       try {
-        const data = JSON.parse(ev.data) as SSEEvent;
-        this.emit(data);
+        const raw = JSON.parse(ev.data);
+        const envelope =
+          raw && typeof raw.event === "string"
+            ? raw
+            : raw?.event && typeof raw.event.event === "string"
+            ? raw.event
+            : null;
+
+        if (envelope && typeof envelope.event === "string") {
+          this.emit(envelope as SSEEvent);
+        }
       } catch {
-        // ignore malformed frames
       }
     };
 
@@ -60,6 +67,7 @@ class SSEClient {
     src.onopen = () => {
       this.connected = true;
     };
+
     src.onerror = () => {
       this.connected = false;
     };
@@ -74,7 +82,20 @@ class SSEClient {
   }
 
   private emit(e: SSEEvent): void {
-    for (const l of this.listeners) l(e);
+    for (const l of this.listeners) {
+      try {
+        l(e);
+      } catch {
+      }
+    }
+  }
+
+  disconnect(): void {
+    if (this.source) {
+      this.source.close();
+      this.source = null;
+      this.connected = false;
+    }
   }
 }
 

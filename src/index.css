@@ -143,3 +143,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Override Vaul's spacer pseudo-element added on drawer roots */
+[data-vaul-drawer]::after {
+  content: none !important;
+}
+
+/* Defensive: specifically neutralize bottom-direction variant if present */
+[data-vaul-drawer][data-vaul-drawer-direction="bottom"]::after {
+  content: none !important;
+  height: 0 !important;
+}

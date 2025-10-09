@@ -1,4 +1,4 @@
-import { API, FILE_API, createSearchParams, type GApiResponse } from "@/shared";
+import { API, SILENT_API, FILE_API, createSearchParams, type GApiResponse } from "@/shared";
 import { queryOptions } from "@tanstack/react-query";
 import type {
 	CreatePracticeRequest,
@@ -11,6 +11,8 @@ import type {
 	PracticeCard,
 	PracticeFinishResult,
   SwitchRoleRequest,
+  RecordingPresignRequest,
+  RecordingPresignResponse,
 } from "../types/practices.types";
 
 export const PracticesAPI = {
@@ -50,6 +52,9 @@ export const PracticesAPI = {
 	getPracticeById: (id: number) =>
 		API.get(`practices/${id}`).json<GApiResponse<PracticeCard>>(),
 
+	getCurrentPractice: () =>
+		SILENT_API.get("practices/current").json<GApiResponse<PracticeCard>>(),
+
 	joinPractice: (id: number, data: JoinPracticeRequest) =>
 		API.post(`practices/${id}/join`, { json: data }).json<
 			GApiResponse<PracticeCard>
@@ -63,6 +68,16 @@ export const PracticesAPI = {
   switchRole: (id: number, data: SwitchRoleRequest) =>
     API.patch(`practices/${id}/switch-role`, { json: data }).json<
       GApiResponse<PracticeCard>
+    >(),
+
+  getRecordingPresignUrl: (id: number, data: RecordingPresignRequest) =>
+    API.post(`practices/${id}/recording/presign`, { json: data }).json<
+      GApiResponse<RecordingPresignResponse>
+    >(),
+
+  finalizeRecording: (id: number) =>
+    API.post(`practices/${id}/recording/finalize`).json<
+      GApiResponse<Practice>
     >(),
 
   downloadReport: async (id: number): Promise<Blob> => {
@@ -102,6 +117,12 @@ export const practicesQueryOptions = {
 		queryOptions({
 			queryKey: ["practices", "detail", id],
 			queryFn: () => PracticesAPI.getPracticeById(id),
+		}),
+
+	current: () =>
+		queryOptions({
+			queryKey: ["practices", "current"],
+			queryFn: () => PracticesAPI.getCurrentPractice(),
 		}),
 };
 

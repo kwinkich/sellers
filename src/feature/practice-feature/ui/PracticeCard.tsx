@@ -1,4 +1,4 @@
-import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon } from "@/shared";
+import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, getUserRoleFromToken } from "@/shared";
 import { Button } from "@/components/ui/button";
 import type { PracticeCard as PracticeCardType } from "@/entities/practices";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
@@ -12,6 +12,7 @@ interface Props {
 
 export const PracticeCard = ({ data }: Props) => {
   const openJoin = usePracticeJoinStore((s) => s.open);
+  const role = getUserRoleFromToken();
   const formatStart = (iso: string) => {
     if (!iso) return { date: "", time: "" };
     const [datePart, timeAndZone] = iso.split("T");
@@ -76,14 +77,16 @@ export const PracticeCard = ({ data }: Props) => {
             </span>
           </div>
         </div>
-        <Button
-          size="xs"
-          rounded="3xl"
-          className="flex min-w-[200px] items-center justify-center max-h-[40px]"
-          onClick={() => openJoin(data)}
-        >
-          Присоединиться <ArrowIcon size={30} cn="inline-block" />
-        </Button>
+        {role !== "CLIENT" && (
+          <Button
+            size="xs"
+            rounded="3xl"
+            className="flex min-w-[200px] items-center justify-center max-h-[40px]"
+            onClick={() => openJoin(data)}
+          >
+            Присоединиться <ArrowIcon size={30} cn="inline-block" />
+          </Button>
+        )}
       </div>
     </div>
   );

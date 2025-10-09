@@ -150,7 +150,7 @@ export const MopProfilePage = () => {
 
 			<div className="px-2 pt-2 flex flex-wrap gap-2">
 				{skills.length === 0 ? (
-					<p className="text-xs text-base-gray pl-2">Навыков пока нет</p>
+					<p className="text-xs text-base-gray font-medium">Навыков пока нет</p>
 				) : (
 					skills.map((s) => (
 						<span
@@ -173,7 +173,7 @@ export const MopProfilePage = () => {
 
 			<div className="px-2 flex flex-col gap-2">
 				{practices.length === 0 ? (
-					<p className="text-xs text-base-gray pl-2">Практик пока нет</p>
+					<p className="text-xs text-base-gray font-medium pt-2">Практик пока нет</p>
 				) : (
 					practices.map((p: MopPractice) => (
 						<Box key={p.id} className="px-3 py-2" rounded="xl">

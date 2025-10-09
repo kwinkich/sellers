@@ -190,12 +190,12 @@ export const route = createBrowserRouter([
             path: "evaluate/:practiceId",
             element: <EvaluationPage />,
           },
+          {
+            path: "report/:practiceId",
+            element: <EvaluationReportPage />,
+          }
         ],
       },
-      {
-        path: "report/:practiceId",
-        element: <EvaluationReportPage />,
-      }
 		],
 	},
 ]);
