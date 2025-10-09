@@ -38,17 +38,6 @@ async function handle401(request: Request, options: any, response: Response) {
     throw data;
   }
 
-  // 3) 401 — не ретраим для самих auth эндпоинтов и если уже делали ретрай
-  const requestUrl = new URL(request.url);
-  const isAuth = /\/auth\/(refresh|telegram)$/.test(requestUrl.pathname);
-  if (isAuth || (request as any).__retried401 || (options as any).__retrying) {
-    console.log(
-      "🚫 KY: Пропускаем обработку 401 - уже обработан или auth endpoint"
-    );
-    throw new HTTPError(response, request, options);
-  }
-  (request as any).__retried401 = true;
-
   // 4) пробуем обновиться
   console.log("🔄 KY: Обрабатываем 401, пробуем refresh");
   try {
