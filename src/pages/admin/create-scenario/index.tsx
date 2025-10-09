@@ -15,11 +15,11 @@ import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/sce
 // Pre-built block configurations
 const PREBUILT_BLOCKS = {
     MODERATOR: {
-        skills: ["Презентация", "Закрытие сделки", "Работа с возражениями"],
+        skills: ["Управление процессом", "Тайминг", "Обаяние"],
         type: "SCALE_SKILL_MULTI" as BlockKind
     },
     BUYER: {
-        skills: ["Выявление боли", "Понимание приоритетов", "Понимание ресурсов"],
+        skills: ["Логичность поведения", "Эмоциональная достоверность", "Цельность образа"],
         type: "SCALE_SKILL_MULTI" as BlockKind
     }
 };
@@ -285,7 +285,7 @@ export const AdminScenariosCreatePage = () => {
 				<CreateScenarioForm onFormDataChange={setFormData} />
 			</div>
 			<div className="flex-1 overflow-y-auto">
-				<div className="flex flex-col gap-6 px-2 min-h-full">
+				<div className="flex flex-col pb-24 gap-6 px-2 min-h-full">
 					<Tabs defaultValue="SELLER">
 						<TabsList variant="second" className="grid grid-cols-3 w-full">
 							<TabsTrigger variant="second" value="SELLER" >Продавец</TabsTrigger>
@@ -320,7 +320,7 @@ export const AdminScenariosCreatePage = () => {
 					</Tabs>
 
 					{/* Submit button */}
-					<div className="sticky bottom-0 bg-white pt-4 pb-4 border-t">
+					<div className="sticky bottom-0 bg-white pt-4 pb-4">
 						<Button
 							onClick={handleSubmit}
 							disabled={isPending || !formData.title.trim()}

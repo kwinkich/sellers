@@ -66,14 +66,14 @@ export const ScaleSingleEvaluationBlock = ({
               <div key={itemIndex} className="flex flex-col gap-3">
                 <h4 className="text-sm font-medium text-gray-800">{item.title}</h4>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-stretch">
                   {block.scale?.options.map((option) => (
-                    <label key={option.ord} className="flex-1">
+                    <label key={option.ord} className="relative flex-1 min-w-0">
                       <input
                         type="radio"
                         name={groupName}
                         value={option.value}
-                        className="peer sr-only"
+                        className="peer absolute inset-0 h-0 w-0 opacity-0 pointer-events-none appearance-none"
                         checked={selected === option.value}
                         onChange={() =>
                           setAnswers((prev) => ({ ...prev, [itemIndex]: option.value }))
@@ -82,8 +82,8 @@ export const ScaleSingleEvaluationBlock = ({
                        <div
                          className={[
                            // base unselected "chip"
-                           "w-full select-none rounded-xl px-0 py-2 text-center transition-colors",
-                           "bg-muted hover:bg-muted/80",
+                           "select-none rounded-xl px-0 py-2 text-center transition-colors",
+                           "bg-muted hover:bg-muted/80 border border-transparent box-border",
                            // default text color by ord
                            textColorsByOrd[option.ord] ?? "text-foreground/80",
                            // selected background colors by ord

@@ -86,13 +86,11 @@ export const PracticeJoinDrawer = () => {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    timeZone: "Europe/Moscow",
   });
 
   const time = start.toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "Europe/Moscow",
   });
 
 

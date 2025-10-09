@@ -12,8 +12,8 @@ function PracticeInfoCardSimple({
   data: any;
 }) {
   const start = new Date(data.startAt);
-  const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Moscow" });
-  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" });
+  const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
   const icon = data.practiceType === "MINI" ? (
     <MiniGameIcon size={32} cn="text-base-main" />
@@ -86,7 +86,7 @@ function PracticeInfoCardSimple({
               <div className="text-base-gray">Название кейса</div>
               <div className="text-black font-medium">{data.case.title}</div>
             </div>
-            <Button className="w-full bg-base-main" size="2s"
+            <Button className="bg-base-main" size="2s"
               onClick={() => useCaseInfoStore.getState().open(data)}
             >
               Изучить

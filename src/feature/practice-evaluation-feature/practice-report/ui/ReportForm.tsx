@@ -7,9 +7,11 @@ import { ReportHeader } from "./ReportHeader";
 import { ReportFooter } from "./ReportFooter";
 import { QAReportBlock } from "./blocks";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm[] }) => {
   const [activeTab, setActiveTab] = useState<string>("");
+  const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -158,7 +160,7 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
           const next = evaluationData.forms[idx + 1];
           if (next) setActiveTab(next.role);
         }}
-        onFinish={() => { /* noop for now */ }}
+        onFinish={() => { navigate("/practice"); }}
       />
     </div>
   );
