@@ -119,10 +119,11 @@ const PracticeCreatePage = () => {
       }
       const [hh, mm] = (t || "00:00").split(":").map((x) => Number(x));
       const y = date.getFullYear();
-      const m = date.getMonth();
+      const m = date.getMonth() + 1; // month is 0-based
       const d = date.getDate();
-      const utc = new Date(Date.UTC(y, m, d, hh - 3, mm, 0, 0));
-      store.setStartAt(utc.toISOString());
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const localIsoWithoutTz = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
+      store.setStartAt(localIsoWithoutTz);
     },
     [store]
   );
@@ -222,7 +223,9 @@ const PracticeCreatePage = () => {
           </Select>
         </div>
 
+        <div className="flex flex-row gap-2">
           <DatePickerFloatingLabel
+            className="w-3/5"
             placeholder="Дата проведения (МСК)"
             value={selectedDate}
             onValueChange={(d) => {
@@ -230,28 +233,27 @@ const PracticeCreatePage = () => {
               updateStartAt(d, time);
             }}
           />
-          <div className="flex items-center">
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => {
-                setTime(e.target.value);
-                updateStartAt(selectedDate, e.target.value);
-              }}
-              className="w-full h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
-              placeholder="Время (МСК)"
-              step={300}
-              min="00:00"
-              max="23:59"
-              lang="ru-RU"
-            />
-          </div>
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => {
+              setTime(e.target.value);
+              updateStartAt(selectedDate, e.target.value);
+            }}
+            className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
+            placeholder="Время (МСК)"
+            step={300}
+            min="00:00"
+            max="23:59"
+            lang="ru-RU"
+          />
         </div>
+      </div>
 
       <div className="fixed inset-x-0 bottom-24 p-4 pb-0">
         <Button
           className="w-full"
-          disabled={!practiceType || !scenarioId || ((practiceType === "WITH_CASE") && !caseId) || skillIds.length === 0 || !startAt}
+          disabled={!practiceType || !scenarioId || ((practiceType === "WITH_CASE") && !caseId) || !startAt}
           onClick={() => navigate("/practice/preview")}
         >
           Следующий шаг
