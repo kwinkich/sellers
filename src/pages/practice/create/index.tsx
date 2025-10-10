@@ -218,7 +218,7 @@ const PracticeCreatePage = () => {
 
 	return (
 		<div className="bg-white text-black min-h-screen flex flex-col">
-			<div className="px-4 py-4 flex-1 overflow-y-auto pb-40">
+			<div className="px-4 py-4 h-[80dvh] overflow-y-auto">
 				<h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
 				<div className="space-y-3">
@@ -226,7 +226,7 @@ const PracticeCreatePage = () => {
 					<MultiSelectChips
 						options={skillOptions}
 						value={skillIds}
-						onChange={(next) => {
+						onChange={(next) => {git 
 							const ids = next.map((v) => Number(v));
 							store.setSkills(ids);
 							const labelMap = new Map(skillOptions.map((o) => [String(o.value), o.label]));

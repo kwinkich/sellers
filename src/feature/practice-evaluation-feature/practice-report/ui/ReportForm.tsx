@@ -82,7 +82,7 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
@@ -90,7 +90,7 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
     if (isLeftSwipe || isRightSwipe) {
       const currentIndex = evaluationData?.forms.findIndex(form => form.role === activeTab) ?? 0;
       const totalForms = evaluationData?.forms.length ?? 0;
-      
+
       if (isLeftSwipe && currentIndex < totalForms - 1) {
         // Swipe left - go to next tab
         const nextForm = evaluationData?.forms[currentIndex + 1];
@@ -106,14 +106,14 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
   const isLast = activeTab === (evaluationData.forms[evaluationData.forms.length - 1]?.role || "");
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-white flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       <ReportHeader />
-      <div className="bg-white px-4 py-2">
+      <div className="bg-white px-4 py-2 pb-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="bg-gray-100 rounded-xl gap-0">
           <ReportTabs forms={evaluationData.forms} activeTab={activeTab} />
 
@@ -153,7 +153,7 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
           ))}
         </Tabs>
       </div>
-      <ReportFooter 
+      <ReportFooter
         isLastTab={isLast}
         onNext={() => {
           const idx = evaluationData.forms.findIndex(f => f.role === activeTab);
