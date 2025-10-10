@@ -22,7 +22,7 @@ export const AuthAPI = {
     );
   },
 
-  refreshTelegram: () =>
+  refreshTelegram: () =>  
     pTimeout(
       API.post("auth/refresh").json<GResponse<AuthResponse>>(),
       8000,

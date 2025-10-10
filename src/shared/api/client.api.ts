@@ -1,4 +1,4 @@
-import ky, { HTTPError } from "ky";
+import ky from "ky";
 import {
   getAuthToken,
   updateAuthToken,
@@ -10,6 +10,13 @@ import { handleUnauthorized } from "../lib/unauthorizedInterceptor";
 // — глобальный «замок» refresh
 let refreshing: Promise<void> | null = null;
 let refreshAttempts = 0;
+
+async function apiLogout() {
+  try {
+    await base.post("auth/logout");
+  } catch {}
+  localStorage.removeItem("accessToken"); // server clears the cookie
+}
 
 function forceLogout() {
   console.log("🧹 API: Принудительный logout - очищаем все токены");
@@ -23,11 +30,13 @@ function attachToken(req: Request) {
   if (t) req.headers.set("Authorization", `Bearer ${t}`);
 }
 
-async function handle401(request: Request, options: any, response: Response) {
-  // 1) успех — ничего не делаем
-  if (response.ok) return;
+function isAuthPath(url: string) {
+  const u = new URL(url);
+  return /\/auth\/(refresh|telegram|logout)$/.test(u.pathname);
+}
 
-  // 2) ошибки НЕ 401 — вытащим тело и выбросим
+async function handle401(request: Request, options: any, response: Response) {
+  if (response.ok) return;
   if (response.status !== 401) {
     let data: any;
     try {
@@ -38,30 +47,24 @@ async function handle401(request: Request, options: any, response: Response) {
     throw data;
   }
 
-  // 4) пробуем обновиться
-  console.log("🔄 KY: Обрабатываем 401, пробуем refresh");
+  // Don't intercept auth endpoints and don't retry twice
+  if ((options as any).__retrying || isAuthPath(request.url)) {
+    return response; // let caller handle the 401
+  }
+
   try {
     await doRefreshSafe();
-    console.log("✅ KY: Refresh успешен, ретраим запрос");
-  } catch (e) {
-    console.log("❌ KY: Refresh не удался, пробуем auth");
-    if (
-      e instanceof HTTPError ||
-      (e instanceof Error && /Unauthorized/i.test(e.message))
-    ) {
-      try {
-        await doAuth();
-        console.log("✅ KY: Auth успешен, ретраим запрос");
-      } catch {
-        console.log("❌ KY: Auth не удался, принудительный logout");
-        forceLogout();
-      }
-    } else {
-      throw e; // не сбивать refresh при сетевых ошибках
+  } catch {
+    try {
+      await doAuth();
+    } catch {
+      // final fallback: logout and bubble error
+      await apiLogout();
+      throw new Error("Unauthorized");
     }
   }
 
-  // 5) ретрай исходного запроса с новым access
+  // Retry original request once with fresh access token
   const t = getAuthToken();
   const newOpts: any = {
     ...options,
@@ -72,15 +75,10 @@ async function handle401(request: Request, options: any, response: Response) {
   };
   if (t) (newOpts.headers as Headers).set("Authorization", `Bearer ${t}`);
 
-  // ВАЖНО: вернуть именно Response, без .json()
-  // Используем base клиент для ретрая, чтобы избежать рекурсии
   const retryUrl = new URL(request.url);
   const path = retryUrl.pathname + retryUrl.search;
-
-  // Убираем API префикс из пути, так как prefixUrl уже содержит его
   const apiPrefix = import.meta.env.VITE_API_PREFIX || "/api/v1";
   const cleanPath = path.replace(new RegExp(`^${apiPrefix}`), "");
-  // Убираем ведущий слэш, если он есть
   const finalPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
 
   return base(finalPath, newOpts);
