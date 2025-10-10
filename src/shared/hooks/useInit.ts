@@ -23,18 +23,31 @@ export const useAppInit = (): UseAppInitReturn => {
     retry: 0,
     staleTime: Infinity,
     queryFn: async () => {
-      // 1) Try refresh first (ALWAYS)
+      const initData = getTelegramInitData();
+      const inTelegram = !!initData;
+      const preferTgFirst = inTelegram || import.meta.env.DEV;
+
+      if (preferTgFirst) {
+        try {
+          const r = await AuthAPI.authTelegram();
+          updateAuthToken(r.data.accessToken);
+          return r;
+        } catch (e) {
+          // fall back to refresh if Telegram auth not possible
+        }
+      }
+
       try {
         const r = await AuthAPI.refreshTelegram();
         updateAuthToken(r.data.accessToken);
         return r;
       } catch (e) {
-        // 2) Fallback to Telegram auth (only if we have initData)
-        const initData = getTelegramInitData();
-        if (!initData) throw e; // not in Telegram & no DEV initData
-        const r = await AuthAPI.authTelegram();
-        updateAuthToken(r.data.accessToken);
-        return r;
+        if (inTelegram) {
+          const r = await AuthAPI.authTelegram();
+          updateAuthToken(r.data.accessToken);
+          return r;
+        }
+        throw e;
       }
     },
   });
