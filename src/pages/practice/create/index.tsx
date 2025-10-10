@@ -11,23 +11,51 @@ import {
 import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
+import { adminsQueryOptions, AdminsAPI } from "@/entities/admin/model/api/admin.api";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
+import { useUserRole } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import MultiSelectChips from "@/components/multi-select-chips";
+
+// Simple Zoom icon component
+const ZoomIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+      fill="#2D8CFF"
+    />
+  </svg>
+);
 
 const PracticeCreatePage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
   const { scenarioId, caseId, skillIds, startAt, practiceType } = store;
 
+  const { role } = useUserRole();
   const [time, setTime] = React.useState<string>("15:00");
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     startAt ? new Date(startAt) : undefined
   );
+
+  // Zoom status query for admin users
+  const { data: zoomStatusData } = useQuery({
+    ...adminsQueryOptions.zoomStatus(),
+    enabled: role === "ADMIN",
+  });
+
+  const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
 
   const skills = useInfiniteQuery({
     queryKey: ["skills", "list"],
@@ -403,6 +431,28 @@ const PracticeCreatePage = () => {
               lang="ru-RU"
             />
           </div>
+
+          {/* Zoom Connect Button for Admin Users */}
+          {role === "ADMIN" && !isZoomAuthorized && (
+            <div>
+              <Button
+                type="button"
+                variant="default"
+                className="w-full bg-[#2D8CFF] hover:bg-[#1E6BB8] text-white"
+                onClick={async () => {
+                  try {
+                    // Call the zoomConnect API endpoint which will redirect to Zoom auth
+                    await AdminsAPI.zoomConnect();
+                  } catch (error) {
+                    console.error("Error connecting to Zoom:", error);
+                  }
+                }}
+              >
+                <ZoomIcon size={20} className="mr-2" />
+                Connect Zoom Account
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

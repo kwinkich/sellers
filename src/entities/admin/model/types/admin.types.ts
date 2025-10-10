@@ -28,3 +28,24 @@ export interface GetAdminsParams {
 	order?: "asc" | "desc";
 	telegramUsername?: string | string[];
 }
+
+// Zoom-related types
+export interface ZoomStatus {
+	connected: boolean;
+	expiresAt: string | null;
+}
+
+export interface ZoomCreateMeetingParams {
+	topic?: string;
+	start_time: string;
+	timezone?: string;
+}
+
+export interface ZoomMeeting {
+	id: string;
+	topic: string;
+	start_time: string;
+	duration: number;
+	join_url: string;
+	password?: string;
+}

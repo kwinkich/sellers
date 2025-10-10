@@ -5,6 +5,9 @@ import type {
   AdminProfile,
   CreateAdminRequest,
   GetAdminsParams,
+  ZoomStatus,
+  ZoomCreateMeetingParams,
+  ZoomMeeting,
 } from "../types/admin.types";
 
 export const AdminsAPI = {
@@ -23,6 +26,26 @@ export const AdminsAPI = {
 
   blockAdmin: (id: number) =>
     API.post(`admins/${id}/block`, {}).json<GApiResponse<Admin>>(),
+
+  // Zoom integration endpoints
+  zoomConnect: () =>
+    API.get("admins/zoom/connect"),
+
+  zoomCreateMeeting: (params: ZoomCreateMeetingParams) => {
+    const searchParams = createSearchParams(params);
+    return API.get("admins/zoom/create-meeting", { searchParams }).json<GApiResponse<ZoomMeeting>>();
+  },
+
+  zoomCallback: (code: string, state: string) => {
+    const searchParams = createSearchParams({ code, state });
+    return API.get("admins/zoom/callback", { searchParams }).json<GApiResponse<{ success: boolean }>>();
+  },
+
+  zoomDisconnect: () =>
+    API.post("admins/zoom/disconnect", {}).json<GApiResponse<{ success: boolean }>>(),
+
+  zoomStatus: () =>
+    API.get("admins/zoom/status").json<GApiResponse<ZoomStatus>>(),
 };
 
 export const adminsQueryOptions = {
@@ -37,6 +60,12 @@ export const adminsQueryOptions = {
       queryKey: ["admins", "profile"],
       queryFn: () => AdminsAPI.getAdminProfile(),
     }),
+
+  zoomStatus: () =>
+    queryOptions({
+      queryKey: ["admins", "zoom", "status"],
+      queryFn: () => AdminsAPI.zoomStatus(),
+    }),
 };
 
 export const adminsMutationOptions = {
@@ -46,5 +75,13 @@ export const adminsMutationOptions = {
 
   block: () => ({
     mutationFn: AdminsAPI.blockAdmin,
+  }),
+
+  zoomCreateMeeting: () => ({
+    mutationFn: AdminsAPI.zoomCreateMeeting,
+  }),
+
+  zoomDisconnect: () => ({
+    mutationFn: AdminsAPI.zoomDisconnect,
   }),
 };
