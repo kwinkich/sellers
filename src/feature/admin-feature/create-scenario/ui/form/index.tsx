@@ -1,5 +1,6 @@
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
+import { Button } from "@/components/ui/button";
 // Tabs are rendered on the page container, not here
 import {
 	Form,
@@ -9,6 +10,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { casesQueryOptions } from "@/entities";
+import { RemoveIcon } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { createScenarioSchema, type CreateScenarioFormData } from "../../model";
@@ -76,32 +78,64 @@ export function CreateScenarioForm({ onFormDataChange }: CreateScenarioFormProps
 				{/* Case select (multiple) */}
 				<div className="space-y-2">
 					{caseSelects.map((val, idx) => (
-						<div key={idx}>
-							<SelectFloatingLabel
-								variant="default"
-								className="bg-second-bg"
-								placeholder={idx === 0 ? "Выберите кейс (опционально)" : "Добавьте ещё один кейс (опционально)"}
-								value={val ? String(val) : ""}
-								onValueChange={(value) => {
-									const num = parseInt(value);
-									setCaseSelects((prev) => {
-										const next = [...prev];
-										next[idx] = Number.isNaN(num) ? null : num;
-										// If this is the last selector and user selected a value, append a new empty selector
-										if (idx === prev.length - 1 && !Number.isNaN(num)) {
-											next.push(null);
-										}
-										return next;
-									});
-								}}
-								options={caseOptions.filter((o) => {
-									// allow currently selected value for this selector
-									if (val && String(val) === o.value) return true;
-									// otherwise filter out already taken ids
-									const id = parseInt(o.value);
-									return !selectedCaseIds.includes(id);
-								})}
-							/>
+						<div key={idx} className="flex items-center gap-2">
+							<div className="flex-1">
+								<SelectFloatingLabel
+									variant="default"
+									className="bg-second-bg"
+									placeholder={idx === 0 ? "Выберите кейс (опционально)" : "Добавьте ещё один кейс (опционально)"}
+									value={val ? String(val) : ""}
+									onValueChange={(value) => {
+										const num = parseInt(value);
+										setCaseSelects((prev) => {
+											const next = [...prev];
+											next[idx] = Number.isNaN(num) ? null : num;
+											// If this is the last selector and user selected a value, append a new empty selector
+											if (idx === prev.length - 1 && !Number.isNaN(num)) {
+												next.push(null);
+											}
+											return next;
+										});
+									}}
+									options={caseOptions.filter((o) => {
+										// allow currently selected value for this selector
+										if (val && String(val) === o.value) return true;
+										// otherwise filter out already taken ids
+										const id = parseInt(o.value);
+										return !selectedCaseIds.includes(id);
+									})}
+								/>
+							</div>
+							{(idx === 0 ? val : true) && (
+								<Button
+									type="button"
+									variant="link"
+									size="2s"
+									rounded="full"
+									text="main"
+									onClick={() => {
+										setCaseSelects((prev) => {
+											const next = [...prev];
+											
+											if (val) {
+												// If selector has a value, clear it
+												next[idx] = null;
+											} else {
+												// If selector is empty, remove the entire selector
+												// But keep at least one selector
+												if (next.length > 1) {
+													next.splice(idx, 1);
+												}
+											}
+											
+											return next;
+										});
+									}}
+									className="shrink-0"
+								>
+									<RemoveIcon />
+								</Button>
+							)}
 						</div>
 					))}
 				</div>

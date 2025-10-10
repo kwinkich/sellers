@@ -14,7 +14,7 @@ import {
   scenariosQueryOptions,
   type CreateCaseRequest,
 } from "@/entities";
-import { useUserRole } from "@/shared";
+import { useUserRole, RemoveIcon } from "@/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -281,35 +281,68 @@ export function CreateCaseForm() {
         {/* 9. Выберите сценарий(и) - dynamic selectors */}
         <div className="space-y-2">
           {scenarioSelects.map((val, idx) => (
-            <div key={idx}>
-              <SelectFloatingLabel
-                placeholder={
-                  idx === 0
-                    ? "Выберите сценарий"
-                    : "Добавьте ещё один сценарий (опционально)"
-                }
-                value={val ? String(val) : ""}
-                onValueChange={(value) => {
-                  const num = parseInt(value);
-                  setScenarioSelects((prev) => {
-                    const next = [...prev];
-                    next[idx] = Number.isNaN(num) ? null : num;
-                    // If this is the last selector and user selected a value, append a new empty selector
-                    if (idx === prev.length - 1 && !Number.isNaN(num)) {
-                      next.push(null);
-                    }
-                    return next;
-                  });
-                }}
-                options={scenarioOptions.filter((o) => {
-                  // allow currently selected value for this selector
-                  if (val && String(val) === o.value) return true;
-                  // otherwise filter out already taken ids
-                  const id = parseInt(o.value);
-                  return !takenScenarioIds.has(id);
-                })}
-                disabled={isPending || scenariosLoading}
-              />
+            <div key={idx} className="flex items-center gap-2">
+              <div className="flex-1">
+                <SelectFloatingLabel
+                  placeholder={
+                    idx === 0
+                      ? "Выберите сценарий"
+                      : "Добавьте ещё один сценарий (опционально)"
+                  }
+                  value={val ? String(val) : ""}
+                  onValueChange={(value) => {
+                    const num = parseInt(value);
+                    setScenarioSelects((prev) => {
+                      const next = [...prev];
+                      next[idx] = Number.isNaN(num) ? null : num;
+                      // If this is the last selector and user selected a value, append a new empty selector
+                      if (idx === prev.length - 1 && !Number.isNaN(num)) {
+                        next.push(null);
+                      }
+                      return next;
+                    });
+                  }}
+                  options={scenarioOptions.filter((o) => {
+                    // allow currently selected value for this selector
+                    if (val && String(val) === o.value) return true;
+                    // otherwise filter out already taken ids
+                    const id = parseInt(o.value);
+                    return !takenScenarioIds.has(id);
+                  })}
+                  disabled={isPending || scenariosLoading}
+                />
+              </div>
+              {(idx === 0 ? val : true) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="2s"
+                  rounded="full"
+                  text="main"
+                  onClick={() => {
+                    setScenarioSelects((prev) => {
+                      const next = [...prev];
+                      
+                      if (val) {
+                        // If selector has a value, clear it
+                        next[idx] = null;
+                      } else {
+                        // If selector is empty, remove the entire selector
+                        // But keep at least one selector
+                        if (next.length > 1) {
+                          next.splice(idx, 1);
+                        }
+                      }
+                      
+                      return next;
+                    });
+                  }}
+                  disabled={isPending}
+                  className="shrink-0"
+                >
+                  <RemoveIcon />
+                </Button>
+              )}
             </div>
           ))}
         </div>
