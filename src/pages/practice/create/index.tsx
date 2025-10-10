@@ -226,7 +226,7 @@ const PracticeCreatePage = () => {
 					<MultiSelectChips
 						options={skillOptions}
 						value={skillIds}
-						onChange={(next) => {git 
+						onChange={(next) => {
 							const ids = next.map((v) => Number(v));
 							store.setSkills(ids);
 							const labelMap = new Map(skillOptions.map((o) => [String(o.value), o.label]));
