@@ -22,7 +22,7 @@ export const AdminsAPI = {
     API.get("admins/profile").json<GApiResponse<AdminProfile>>(),
 
   blockAdmin: (id: number) =>
-    API.patch(`admins/${id}/block`).json<GApiResponse<Admin>>(),
+    API.post(`admins/${id}/block`, {}).json<GApiResponse<Admin>>(),
 };
 
 export const adminsQueryOptions = {
