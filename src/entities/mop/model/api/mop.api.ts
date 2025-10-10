@@ -16,7 +16,7 @@ export const MopProfilesAPI = {
     >(),
 
   blockMopProfile: (id: number) =>
-    API.patch(`mop-profiles/${id}/block`).json<
+    API.post(`mop-profiles/${id}/block`, {}).json<
       GApiResponse<{
         id: number;
         telegramUsername: string;

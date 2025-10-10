@@ -10,13 +10,14 @@ import {
 } from "@/components/ui/select";
 import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
+import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import MultiSelectChips from "@/components/multi-select-chips";
 
 const PracticeCreatePage = () => {
 	const store = useCreatePracticeStore();
@@ -28,7 +29,31 @@ const PracticeCreatePage = () => {
 		startAt ? new Date(startAt) : undefined
 	);
 
-	const skills = useQuery(skillsQueryOptions.list());
+	const skills = useInfiniteQuery({
+		queryKey: ["skills", "list"],
+		queryFn: ({ pageParam = 1 }) =>
+			SkillsAPI.getSkillsPaged({ page: pageParam as number, limit: 50 }),
+		getNextPageParam: (lastPage: any) => {
+			const p = lastPage?.meta?.pagination as any;
+			if (!p) return undefined;
+			const currentPage = p.currentPage ?? p.page ?? 1;
+			const totalPages = p.totalPages ?? (p.totalItems && p.limit ? Math.ceil(p.totalItems / p.limit) : undefined);
+			if (typeof totalPages === "number") return currentPage < totalPages ? currentPage + 1 : undefined;
+			if (typeof (p as any).hasNext === "boolean") return (p as any).hasNext ? currentPage + 1 : undefined;
+			return undefined;
+		},
+		initialPageParam: 1,
+		staleTime: 5 * 60 * 1000,
+	});
+
+	const skillOptions = React.useMemo(
+		() =>
+			(skills.data?.pages ?? []).flatMap((pg: any) => pg?.data ?? []).map((s: any) => ({
+				value: s.id,
+				label: s.name,
+			})),
+		[skills.data]
+	);
 	const scenarios = useInfiniteQuery({
 		queryKey: [
 			"scenarios",
@@ -116,31 +141,34 @@ const PracticeCreatePage = () => {
 		[cases.data]
 	);
 
-	// Auto-load all pages so selects show complete lists
-	React.useEffect(() => {
-		if (scenarios.hasNextPage && !scenarios.isFetchingNextPage) {
-			scenarios.fetchNextPage();
-		}
-	}, [
-		scenarios.hasNextPage,
-		scenarios.isFetchingNextPage,
-		scenarios.fetchNextPage,
-	]);
+	// Infinite scroll handlers for dropdown lists
+	const SCROLL_LOAD_THRESHOLD_PX = 24;
 
-	React.useEffect(() => {
-		if (
-			practiceType !== "WITHOUT_CASE" &&
-			cases.hasNextPage &&
-			!cases.isFetchingNextPage
-		) {
-			cases.fetchNextPage();
-		}
-	}, [
-		practiceType,
-		cases.hasNextPage,
-		cases.isFetchingNextPage,
-		cases.fetchNextPage,
-	]);
+	const handleScrollLoadMoreScenarios = React.useCallback(
+		(e: any) => {
+			const el = e?.target as HTMLElement | null;
+			if (!el) return;
+			const nearBottom =
+				el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_LOAD_THRESHOLD_PX;
+			if (nearBottom && scenarios.hasNextPage && !scenarios.isFetchingNextPage) {
+				scenarios.fetchNextPage();
+			}
+		},
+		[scenarios.hasNextPage, scenarios.isFetchingNextPage, scenarios.fetchNextPage]
+	);
+
+	const handleScrollLoadMoreCases = React.useCallback(
+		(e: any) => {
+			const el = e?.target as HTMLElement | null;
+			if (!el) return;
+			const nearBottom =
+				el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_LOAD_THRESHOLD_PX;
+			if (nearBottom && cases.hasNextPage && !cases.isFetchingNextPage) {
+				cases.fetchNextPage();
+			}
+		},
+		[cases.hasNextPage, cases.isFetchingNextPage, cases.fetchNextPage]
+	);
 
 	React.useEffect(() => {
 		if (scenarios.isLoading || scenarios.isFetching) return;
@@ -189,10 +217,33 @@ const PracticeCreatePage = () => {
 	);
 
 	return (
-		<div className="bg-white px-4 py-4 text-black">
-			<h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
+		<div className="bg-white text-black min-h-screen flex flex-col">
+			<div className="px-4 py-4 flex-1 overflow-y-auto pb-40">
+				<h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
-			<div className="space-y-3">
+				<div className="space-y-3">
+			<div>
+					<MultiSelectChips
+						options={skillOptions}
+						value={skillIds}
+						onChange={(next) => {
+							const ids = next.map((v) => Number(v));
+							store.setSkills(ids);
+							const labelMap = new Map(skillOptions.map((o) => [String(o.value), o.label]));
+							const names = next
+								.map((v) => labelMap.get(String(v)))
+								.filter(Boolean) as string[];
+							store.setSkillNames(names);
+						}}
+						placeholder={"Выберите навыки"}
+						onLoadMore={() => {
+							if (skills.hasNextPage && !skills.isFetchingNextPage) skills.fetchNextPage();
+						}}
+						canLoadMore={Boolean(skills.hasNextPage)}
+						isLoadingMore={Boolean(skills.isFetchingNextPage)}
+					/>
+				</div>
+
 				<div>
 					<Select
 						onValueChange={(t) => {
@@ -224,38 +275,6 @@ const PracticeCreatePage = () => {
 				<div>
 					<Select
 						onValueChange={(id) => {
-							store.setSkills([Number(id)]);
-							const item = skills.data?.data?.find(
-								(x: any) => String(x.id) === String(id)
-							);
-							if (item) store.setSkillNames([item.name]);
-						}}
-						value={skillIds[0] ? String(skillIds[0]) : undefined}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder="Выберите навык" />
-						</SelectTrigger>
-						<SelectContent side="bottom" align="start">
-							<SelectGroup>
-								{skills.data?.data?.length ? (
-									skills.data?.data?.map((s: any) => (
-										<SelectItem key={s.id} value={String(s.id)}>
-											{s.name}
-										</SelectItem>
-									))
-								) : (
-									<SelectItem disabled value="__none">
-										Нет навыков
-									</SelectItem>
-								)}
-							</SelectGroup>
-						</SelectContent>
-					</Select>
-				</div>
-
-				<div>
-					<Select
-						onValueChange={(id) => {
 							const s = scenarioOptions.find(
 								(x: any) => String(x.id) === String(id)
 							);
@@ -267,7 +286,7 @@ const PracticeCreatePage = () => {
 						<SelectTrigger>
 							<SelectValue placeholder="Выберите сценарий практики" />
 						</SelectTrigger>
-						<SelectContent side="bottom" align="start">
+					<SelectContent side="bottom" align="start" onScroll={handleScrollLoadMoreScenarios}>
 							<SelectGroup>
 								{scenarioOptions?.length ? (
 									scenarioOptions.map((s: any) => (
@@ -280,6 +299,9 @@ const PracticeCreatePage = () => {
 										Нет сценариев для текущего навыка и кейса
 									</SelectItem>
 								)}
+							{scenarios.isFetchingNextPage ? (
+								<SelectItem disabled value="__loading_scenarios">Загрузка...</SelectItem>
+							) : null}
 							</SelectGroup>
 						</SelectContent>
 					</Select>
@@ -305,7 +327,7 @@ const PracticeCreatePage = () => {
 								}
 							/>
 						</SelectTrigger>
-						<SelectContent side="bottom" align="start">
+					<SelectContent side="bottom" align="start" onScroll={handleScrollLoadMoreCases}>
 							<SelectGroup>
 								{caseOptions?.length ? (
 									caseOptions.map((c: any) => (
@@ -318,6 +340,9 @@ const PracticeCreatePage = () => {
 										Нет кейсов для текущего навыка и сценария
 									</SelectItem>
 								)}
+							{cases.isFetchingNextPage ? (
+								<SelectItem disabled value="__loading_cases">Загрузка...</SelectItem>
+							) : null}
 							</SelectGroup>
 						</SelectContent>
 					</Select>
@@ -347,6 +372,7 @@ const PracticeCreatePage = () => {
 						max="23:59"
 						lang="ru-RU"
 					/>
+				</div>
 				</div>
 			</div>
 

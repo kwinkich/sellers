@@ -12,6 +12,15 @@ export const SkillsAPI = {
 
 	getSkills: () => API.get("skills").json<GApiResponse<Skill[]>>(),
 
+	getSkillsPaged: ({
+		page,
+		limit,
+	}: {
+		page: number;
+		limit: number;
+	}) =>
+		API.get("skills", { searchParams: { page: String(page), limit: String(limit) } }).json<GApiResponse<Skill[]>>(),
+
 	getSkillById: (id: number) =>
 		API.get(`skills/${id}`).json<GApiResponse<Skill>>(),
 
@@ -27,6 +36,13 @@ export const skillsQueryOptions = {
 		queryOptions({
 			queryKey: ["skills", "list"],
 			queryFn: () => SkillsAPI.getSkills(),
+		}),
+
+	infinite: ({ limit = 50 }: { limit?: number } = {}) =>
+		queryOptions({
+			queryKey: ["skills", "list", { limit }],
+			// placeholder to guide useInfiniteQuery; the actual queryFn will be provided in component
+			queryFn: () => SkillsAPI.getSkillsPaged({ page: 1, limit }),
 		}),
 
 	byId: (id: number) =>
