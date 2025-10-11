@@ -1,16 +1,11 @@
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getRoleLabel } from "@/shared";
 import type { EvaluationFormData } from "./index";
 
 interface EvaluationTabsProps {
   forms: EvaluationFormData[];
   activeTab: string;
 }
-
-const roleLabel = {
-  SELLER: "Продавец",
-  BUYER: "Покупатель", 
-  MODERATOR: "Модератор",
-} as const;
 
 export const EvaluationTabs = ({ forms, activeTab }: EvaluationTabsProps) => {
   return (
@@ -21,18 +16,21 @@ export const EvaluationTabs = ({ forms, activeTab }: EvaluationTabsProps) => {
           <div
             key={form.role}
             className={`absolute left-1/2 -translate-x-1/2 text-center transition-opacity duration-200 ${
-              form.role === activeTab ? 'opacity-100' : 'opacity-0'
+              form.role === activeTab ? "opacity-100" : "opacity-0"
             }`}
           >
             <span className="text-xl font-semibold text-gray-800">
-              {roleLabel[form.role as keyof typeof roleLabel] ?? form.role}
+              {getRoleLabel(form.role as any)}
             </span>
           </div>
         ))}
       </div>
 
       {/* Progress bar with segments */}
-      <TabsList className="relative grid w-1/2 bg-transparent p-0 mx-auto h-4" style={{ gridTemplateColumns: `repeat(${forms.length}, 1fr)` }}>
+      <TabsList
+        className="relative grid w-1/2 bg-transparent p-0 mx-auto h-4"
+        style={{ gridTemplateColumns: `repeat(${forms.length}, 1fr)` }}
+      >
         {forms.map((form) => (
           <TabsTrigger
             key={form.role}
@@ -42,14 +40,12 @@ export const EvaluationTabs = ({ forms, activeTab }: EvaluationTabsProps) => {
             {/* Progress segment */}
             <div
               className={`h-2 w-full rounded-full transition-colors duration-500 ${
-                form.role === activeTab ? 'bg-emerald-500' : 'bg-gray-300'
+                form.role === activeTab ? "bg-emerald-500" : "bg-gray-300"
               }`}
             />
-            
+
             {/* Hidden text for accessibility */}
-            <span className="sr-only">
-              {roleLabel[form.role as keyof typeof roleLabel] ?? form.role}
-            </span>
+            <span className="sr-only">{getRoleLabel(form.role as any)}</span>
           </TabsTrigger>
         ))}
       </TabsList>

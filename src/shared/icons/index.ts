@@ -21,7 +21,7 @@ export * from "./success-icon/index";
 export * from "./scenario-icon/index";
 export * from "./practice-type/index";
 export * from "./skills-icon/index";
-export * from  "./calendar-icon/index";
+export * from "./calendar-icon/index";
 export * from "./practice-with-case-icon/index";
 export * from "./studio-icon/index";
 export * from "./timer-icon/index";

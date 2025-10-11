@@ -1,5 +1,16 @@
 import WebApp from "@twa-dev/sdk";
 
+// Type declaration for Telegram WebApp API
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        openLink: (url: string) => void;
+      };
+    };
+  }
+}
+
 /**
  * Возвращает сырую initData.
  * В Telegram-клиенте — берём из SDK.
@@ -15,4 +26,19 @@ export function getTelegramInitData(): string {
 // Если нужен start_param — только из SDK (без URL-фолбэков)
 export function getTelegramStartParam(): string | null {
   return WebApp?.initDataUnsafe?.start_param ?? null;
+}
+
+/**
+ * Opens a URL using Telegram WebApp API if available, otherwise falls back to regular browser behavior
+ * @param url - The URL to open
+ */
+export function openExternalUrl(url: string): void {
+  // Check if we're in Telegram WebApp environment
+  if (window.Telegram?.WebApp?.openLink) {
+    // Use Telegram WebApp API to open in external browser
+    window.Telegram.WebApp.openLink(url);
+  } else {
+    // Fallback to regular browser behavior - open in new tab
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 }

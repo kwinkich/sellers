@@ -6,6 +6,7 @@ import {
 } from "../lib/getAuthToken";
 import { getTelegramInitData } from "../lib/telegram";
 import { handleUnauthorized } from "../lib/unauthorizedInterceptor";
+import { getFullApiUrl, getApiPrefixForPath } from "../lib/api-config";
 
 // — глобальный «замок» refresh
 let refreshing: Promise<void> | null = null;
@@ -77,7 +78,7 @@ async function handle401(request: Request, options: any, response: Response) {
 
   const retryUrl = new URL(request.url);
   const path = retryUrl.pathname + retryUrl.search;
-  const apiPrefix = import.meta.env.VITE_API_PREFIX || "/api/v1";
+  const apiPrefix = getApiPrefixForPath();
   const cleanPath = path.replace(new RegExp(`^${apiPrefix}`), "");
   const finalPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
 
@@ -85,7 +86,7 @@ async function handle401(request: Request, options: any, response: Response) {
 }
 
 const base = ky.create({
-  prefixUrl: import.meta.env.VITE_API_URL,
+  prefixUrl: getFullApiUrl(),
   credentials: "include",
   retry: 0,
   timeout: 10000, // <<— таймаут на любой запрос, чтобы не висло вечно
@@ -145,7 +146,7 @@ async function doAuth() {
 // Фабрика для создания API клиентов
 function createAPI() {
   return ky.create({
-    prefixUrl: import.meta.env.VITE_API_URL,
+    prefixUrl: getFullApiUrl(),
     credentials: "include",
     retry: 0,
     timeout: 10000,

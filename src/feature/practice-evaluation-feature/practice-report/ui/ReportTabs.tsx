@@ -1,15 +1,10 @@
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getRoleLabel } from "@/shared";
 
 interface ReportTabsProps {
   forms: { role: "SELLER" | "BUYER" | "MODERATOR" }[];
   activeTab: string;
 }
-
-const roleLabel = {
-  SELLER: "Продавец",
-  BUYER: "Покупатель",
-  MODERATOR: "Модератор",
-} as const;
 
 export const ReportTabs = ({ forms, activeTab }: ReportTabsProps) => {
   return (
@@ -23,13 +18,16 @@ export const ReportTabs = ({ forms, activeTab }: ReportTabsProps) => {
             }`}
           >
             <span className="text-xl font-semibold text-gray-800">
-              {roleLabel[form.role as keyof typeof roleLabel] ?? form.role}
+              {getRoleLabel(form.role as any)}
             </span>
           </div>
         ))}
       </div>
 
-      <TabsList className="relative grid w-1/2 bg-transparent p-0 mx-auto h-4" style={{ gridTemplateColumns: `repeat(${forms.length}, 1fr)` }}>
+      <TabsList
+        className="relative grid w-1/2 bg-transparent p-0 mx-auto h-4"
+        style={{ gridTemplateColumns: `repeat(${forms.length}, 1fr)` }}
+      >
         {forms.map((form) => (
           <TabsTrigger
             key={form.role}
@@ -41,14 +39,10 @@ export const ReportTabs = ({ forms, activeTab }: ReportTabsProps) => {
                 form.role === activeTab ? "bg-emerald-500" : "bg-gray-300"
               }`}
             />
-            <span className="sr-only">
-              {roleLabel[form.role as keyof typeof roleLabel] ?? form.role}
-            </span>
+            <span className="sr-only">{getRoleLabel(form.role as any)}</span>
           </TabsTrigger>
         ))}
       </TabsList>
     </div>
   );
 };
-
-

@@ -7,6 +7,7 @@ import {
   MiniGameIcon,
   PracticeNoCaseIcon,
   useUserRole,
+  getRoleLabel,
 } from "@/shared";
 import { PracticesAPI } from "@/entities/practices";
 import { Button } from "@/components/ui/button";
@@ -14,20 +15,12 @@ import type { PracticeCard as PracticeCardType } from "@/entities/practices";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { ReactNode } from "react";
 import type { PracticeType } from "@/shared/types/practice.types";
-import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
   data: PracticeCardType;
 }
-
-const roleLabel: Record<PracticeParticipantRole, string> = {
-  SELLER: "Продавец",
-  BUYER: "Покупатель",
-  MODERATOR: "Модератор",
-  OBSERVER: "Наблюдатель",
-};
 
 export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
@@ -38,8 +31,15 @@ export const PracticePastCard = ({ data }: Props) => {
     if (!iso) return { date: "", time: "" };
     const d = new Date(iso);
     return {
-      date: d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
-      time: d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+      date: d.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      time: d.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
   };
   const { date, time } = formatStart(data.startAt as string);
@@ -147,7 +147,7 @@ export const PracticePastCard = ({ data }: Props) => {
         <div className="flex flex-col gap-1">
           <span className="text-base-gray text-xs">Ваша роль</span>
           <span className="text-white font-medium">
-            {data.myRole ? roleLabel[data.myRole] : "\u00A0\u00A0—"}
+            {data.myRole ? getRoleLabel(data.myRole) : "\u00A0\u00A0—"}
           </span>
         </div>
       </div>

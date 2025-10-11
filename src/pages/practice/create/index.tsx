@@ -11,9 +11,9 @@ import {
 import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
-import { adminsQueryOptions, AdminsAPI } from "@/entities/admin/model/api/admin.api";
+import { adminsQueryOptions } from "@/entities/admin/model/api/admin.api";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
-import { useUserRole } from "@/shared";
+import { useUserRole, useZoomConnection } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -22,7 +22,13 @@ import { useNavigate } from "react-router-dom";
 import MultiSelectChips from "@/components/multi-select-chips";
 
 // Simple Zoom icon component
-const ZoomIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
+const ZoomIcon = ({
+  size = 20,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) => (
   <svg
     width={size}
     height={size}
@@ -44,6 +50,7 @@ const PracticeCreatePage = () => {
   const { scenarioId, caseId, skillIds, startAt, practiceType } = store;
 
   const { role } = useUserRole();
+  const { connectToZoom, isConnecting } = useZoomConnection();
   const [time, setTime] = React.useState<string>("15:00");
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     startAt ? new Date(startAt) : undefined
@@ -267,28 +274,31 @@ const PracticeCreatePage = () => {
       <div className="px-4 py-4 h-[80dvh] overflow-y-auto">
         <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
-				<div className="space-y-3">
-			<div>
-					<MultiSelectChips
-						options={skillOptions}
-						value={skillIds}
-						onChange={(next) => {
-							const ids = next.map((v) => Number(v));
-							store.setSkills(ids);
-							const labelMap = new Map(skillOptions.map((o) => [String(o.value), o.label]));
-							const names = next
-								.map((v) => labelMap.get(String(v)))
-								.filter(Boolean) as string[];
-							store.setSkillNames(names);
-						}}
-						placeholder={"Выберите навыки"}
-						onLoadMore={() => {
-							if (skills.hasNextPage && !skills.isFetchingNextPage) skills.fetchNextPage();
-						}}
-						canLoadMore={Boolean(skills.hasNextPage)}
-						isLoadingMore={Boolean(skills.isFetchingNextPage)}
-					/>
-				</div>
+        <div className="space-y-3">
+          <div>
+            <MultiSelectChips
+              options={skillOptions}
+              value={skillIds}
+              onChange={(next) => {
+                const ids = next.map((v) => Number(v));
+                store.setSkills(ids);
+                const labelMap = new Map(
+                  skillOptions.map((o) => [String(o.value), o.label])
+                );
+                const names = next
+                  .map((v) => labelMap.get(String(v)))
+                  .filter(Boolean) as string[];
+                store.setSkillNames(names);
+              }}
+              placeholder={"Выберите навыки"}
+              onLoadMore={() => {
+                if (skills.hasNextPage && !skills.isFetchingNextPage)
+                  skills.fetchNextPage();
+              }}
+              canLoadMore={Boolean(skills.hasNextPage)}
+              isLoadingMore={Boolean(skills.isFetchingNextPage)}
+            />
+          </div>
 
           <div>
             <Select
@@ -439,17 +449,11 @@ const PracticeCreatePage = () => {
                 type="button"
                 variant="default"
                 className="w-full bg-[#2D8CFF] hover:bg-[#1E6BB8] text-white"
-                onClick={async () => {
-                  try {
-                    // Call the zoomConnect API endpoint which will redirect to Zoom auth
-                    await AdminsAPI.zoomConnect();
-                  } catch (error) {
-                    console.error("Error connecting to Zoom:", error);
-                  }
-                }}
+                onClick={connectToZoom}
+                disabled={isConnecting}
               >
                 <ZoomIcon size={20} className="mr-2" />
-                Connect Zoom Account
+                {isConnecting ? "Connecting..." : "Connect Zoom Account"}
               </Button>
             </div>
           )}

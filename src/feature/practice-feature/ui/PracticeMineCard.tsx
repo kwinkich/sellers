@@ -1,27 +1,45 @@
-import { Badge, TimerIcon, ClientIcon, ArrowIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, CopyIcon } from "@/shared";
+import {
+  Badge,
+  TimerIcon,
+  ClientIcon,
+  ArrowIcon,
+  PracticeWithCaseIcon,
+  MiniGameIcon,
+  PracticeNoCaseIcon,
+  CopyIcon,
+  getRoleLabel,
+} from "@/shared";
 import { Button } from "@/components/ui/button";
-import type { PracticeCard as PracticeCardType, PracticeRole, PracticeParticipantRole } from "@/entities/practices";
+import type {
+  PracticeCard as PracticeCardType,
+  PracticeRole,
+  PracticeParticipantRole,
+} from "@/entities/practices";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { ReactNode } from "react";
 import type { PracticeType } from "@/shared/types/practice.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices";
-import { } from "react";
+import {} from "react";
 
 interface Props {
   data: PracticeCardType;
 }
 
-const roleLabel: Record<PracticeParticipantRole, string> = {
-  SELLER: "Продавец",
-  BUYER: "Покупатель",
-  MODERATOR: "Модератор",
-  OBSERVER: "Наблюдатель",
-};
-
-const ALL_ROLES: PracticeParticipantRole[] = ["SELLER", "BUYER", "MODERATOR", "OBSERVER"];
+const ALL_ROLES: PracticeParticipantRole[] = [
+  "SELLER",
+  "BUYER",
+  "MODERATOR",
+  "OBSERVER",
+];
 
 export const PracticeMineCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
@@ -38,8 +56,15 @@ export const PracticeMineCard = ({ data }: Props) => {
     if (!iso) return { date: "", time: "" };
     const d = new Date(iso);
     return {
-      date: d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }),
-      time: d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+      date: d.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      time: d.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
   };
   const { date, time } = formatStart(data.startAt as string);
@@ -49,7 +74,8 @@ export const PracticeMineCard = ({ data }: Props) => {
   };
 
   const onConnect = () => {
-    if (data.zoomLink) window.open(data.zoomLink, "_blank", "noopener,noreferrer");
+    if (data.zoomLink)
+      window.open(data.zoomLink, "_blank", "noopener,noreferrer");
   };
 
   const onCopyLink = () => {
@@ -72,13 +98,17 @@ export const PracticeMineCard = ({ data }: Props) => {
             WITH_CASE: <PracticeWithCaseIcon size={64} cn="text-base-main" />,
             WITHOUT_CASE: <PracticeNoCaseIcon size={64} cn="text-base-main" />,
           };
-          return iconByType[(data.practiceType as PracticeType)] ?? (
-            <PracticeWithCaseIcon size={64} cn="text-base-main" />
+          return (
+            iconByType[data.practiceType as PracticeType] ?? (
+              <PracticeWithCaseIcon size={64} cn="text-base-main" />
+            )
           );
         })()}
         <div className="flex flex-col gap-2">
           <div className="flex p-2 rounded-lg bg-second-bg items-center justify-center w-fit">
-            <span className="text-base-gray text-xs">{getPracticeTypeLabel(data.practiceType as PracticeType)}</span>
+            <span className="text-base-gray text-xs">
+              {getPracticeTypeLabel(data.practiceType as PracticeType)}
+            </span>
           </div>
           <p className="text-white text-lg font-semibold">{data.title}</p>
         </div>
@@ -101,7 +131,9 @@ export const PracticeMineCard = ({ data }: Props) => {
       <div className="flex flex-row items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <ClientIcon size={16} fill="#A2A2A2" />
-          <span className="text-base-gray font-bold text-white">{data.participantsCount}</span>
+          <span className="text-base-gray font-bold text-white">
+            {data.participantsCount}
+          </span>
           <span className="text-base-gray">Участвуют</span>
         </div>
         <div className="flex items-center gap-1 text-base-gray">
@@ -116,17 +148,29 @@ export const PracticeMineCard = ({ data }: Props) => {
       <div className="bg-second-bg rounded-2xl p-3 text-sm flex items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <span className="text-base-gray text-xs">Ваша роль</span>
-          <span className="text-white font-medium">{data.myRole ? roleLabel[data.myRole] : "—"}</span>
+          <span className="text-white font-medium">
+            {data.myRole ? getRoleLabel(data.myRole) : "—"}
+          </span>
         </div>
-        <Select onValueChange={(v) => { switchRole.mutate({ id: data.id, data: { to: v as PracticeParticipantRole } }); }}>
-          <SelectTrigger showIcon={false} className="text-xs py-2 bg-transparent text-base-main w-fit h-fit px-0 text-md">
+        <Select
+          onValueChange={(v) => {
+            switchRole.mutate({
+              id: data.id,
+              data: { to: v as PracticeParticipantRole },
+            });
+          }}
+        >
+          <SelectTrigger
+            showIcon={false}
+            className="text-xs py-2 bg-transparent text-base-main w-fit h-fit px-0 text-md"
+          >
             Изменить
           </SelectTrigger>
           <SelectContent className="text-xs" side="bottom" align="end">
             <SelectGroup>
               {ALL_ROLES.map((r) => (
                 <SelectItem key={r} value={r} disabled={!isAllowed(r)}>
-                  {roleLabel[r]}
+                  {getRoleLabel(r)}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -142,7 +186,15 @@ export const PracticeMineCard = ({ data }: Props) => {
             {data.zoomLink ?? "—"}
           </div>
         </div>
-        <Button size="xs" className="bg-transparent" rounded="3xl" variant="main-opacity10" text="main" onClick={onCopyLink} disabled={!data.zoomLink}>
+        <Button
+          size="xs"
+          className="bg-transparent"
+          rounded="3xl"
+          variant="main-opacity10"
+          text="main"
+          onClick={onCopyLink}
+          disabled={!data.zoomLink}
+        >
           <CopyIcon size={24} fill="#06935F" />
         </Button>
       </div>
@@ -150,13 +202,25 @@ export const PracticeMineCard = ({ data }: Props) => {
       {/* Additional materials: Case */}
       {data.case && data.practiceType !== "WITHOUT_CASE" && (
         <div className="flex flex-col gap-2">
-          <span className="text-base-gray text-xs">Дополнительные материалы</span>
+          <span className="text-base-gray text-xs">
+            Дополнительные материалы
+          </span>
           <div className="bg-second-bg rounded-2xl p-3 flex items-center justify-between text-sm">
             <div className="flex flex-col gap-1">
-            <span className="text-base-gray text-xs">Название кейса</span>
-              <span className="text-white font-medium truncate max-w-[220px]">{data.case.title}</span>
+              <span className="text-base-gray text-xs">Название кейса</span>
+              <span className="text-white font-medium truncate max-w-[220px]">
+                {data.case.title}
+              </span>
             </div>
-            <Button className="bg-transparent text-md text-base-main" size="xs" rounded="3xl" variant="second" onClick={onLearnCase}>Изучить</Button>
+            <Button
+              className="bg-transparent text-md text-base-main"
+              size="xs"
+              rounded="3xl"
+              variant="second"
+              onClick={onLearnCase}
+            >
+              Изучить
+            </Button>
           </div>
         </div>
       )}
@@ -174,5 +238,3 @@ export const PracticeMineCard = ({ data }: Props) => {
     </div>
   );
 };
-
-

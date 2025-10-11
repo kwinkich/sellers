@@ -1,3 +1,5 @@
+import { getApiOrigin } from "./api-config";
+
 type PracticeStartedEvent = {
   event: "practice-started";
   practiceId: number;
@@ -30,14 +32,7 @@ class SSEClient {
   private connect(): void {
     if (this.connected || this.source) return;
 
-    const api = import.meta.env.VITE_API_URL;
-    const origin = (() => {
-      try {
-        return api ? new URL(api).origin : window.location.origin;
-      } catch {
-        return window.location.origin;
-      }
-    })();
+    const origin = getApiOrigin();
     const url = `${origin}/sse`;
 
     const src = new EventSource(url, { withCredentials: false });
@@ -56,8 +51,7 @@ class SSEClient {
         if (envelope && typeof envelope.event === "string") {
           this.emit(envelope as SSEEvent);
         }
-      } catch {
-      }
+      } catch {}
     };
 
     src.addEventListener("message", dispatch);
@@ -85,8 +79,7 @@ class SSEClient {
     for (const l of this.listeners) {
       try {
         l(e);
-      } catch {
-      }
+      } catch {}
     }
   }
 
@@ -100,5 +93,3 @@ class SSEClient {
 }
 
 export const sseClient = SSEClient.get();
-
-
