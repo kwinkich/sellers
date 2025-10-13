@@ -47,6 +47,116 @@ export const LessonDetailsPage = () => {
 		);
 	}
 
+	// Функция для рендера встроенного контента
+	const renderEmbeddedContent = (block: ContentBlock) => {
+		if (!block.storageObject?.publicUrl) {
+			return (
+				<div className=" text-center ">
+					<p className="text-gray-500">[Файл не загружен]</p>
+					<p className="text-sm text-gray-400 mt-1">
+						Файл не был загружен в хранилище
+					</p>
+				</div>
+			);
+		}
+
+		const fileUrl = block.storageObject.publicUrl;
+
+		switch (block.type) {
+			case "IMAGE":
+				return (
+					<div className="bg-white rounded-lg p-4 border border-gray-200">
+						<img
+							src={fileUrl}
+							alt={block.textContent || "Изображение из урока"}
+							className="max-w-full h-auto rounded-lg mx-auto max-h-96 object-contain"
+						/>
+						{block.textContent && (
+							<p className="text-sm text-gray-600 text-center mt-3 italic">
+								{block.textContent}
+							</p>
+						)}
+					</div>
+				);
+
+			case "VIDEO":
+				return (
+					<div className="bg-white rounded-lg p-4 border border-gray-200">
+						<video
+							controls
+							className="w-full max-w-full rounded-lg max-h-96 mx-auto"
+						>
+							<source
+								src={fileUrl}
+								type={block.storageObject.contentType || "video/mp4"}
+							/>
+							Ваш браузер не поддерживает видео элементы.
+						</video>
+						{block.textContent && (
+							<p className="text-sm text-gray-600 text-center mt-3 italic">
+								{block.textContent}
+							</p>
+						)}
+					</div>
+				);
+
+			case "FILE":
+				return (
+					<div className="bg-white rounded-lg p-4 border border-gray-200">
+						<div className="flex flex-col items-center gap-3">
+							<iframe
+								src={fileUrl}
+								className="w-full h-96 rounded-lg border"
+								title="PDF документ"
+							/>
+							<div className="flex gap-2 mt-2">
+								<a
+									href={fileUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-blue-600 hover:underline text-sm"
+								>
+									Открыть в новой вкладке
+								</a>
+							</div>
+						</div>
+						{block.textContent && (
+							<p className="text-sm text-gray-600 text-center mt-3 italic">
+								{block.textContent}
+							</p>
+						)}
+					</div>
+				);
+
+			case "AUDIO":
+				return (
+					<div className="bg-white rounded-lg p-4 border border-gray-200">
+						<div className="flex flex-col items-center gap-3">
+							<audio controls className="w-full max-w-md">
+								<source
+									src={fileUrl}
+									type={block.storageObject.contentType || "audio/mpeg"}
+								/>
+								Ваш браузер не поддерживает аудио элементы.
+							</audio>
+						</div>
+						{block.textContent && (
+							<p className="text-sm text-gray-600 text-center mt-3 italic">
+								{block.textContent}
+							</p>
+						)}
+					</div>
+				);
+
+			default:
+				return (
+					<div className="bg-gray-100 rounded-lg p-4 text-center border-2 border-dashed border-gray-300">
+						<p className="text-gray-500">[Неизвестный тип файла]</p>
+					</div>
+				);
+		}
+	};
+
 	return (
 		<div className="min-h-full pb-24">
 			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
@@ -58,86 +168,39 @@ export const LessonDetailsPage = () => {
 			</div>
 
 			{/* Контентные блоки */}
-			<div className="px-2">
+			<div className="px-2 space-y-6">
 				{lesson.contentBlocks.map((block: ContentBlock) => (
-					<div key={block.orderIndex} className="py-4 border-b">
+					<div key={block.orderIndex} className="py-4">
 						{block.type === "TEXT" && (
-							<div className="prose max-w-none">
-								<p className="text-sm text-gray-700 leading-relaxed">
+							<div className="prose max-w-none bg-white rounded-lg p-4 border border-gray-200">
+								<p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
 									{block.textContent}
 								</p>
 							</div>
 						)}
 
-						{block.type === "IMAGE" && (
-							<div>
-								<p className="text-gray-600 mb-3 italic">{block.textContent}</p>
-								<div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
-									<p className="text-gray-500">
-										[Изображение: {block.storageObjectId}]
-									</p>
-									<p className="text-sm text-gray-400 mt-2">
-										Здесь будет отображаться изображение из хранилища
-									</p>
-								</div>
-							</div>
-						)}
-
-						{block.type === "VIDEO" && (
-							<div>
-								<p className="text-gray-600 mb-3 italic">{block.textContent}</p>
-								<div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
-									<p className="text-gray-500">
-										[Видео: {block.storageObjectId}]
-									</p>
-									<p className="text-sm text-gray-400 mt-2">
-										Здесь будет отображаться видео плеер
-									</p>
-								</div>
-							</div>
-						)}
-
-						{block.type === "AUDIO" && (
-							<div>
-								<p className="text-gray-600 mb-3 italic">{block.textContent}</p>
-								<div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
-									<p className="text-gray-500">
-										[Аудио: {block.storageObjectId}]
-									</p>
-									<p className="text-sm text-gray-400 mt-2">
-										Здесь будет отображаться аудио плеер
-									</p>
-								</div>
-							</div>
-						)}
-
-						{block.type === "FILE" && (
-							<div>
-								<p className="text-gray-600 mb-3 italic">{block.textContent}</p>
-								<div className="bg-gray-100 rounded-lg p-4 text-center border-2 border-dashed border-gray-300">
-									<p className="text-gray-500">
-										[Файл: {block.storageObjectId}]
-									</p>
-									<p className="text-sm text-gray-400 mt-1">
-										Здесь будет отображаться скачивание файла
-									</p>
-								</div>
-							</div>
+						{(block.type === "IMAGE" ||
+							block.type === "VIDEO" ||
+							block.type === "FILE" ||
+							block.type === "AUDIO") && (
+							<div>{renderEmbeddedContent(block)}</div>
 						)}
 					</div>
 				))}
 			</div>
 
-			<div className="w-full px-2">
-				<Button
-					className="w-full"
-					size="sm"
-					onClick={() => navigate(`/mop/education/quizzes/${lesson.quizId}`)}
-				>
-					Пройти завершающий тест
-					<ArrowIcon />
-				</Button>
-			</div>
+			{lesson.quizId > 0 && (
+				<div className="w-full px-2 mt-8">
+					<Button
+						className="w-full"
+						size="sm"
+						onClick={() => navigate(`/mop/education/quizzes/${lesson.quizId}`)}
+					>
+						Пройти завершающий тест
+						<ArrowIcon />
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 };

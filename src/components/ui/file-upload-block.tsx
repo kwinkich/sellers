@@ -58,7 +58,9 @@ export const FileUploadBlock = ({
 			const result = await StorageAPI.uploadFile(file);
 
 			if (result.success && result.data) {
+				// ИСПРАВЛЕНИЕ: Сохраняем ID для отправки и полный объект для отображения
 				onUpdate(index, "storageObjectId", result.data.id);
+				onUpdate(index, "storageObject", result.data); // Сохраняем полный объект для немедленного отображения
 				onUpdate(index, "textContent", result.data.publicUrl);
 				setUploadStatus("success");
 			} else {
@@ -114,9 +116,76 @@ export const FileUploadBlock = ({
 		}
 	};
 
-	const handleViewFile = (): void => {
-		if (block.textContent) {
-			window.open(block.textContent, "_blank");
+	// Проверка наличия загруженного файла
+	const hasUploadedFile = Boolean(
+		block?.storageObject?.id && block.storageObject.id > 0
+	);
+
+	// Получаем актуальный URL файла
+	const getFileUrl = (): string | null => {
+		// Используем storageObject.publicUrl если есть, иначе textContent
+		return block.storageObject?.publicUrl || block.textContent || null;
+	};
+
+	// Рендер встроенного контента
+	const renderEmbeddedContent = () => {
+		const fileUrl = getFileUrl();
+		if (!fileUrl) return null;
+
+		switch (block.type) {
+			case "IMAGE":
+				return (
+					<div className="mt-3">
+						<img
+							src={fileUrl}
+							alt={block.textContent || "Загруженное изображение"}
+							className="max-w-full h-auto rounded-lg mx-auto max-h-64 object-contain"
+							key={fileUrl} // Добавляем key для принудительного обновления
+						/>
+					</div>
+				);
+
+			case "VIDEO":
+				return (
+					<div className="mt-3">
+						<video
+							controls
+							className="w-full max-w-full rounded-lg max-h-64"
+							key={fileUrl} // Добавляем key для принудительного обновления
+						>
+							<source
+								src={fileUrl}
+								type={block.storageObject?.contentType || "video/mp4"}
+							/>
+							Ваш браузер не поддерживает видео элементы.
+						</video>
+					</div>
+				);
+
+			case "FILE":
+				return (
+					<div className="mt-3">
+						<iframe
+							src={fileUrl}
+							className="w-full h-64 rounded-lg border"
+							title="PDF документ"
+							key={fileUrl} // Добавляем key для принудительного обновления
+						/>
+						<div className="mt-2 text-center">
+							<a
+								href={fileUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-blue-600 hover:underline text-sm"
+							>
+								Открыть в новой вкладке
+							</a>
+						</div>
+					</div>
+				);
+
+			default:
+				return null;
 		}
 	};
 
@@ -136,19 +205,21 @@ export const FileUploadBlock = ({
 						</a>
 					</div>
 				)}
-				{block.storageObjectId > 0 ? (
-					<div className="border-2 border-gray-200 rounded-xl p-4 text-center bg-gray-50">
-						<CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-						<p className="text-sm text-gray-700">Файл загружен</p>
-						{block.textContent && (
-							<Button
-								type="button"
-								size="sm"
-								className="mt-2"
-								onClick={handleViewFile}
-							>
-								Просмотреть файл
-							</Button>
+				{hasUploadedFile ? (
+					<div className="border-2 border-gray-200 rounded-xl p-4 bg-gray-50">
+						<div className="flex items-center justify-center mb-3">
+							<CheckCircle className="h-6 w-6 text-green-500 mr-2" />
+							<p className="text-sm text-gray-700 font-medium">
+								{block.type === "IMAGE" && "Изображение загружено"}
+								{block.type === "VIDEO" && "Видео загружено"}
+								{block.type === "FILE" && "PDF документ загружен"}
+							</p>
+						</div>
+						{renderEmbeddedContent()}
+						{block.storageObject && (
+							<div className="mt-3 text-xs text-gray-500 text-center">
+								Размер: {Math.round(block.storageObject.sizeBytes / 1024)} KB
+							</div>
 						)}
 					</div>
 				) : (
@@ -176,7 +247,7 @@ export const FileUploadBlock = ({
 			<div className="text-center text-xs text-gray-500">или</div>
 
 			{/* Загрузка файла */}
-			<div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center">
+			<div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
 				<input
 					type="file"
 					ref={fileInputRef}
@@ -191,22 +262,15 @@ export const FileUploadBlock = ({
 						<p className="text-sm text-gray-600">Загрузка файла...</p>
 					</div>
 				) : uploadStatus === "success" ? (
-					<div className="flex flex-col items-center">
-						<CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-						<p className="text-sm text-green-600">Файл успешно загружен</p>
-						<p className="text-xs text-gray-500 mt-1">
-							ID: {block.storageObjectId}
-						</p>
-						{block.textContent && (
-							<a
-								href={block.textContent}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-xs text-blue-600 hover:underline mt-1"
-							>
-								Просмотреть
-							</a>
-						)}
+					<div className="space-y-3">
+						<div className="flex flex-col items-center">
+							<CheckCircle className="h-8 w-8 text-green-500 mb-2" />
+							<p className="text-sm text-green-600">Файл успешно загружен</p>
+							<p className="text-xs text-gray-500">
+								ID: {block.storageObjectId}
+							</p>
+						</div>
+						{renderEmbeddedContent()}
 					</div>
 				) : uploadStatus === "error" ? (
 					<div className="flex flex-col items-center">
@@ -224,26 +288,24 @@ export const FileUploadBlock = ({
 							Попробовать снова
 						</Button>
 					</div>
-				) : block.storageObjectId > 0 ? (
-					<div className="flex flex-col items-center">
-						<CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-						<p className="text-sm text-green-600">Файл уже загружен</p>
-						<p className="text-xs text-gray-500 mt-1">
-							ID: {block.storageObjectId}
-						</p>
-						<div className="flex gap-2 mt-2">
+				) : hasUploadedFile ? (
+					<div className="space-y-3">
+						<div className="flex flex-col items-center">
+							<CheckCircle className="h-8 w-8 text-green-500 mb-2" />
+							<p className="text-sm text-green-600">Файл уже загружен</p>
+							<p className="text-xs text-gray-500">
+								ID: {block.storageObjectId}
+							</p>
+						</div>
+						{renderEmbeddedContent()}
+						<div className="flex gap-2 justify-center mt-3">
 							<Button type="button" size="sm" onClick={handleFileSelect}>
 								Заменить файл
 							</Button>
-							{block.textContent && (
-								<Button type="button" size="sm" onClick={handleViewFile}>
-									Просмотр
-								</Button>
-							)}
 						</div>
 					</div>
 				) : (
-					<>
+					<div className="text-center">
 						<Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
 						<p className="text-sm text-gray-600 mb-2">
 							Загрузите {getFileTypeText()}
@@ -252,7 +314,7 @@ export const FileUploadBlock = ({
 							Выбрать файл
 						</Button>
 						<p className="text-xs text-gray-500 mt-2">{getFileSizeLimit()}</p>
-					</>
+					</div>
 				)}
 			</div>
 		</div>
