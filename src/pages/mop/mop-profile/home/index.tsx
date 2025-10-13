@@ -16,6 +16,7 @@ import { MopNavBar } from "@/widget";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const MopProfilePage = () => {
   const {
@@ -35,8 +36,47 @@ export const MopProfilePage = () => {
   const learningProgress = profile?.learningProgress ?? 0;
   const normalizedProgress = Math.max(0, Math.min(100, learningProgress));
 
-  const { data: skillsRes } = useQuery(mopProfilesQueryOptions.profileSkills());
-  const skills = skillsRes?.data ?? [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allSkills, setAllSkills] = useState<MopSkill[]>([]);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const limit = 20;
+
+  const { data: skillsRes, isLoading: isLoadingSkills } = useQuery(
+    mopProfilesQueryOptions.profileSkills({
+      offset: (currentPage - 1) * limit,
+      limit,
+    })
+  );
+
+  const totalPages = skillsRes?.meta?.pagination?.totalPages ?? 0;
+  const hasMorePages = currentPage < totalPages;
+
+  useEffect(() => {
+    if (skillsRes?.data) {
+      if (currentPage === 1) {
+        setAllSkills(skillsRes.data);
+      } else {
+        setAllSkills((prev) => [...prev, ...skillsRes.data]);
+      }
+      setIsFetchingMore(false);
+    }
+  }, [skillsRes, currentPage]);
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const container = e.currentTarget;
+      if (isFetchingMore || !hasMorePages) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+
+      if (isNearBottom) {
+        setIsFetchingMore(true);
+        setCurrentPage((prev) => prev + 1);
+      }
+    },
+    [isFetchingMore, hasMorePages]
+  );
 
   const { data: practicesRes } = useQuery(
     mopProfilesQueryOptions.profilePractices()
@@ -93,31 +133,45 @@ export const MopProfilePage = () => {
         </p>
       ),
       content: (
-        <div className="flex flex-col gap-2 pt-2">
-          {skills.length === 0 ? (
+        <div
+          className="flex flex-col gap-2 pt-2 max-h-[320px] overflow-auto"
+          onScroll={handleScroll}
+        >
+          {isLoadingSkills && currentPage === 1 ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-white" />
+            </div>
+          ) : allSkills.length === 0 ? (
             <p className="text-xs text-white">Навыков пока нет</p>
           ) : (
-            skills.map((s) => (
-              <div
-                key={s.id}
-                className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]"
-              >
-                <p className="text-white">{s.name}</p>
+            <>
+              {allSkills.map((s) => (
                 <div
-                  className={`px-[18px] py-[4.5px] rounded-[8px] ${getSkillClasses(
-                    s.status
-                  )}`}
+                  key={s.id}
+                  className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]"
                 >
-                  <p className="text-xs leading-[100%]">
-                    {s.status === "FULL"
-                      ? "Да"
-                      : s.status === "HALF"
-                      ? "50/50"
-                      : "Нет"}
-                  </p>
+                  <p className="text-white">{s.name}</p>
+                  <div
+                    className={`px-[18px] py-[4.5px] rounded-[8px] ${getSkillClasses(
+                      s.status
+                    )}`}
+                  >
+                    <p className="text-xs leading-[100%]">
+                      {s.status === "FULL"
+                        ? "Да"
+                        : s.status === "HALF"
+                        ? "50/50"
+                        : "Нет"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {isFetchingMore && (
+                <div className="flex justify-center py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                </div>
+              )}
+            </>
           )}
         </div>
       ),
