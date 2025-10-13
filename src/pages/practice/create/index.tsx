@@ -21,28 +21,6 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import MultiSelectChips from "@/components/multi-select-chips";
 
-/** Zoom icon */
-const ZoomIcon = ({
-  size = 20,
-  className = "",
-}: {
-  size?: number;
-  className?: string;
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-      fill="#2D8CFF"
-    />
-  </svg>
-);
 
 /** Pagination helper that tolerates both page-based and boolean hasNext signatures */
 function getNextPageParamFromMeta(lastPage: any) {
@@ -92,11 +70,11 @@ const PracticeCreatePage = () => {
   // ---- Queries ----
 
   // Zoom status
-  const { data: zoomStatusData } = useQuery({
+  const { data: zoomStatusData, isLoading: zoomStatusLoading, isFetching: zoomStatusFetching } = useQuery({
     ...adminsQueryOptions.zoomStatus(),
     enabled: role === "ADMIN",
   });
-  const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
+  const isZoomAuthorized = zoomStatusData?.data?.connected;
 
   // Skills list (always available)
   const skills = useInfiniteQuery({
@@ -273,6 +251,29 @@ const PracticeCreatePage = () => {
     if (!scenarioId) return false;
     if (practiceType === "WITH_CASE" && !caseId) return false;
     if (!dateLocal || !timeLocal) return false;
+
+    // If selected date is today, ensure selected time is in the future
+    const now = new Date();
+    const isSameDay =
+      dateLocal.getFullYear() === now.getFullYear() &&
+      dateLocal.getMonth() === now.getMonth() &&
+      dateLocal.getDate() === now.getDate();
+
+    if (isSameDay) {
+      const [hh, mm] = timeLocal.split(":").map((x) => Number(x));
+      if (!Number.isFinite(hh) || !Number.isFinite(mm)) return false;
+      const candidate = new Date(
+        dateLocal.getFullYear(),
+        dateLocal.getMonth(),
+        dateLocal.getDate(),
+        hh,
+        mm,
+        0,
+        0
+      );
+      if (candidate <= now) return false;
+    }
+
     return true;
   }, [practiceType, scenarioId, caseId, dateLocal, timeLocal]);
 
@@ -471,7 +472,7 @@ const PracticeCreatePage = () => {
           </div>
 
           {/* Zoom Connect (Admin only) */}
-          {role === "ADMIN" && !isZoomAuthorized && (
+          {role === "ADMIN" && !zoomStatusLoading && !zoomStatusFetching && isZoomAuthorized === false && (
             <div>
               <Button
                 type="button"
@@ -480,8 +481,7 @@ const PracticeCreatePage = () => {
                 onClick={connectToZoom}
                 disabled={isConnecting}
               >
-                <ZoomIcon size={20} className="mr-2" />
-                {isConnecting ? "Connecting..." : "Connect Zoom Account"}
+                {isConnecting ? "Подключение..." : "Подключить аккаунт Zoom"}
               </Button>
             </div>
           )}
