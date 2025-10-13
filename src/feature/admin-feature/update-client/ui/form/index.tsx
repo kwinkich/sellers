@@ -99,13 +99,27 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 	const handleAddLicenses = (licenseCount: number, licenseExpiresAt: Date) => {
 		if (!clientId) return;
 
-		addLicenses({
-			id: parseInt(clientId),
-			data: {
-				licenseCount,
-				licenseExpiresAt: licenseExpiresAt.toISOString(),
+		const previousCount = form.getValues("licenseCount");
+		const nextCount = previousCount + licenseCount;
+
+		// Optimistically update the UI
+		form.setValue("licenseCount", nextCount);
+
+		addLicenses(
+			{
+				id: parseInt(clientId),
+				data: {
+					licenseCount,
+					licenseExpiresAt: licenseExpiresAt.toISOString(),
+				},
 			},
-		});
+			{
+				onError: () => {
+					// Rollback on error
+					form.setValue("licenseCount", previousCount);
+				},
+			}
+		);
 	};
 
 	const isPending = isUpdating || isAddingLicenses;

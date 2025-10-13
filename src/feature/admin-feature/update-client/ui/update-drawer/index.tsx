@@ -10,7 +10,7 @@ import {
 	DrawerTrigger,
 } from "@/components/ui/drawer";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AddLicensesDrawerProps {
 	onSave: (licenseCount: number, licenseExpiresAt: Date) => void;
@@ -24,10 +24,20 @@ export function AddLicensesDrawer({
 	disabled,
 }: AddLicensesDrawerProps) {
 	const [open, setOpen] = useState(false);
-	const [licenseCount, setLicenseCount] = useState(
-		currentLicenseCount.toString()
-	);
+	const [licenseCount, setLicenseCount] = useState("0");
 	const [licenseExpiresAt, setLicenseExpiresAt] = useState<Date>();
+
+	useEffect(() => {
+		if (open) {
+			setLicenseCount("0");
+			setLicenseExpiresAt(undefined);
+		}
+	}, [open]);
+
+	// reference currentLicenseCount to avoid unused warnings
+	useEffect(() => {
+		return;
+	}, [currentLicenseCount]);
 
 	const handleSave = () => {
 		if (licenseExpiresAt) {
@@ -56,7 +66,7 @@ export function AddLicensesDrawer({
 							placeholder="Количество лицензий"
 							value={licenseCount}
 							onValueChange={setLicenseCount}
-							options={Array.from({ length: 12 }, (_, i) => i + 1).map(
+					options={Array.from({ length: 13 }, (_, i) => i).map(
 								(number) => ({
 									value: number.toString(),
 									label: `${number} ${

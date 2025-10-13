@@ -19,6 +19,8 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 
 export const MopProfilePage = () => {
+  const navigate = useNavigate();
+
   const {
     data: profileRes,
     isLoading,
@@ -325,7 +327,13 @@ export const MopProfilePage = () => {
 
             <p className="flex-1 text-xs text-base-gray">Прогресс обучения</p>
 
-            <ArrowIcon size={24} fill="#06935F" />
+            <button
+              onClick={() => navigate("/mop/education/courses")}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              aria-label="Перейти к курсам"
+            >
+              <ArrowIcon size={24} fill="#06935F" />
+            </button>
           </div>
 
           <div className="w-full flex items-center gap-2">

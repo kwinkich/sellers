@@ -1,224 +1,285 @@
 import { Button } from "@/components/ui/button";
 import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-	AdminsAPI,
-	adminsQueryOptions,
+  AdminsAPI,
+  adminsQueryOptions,
 } from "@/entities/admin/model/api/admin.api";
+import { mopProfilesQueryOptions } from "@/entities/mop";
 import { practicesMutationOptions } from "@/entities/practices";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
 import {
-	CalendarIcon,
-	PracticeTypeIcon,
-	ScenarioIcon,
-	SkillsIcon,
-	useUserRole,
+  CalendarIcon,
+  PracticeTypeIcon,
+  ScenarioIcon,
+  SkillsIcon,
+  useUserRole,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
+import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Function to get available roles based on repScore
+const getAvailableRoles = (repScore: number): PracticeParticipantRole[] => {
+  const roles: PracticeParticipantRole[] = ["OBSERVER"]; // Always available
+
+  if (repScore >= 2) {
+    roles.push("BUYER");
+  }
+
+  if (repScore >= 3) {
+    roles.push("SELLER", "MODERATOR");
+  }
+
+  return roles;
+};
+
 const PracticePreviewPage = () => {
-	const store = useCreatePracticeStore();
-	const navigate = useNavigate();
-	const qc = useQueryClient();
-	const {
-		scenarioId,
-		caseId,
-		skillIds,
-		startAt,
-		zoomLink,
-		initialRole,
-		scenarioTitle,
-		skillNames,
-		practiceType,
-	} = store;
-	const practiceTypeLabel = practiceType
-		? getPracticeTypeLabel(practiceType as PracticeType)
-		: undefined;
+  const store = useCreatePracticeStore();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const {
+    scenarioId,
+    caseId,
+    skillIds,
+    startAt,
+    zoomLink,
+    initialRole,
+    scenarioTitle,
+    skillNames,
+    practiceType,
+  } = store;
+  const practiceTypeLabel = practiceType
+    ? getPracticeTypeLabel(practiceType as PracticeType)
+    : undefined;
 
-	const { role } = useUserRole();
-	const [zoomError, setZoomError] = useState<string>("");
-	const isZoomMeetingCreatedRef = useRef<boolean>(false);
+  const { role } = useUserRole();
+  const [zoomError, setZoomError] = useState<string>("");
+  const isZoomMeetingCreatedRef = useRef<boolean>(false);
 
-	// Zoom status query for admin users
-	const { data: zoomStatusData } = useQuery({
-		...adminsQueryOptions.zoomStatus(),
-		enabled: role === "ADMIN",
-	});
+  // Get MOP profile info for MOP users
+  const { data: mopProfileRes } = useQuery({
+    ...mopProfilesQueryOptions.profileInfo(),
+    enabled: role === "MOP",
+  });
+  const mopProfile = mopProfileRes?.data;
+  const repScore = mopProfile?.repScore ?? 0;
 
-	const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
+  // Zoom status query for admin users
+  const { data: zoomStatusData } = useQuery({
+    ...adminsQueryOptions.zoomStatus(),
+    enabled: role === "ADMIN",
+  });
 
-	// Auto-set role to MODERATOR for ADMIN users
-	useEffect(() => {
-		if (role === "ADMIN" && initialRole !== "MODERATOR") {
-			store.setRole("MODERATOR");
-		}
-	}, [role, initialRole, store]);
+  const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
 
-	// Auto-create Zoom meeting for admin users when authorized
-	useEffect(() => {
-		const createZoomMeeting = async () => {
-			if (
-				role === "ADMIN" &&
-				isZoomAuthorized &&
-				startAt &&
-				scenarioTitle &&
-				zoomLink === "" &&
-				!isZoomMeetingCreatedRef.current
-			) {
-				try {
-					setZoomError("");
-					isZoomMeetingCreatedRef.current = true; // Set flag immediately to prevent duplicate calls
+  // Auto-set role to MODERATOR for ADMIN users
+  useEffect(() => {
+    if (role === "ADMIN" && initialRole !== "MODERATOR") {
+      store.setRole("MODERATOR");
+    }
+  }, [role, initialRole, store]);
 
-					const response = await AdminsAPI.zoomCreateMeeting({
-						start_time: startAt,
-						topic: scenarioTitle,
-					});
+  // Auto-set role for MOP users based on available roles
+  useEffect(() => {
+    if (role === "MOP" && mopProfile) {
+      const availableRoles = getAvailableRoles(repScore);
+      // If current role is not available, set to the first available role
+      if (
+        initialRole &&
+        !availableRoles.includes(initialRole as PracticeParticipantRole)
+      ) {
+        store.setRole(availableRoles[0]);
+      }
+    }
+  }, [role, mopProfile, repScore, initialRole, store]);
 
-					if (response.data?.join_url) {
-						store.setZoom(response.data.join_url);
-					} else {
-						setZoomError("Генерация ссылки недоступна");
-					}
-				} catch (error) {
-					console.error("Error creating Zoom meeting:", error);
-					setZoomError("Генерация ссылки недоступна");
-					isZoomMeetingCreatedRef.current = false; // Reset flag on error so user can retry
-				}
-			}
-		};
+  // Auto-create Zoom meeting for admin users when authorized
+  useEffect(() => {
+    const createZoomMeeting = async () => {
+      if (
+        role === "ADMIN" &&
+        isZoomAuthorized &&
+        startAt &&
+        scenarioTitle &&
+        zoomLink === "" &&
+        !isZoomMeetingCreatedRef.current
+      ) {
+        try {
+          setZoomError("");
+          isZoomMeetingCreatedRef.current = true; // Set flag immediately to prevent duplicate calls
 
-		createZoomMeeting();
-	}, [role, isZoomAuthorized, startAt, scenarioTitle, zoomLink, store]);
+          const response = await AdminsAPI.zoomCreateMeeting({
+            start_time: startAt,
+            topic: scenarioTitle,
+          });
 
-	const create = useMutation({
-		...practicesMutationOptions.create(),
-		onSuccess: async () => {
-			await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
-			store.close();
-			navigate("/practice");
-		},
-	});
+          if (response.data?.join_url) {
+            store.setZoom(response.data.join_url);
+          } else {
+            setZoomError("Генерация ссылки недоступна");
+          }
+        } catch (error) {
+          console.error("Error creating Zoom meeting:", error);
+          setZoomError("Генерация ссылки недоступна");
+          isZoomMeetingCreatedRef.current = false; // Reset flag on error so user can retry
+        }
+      }
+    };
 
-	return (
-		<div className="bg-white text-black min-h-full pb-24">
-			<div className="flex flex-col bg-base-bg p-3 text-sm rounded-b-2xl text-white gap-2 mb-3">
-				<div className="flex flex-row justify-between items-center">
-					<h1 className="text-xl font-semibold">Предпросмотр практики</h1>
-					<Button
-						size="2s"
-						variant="main-opacity10"
-						text="main"
-						className="rounded-lg px-3 bg-transparent"
-						onClick={() => navigate("/practice/create")}
-					>
-						Изменить
-					</Button>
-				</div>
+    createZoomMeeting();
+  }, [role, isZoomAuthorized, startAt, scenarioTitle, zoomLink, store]);
 
-				<div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
-					<ScenarioIcon size={24} cn="ml-1.5 text-base-main" />
-					<div className="flex flex-col gap-1">
-						<span className="text-base-gray">Сценарий практики</span>{" "}
-						{scenarioTitle ?? "—"}
-					</div>
-				</div>
-				<div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
-					<PracticeTypeIcon size={24} cn="ml-1.5 text-base-main" />
-					<div className="flex flex-col gap-1">
-						<span className="text-base-gray">Тип практики</span>{" "}
-						{practiceTypeLabel ?? "—"}
-					</div>
-				</div>
-				<div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
-					<SkillsIcon size={24} cn="ml-1.5 text-base-main" />
-					<div className="flex flex-col gap-1">
-						<span className="text-base-gray">Навык практики</span>{" "}
-						{skillNames[0] ?? "—"}
-					</div>
-				</div>
-				<div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
-					<CalendarIcon size={24} cn="ml-1.5 text-base-main" />
-					<div className="flex flex-col gap-1">
-						<span className="text-base-gray">Дата/время</span>{" "}
-						{startAt ? new Date(startAt).toLocaleString("ru-RU") : "—"}
-					</div>
-				</div>
-			</div>
+  const create = useMutation({
+    ...practicesMutationOptions.create(),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
+      store.close();
+      navigate("/practice");
+    },
+  });
 
-			<div className="space-y-3 p-3">
-				<div>
-					<input
-						className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium placeholder:text-second-gray"
-						value={zoomLink}
-						onChange={(e) => {
-							store.setZoom(e.target.value);
-							setZoomError(""); // Clear error when user manually edits
-						}}
-						placeholder={zoomError || "Ссылка на встречу"}
-					/>
-					{zoomError && (
-						<p className="text-red-500 text-sm mt-1">{zoomError}</p>
-					)}
-				</div>
+  return (
+    <div className="bg-white text-black min-h-full pb-24">
+      <div className="flex flex-col bg-base-bg p-3 text-sm rounded-b-2xl text-white gap-2 mb-3">
+        <div className="flex flex-row justify-between items-center">
+          <h1 className="text-xl font-semibold">Предпросмотр практики</h1>
+          <Button
+            size="2s"
+            variant="main-opacity10"
+            text="main"
+            className="rounded-lg px-3 bg-transparent"
+            onClick={() => navigate("/practice/create")}
+          >
+            Изменить
+          </Button>
+        </div>
 
-				<div>
-					{role === "ADMIN" ? (
-						<div className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium flex items-center text-gray-700">
-							Роль: Модератор
-						</div>
-					) : (
-						<Select
-							onValueChange={(v) => store.setRole(v as any)}
-							value={initialRole as any}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Выберите свою роль" />
-							</SelectTrigger>
-							<SelectContent side="bottom" align="start">
-								<SelectGroup>
-									<SelectItem value="SELLER">Продавец</SelectItem>
-									<SelectItem value="BUYER">Покупатель</SelectItem>
-									<SelectItem value="MODERATOR">Модератор</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					)}
-				</div>
-			</div>
+        <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
+          <ScenarioIcon size={24} cn="ml-1.5 text-base-main" />
+          <div className="flex flex-col gap-1">
+            <span className="text-base-gray">Сценарий практики</span>{" "}
+            {scenarioTitle ?? "—"}
+          </div>
+        </div>
+        <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
+          <PracticeTypeIcon size={24} cn="ml-1.5 text-base-main" />
+          <div className="flex flex-col gap-1">
+            <span className="text-base-gray">Тип практики</span>{" "}
+            {practiceTypeLabel ?? "—"}
+          </div>
+        </div>
+        <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
+          <SkillsIcon size={24} cn="ml-1.5 text-base-main" />
+          <div className="flex flex-col gap-1">
+            <span className="text-base-gray">Навык практики</span>{" "}
+            {skillNames[0] ?? "—"}
+          </div>
+        </div>
+        <div className="bg-second-bg flex flex-row gap-5 p-2 rounded-2xl items-center">
+          <CalendarIcon size={24} cn="ml-1.5 text-base-main" />
+          <div className="flex flex-col gap-1">
+            <span className="text-base-gray">Дата/время</span>{" "}
+            {startAt ? new Date(startAt).toLocaleString("ru-RU") : "—"}
+          </div>
+        </div>
+      </div>
 
-			<div className="px-3">
-				<Button
-					className="w-full"
-					disabled={create.isPending || !initialRole || !zoomLink}
-					onClick={() => {
-						if (!scenarioId || !startAt || !initialRole || !practiceType)
-							return;
-						create.mutate({
-							scenarioId,
-							practiceType,
-							caseId: practiceType === "WITHOUT_CASE" ? undefined : caseId,
-							skillIds,
-							startAt,
-							initialRole,
-							zoomLink,
-						} as any);
-					}}
-				>
-					{create.isPending ? "Публикация…" : "Опубликовать"}
-				</Button>
-			</div>
-		</div>
-	);
+      <div className="space-y-3 p-3">
+        <div>
+          <input
+            className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium placeholder:text-second-gray"
+            value={zoomLink}
+            onChange={(e) => {
+              store.setZoom(e.target.value);
+              setZoomError(""); // Clear error when user manually edits
+            }}
+            placeholder={zoomError || "Ссылка на встречу"}
+          />
+          {zoomError && (
+            <p className="text-red-500 text-sm mt-1">{zoomError}</p>
+          )}
+        </div>
+
+        <div>
+          {role === "ADMIN" ? (
+            <div className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium flex items-center text-gray-700">
+              Роль: Модератор
+            </div>
+          ) : role === "MOP" ? (
+            <Select
+              onValueChange={(v) => store.setRole(v as any)}
+              value={initialRole as any}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите свою роль" />
+              </SelectTrigger>
+              <SelectContent side="bottom" align="start">
+                <SelectGroup>
+                  {getAvailableRoles(repScore).map((availableRole) => (
+                    <SelectItem key={availableRole} value={availableRole}>
+                      {availableRole === "SELLER" && "Продавец"}
+                      {availableRole === "BUYER" && "Покупатель"}
+                      {availableRole === "MODERATOR" && "Модератор"}
+                      {availableRole === "OBSERVER" && "Наблюдатель"}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          ) : (
+            <Select
+              onValueChange={(v) => store.setRole(v as any)}
+              value={initialRole as any}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите свою роль" />
+              </SelectTrigger>
+              <SelectContent side="bottom" align="start">
+                <SelectGroup>
+                  <SelectItem value="SELLER">Продавец</SelectItem>
+                  <SelectItem value="BUYER">Покупатель</SelectItem>
+                  <SelectItem value="MODERATOR">Модератор</SelectItem>
+                  <SelectItem value="OBSERVER">Наблюдатель</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
+      <div className="px-3">
+        <Button
+          className="w-full"
+          disabled={create.isPending || !initialRole || !zoomLink}
+          onClick={() => {
+            if (!scenarioId || !startAt || !initialRole || !practiceType)
+              return;
+            create.mutate({
+              scenarioId,
+              practiceType,
+              caseId: practiceType === "WITHOUT_CASE" ? undefined : caseId,
+              skillIds,
+              startAt,
+              initialRole,
+              zoomLink,
+            } as any);
+          }}
+        >
+          {create.isPending ? "Публикация…" : "Опубликовать"}
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export default PracticePreviewPage;

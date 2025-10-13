@@ -16,5 +16,3 @@ export const usePracticeJoinStore = create<PracticeJoinState>((set) => ({
   close: () => set({ isOpen: false, practice: undefined }),
   setPractice: (practice) => set({ practice }),
 }));
-
-
