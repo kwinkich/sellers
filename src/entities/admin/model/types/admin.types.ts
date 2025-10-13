@@ -38,16 +38,29 @@ export interface ZoomStatus {
 export interface ZoomCreateMeetingParams {
   topic?: string;
   start_time: string;
+  duration?: number;
   timezone?: string;
 }
 
 export interface ZoomMeeting {
   id: string;
+  join_url: string;
+  start_url: string;
   topic: string;
   start_time: string;
   duration: number;
-  join_url: string;
-  password?: string;
+  timezone: string;
+  created_at: string;
+}
+
+export interface ZoomTokenInfo {
+  expires_in: number;
+  scope: string;
+}
+
+export interface ZoomCreateMeetingResponse {
+  meeting: ZoomMeeting;
+  token_info: ZoomTokenInfo;
 }
 
 export interface ZoomConnectResponse {

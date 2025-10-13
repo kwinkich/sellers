@@ -9,17 +9,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { adminsQueryOptions } from "@/entities/admin/model/api/admin.api";
+import { AdminsAPI } from "@/entities/admin/model/api/admin.api";
 import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
-import { useUserRole, useZoomConnection } from "@/shared";
+import { useUserRole } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 
 /** Pagination helper that tolerates both page-based and boolean hasNext signatures */
@@ -53,12 +54,10 @@ function toUtcIso(dateLocal: Date, hhmm: string): string {
 const PracticeCreatePage = () => {
 	const store = useCreatePracticeStore();
 	const navigate = useNavigate();
+	const { role } = useUserRole();
 
 	// store keeps numeric IDs, UI uses strings to avoid equality glitches
-	const { scenarioId, caseId, skillIds, practiceType } = store;
-
-	const { role } = useUserRole();
-	const { connectToZoom, isConnecting } = useZoomConnection();
+	const { scenarioId, caseId, skillIds, practiceType, scenarioTitle } = store;
 
 	// Local date/time for stable UX; compute UTC on submit
 	const [dateLocal, setDateLocal] = React.useState<Date | undefined>(undefined);
@@ -66,15 +65,9 @@ const PracticeCreatePage = () => {
 
 	// Used to visually reset the MultiSelectChips back to clean placeholder state
 	const [skillsResetVersion, setSkillsResetVersion] = React.useState(0);
+	const [isCreatingMeeting, setIsCreatingMeeting] = React.useState(false);
 
 	// ---- Queries ----
-
-  // Zoom status
-  const { data: zoomStatusData, isLoading: zoomStatusLoading, isFetching: zoomStatusFetching } = useQuery({
-    ...adminsQueryOptions.zoomStatus(),
-    enabled: role === "ADMIN",
-  });
-  const isZoomAuthorized = zoomStatusData?.data?.connected;
 
 	// Skills list (always available)
 	const skills = useInfiniteQuery({
@@ -288,12 +281,37 @@ const PracticeCreatePage = () => {
     return true;
   }, [practiceType, scenarioId, caseId, dateLocal, timeLocal]);
 
-	const handleNext = React.useCallback(() => {
+	const handleNext = React.useCallback(async () => {
 		if (!canProceed || !dateLocal || !timeLocal) return;
+		
 		const startAtUTC = toUtcIso(dateLocal, timeLocal);
 		store.setStartAt(startAtUTC);
+
+		// Create Zoom meeting for admin users
+		if (role === "ADMIN" && scenarioTitle) {
+			setIsCreatingMeeting(true);
+			try {
+				const response = await AdminsAPI.zoomCreateMeeting({
+					start_time: startAtUTC,
+					topic: scenarioTitle,
+				});
+
+				if (response.data?.meeting?.join_url) {
+					store.setZoom(response.data.meeting.join_url);
+					toast.success("Встреча Zoom создана");
+				} else {
+					toast.error("Не удалось создать встречу Zoom");
+				}
+			} catch (error) {
+				console.error("Error creating Zoom meeting:", error);
+				toast.error("Ошибка при создании встречи Zoom");
+			} finally {
+				setIsCreatingMeeting(false);
+			}
+		}
+
 		navigate("/practice/preview");
-	}, [canProceed, dateLocal, timeLocal, store, navigate]);
+	}, [canProceed, dateLocal, timeLocal, store, navigate, role, scenarioTitle]);
 
 	return (
 		<div className="bg-white text-black min-h-screen flex flex-col pb-24">
@@ -481,28 +499,17 @@ const PracticeCreatePage = () => {
 							lang="ru-RU"
 						/>
 					</div>
-
-          {/* Zoom Connect (Admin only) */}
-          {role === "ADMIN" && !zoomStatusLoading && !zoomStatusFetching && isZoomAuthorized === false && (
-            <div>
-              <Button
-                type="button"
-                variant="default"
-                className="w-full bg-[#2D8CFF] hover:bg-[#1E6BB8] text-white"
-                onClick={connectToZoom}
-                disabled={isConnecting}
-              >
-                {isConnecting ? "Подключение..." : "Подключить аккаунт Zoom"}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+				</div>
+			</div>
 
 			{/* Footer / Next */}
 			<div className="px-4">
-				<Button className="w-full" disabled={!canProceed} onClick={handleNext}>
-					Следующий шаг
+				<Button 
+					className="w-full" 
+					disabled={!canProceed || isCreatingMeeting} 
+					onClick={handleNext}
+				>
+					{isCreatingMeeting ? "Создание встречи..." : "Следующий шаг"}
 				</Button>
 			</div>
 		</div>
