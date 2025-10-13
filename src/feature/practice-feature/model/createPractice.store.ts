@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { PracticeType } from "@/shared/types/practice.types";
+import type { PracticeParticipantRole } from "@/shared/types/user.types";
 
 interface CreatePracticeState {
   scenarioId?: number;
@@ -12,7 +13,7 @@ interface CreatePracticeState {
   skillNames: string[];
   startAt?: string; // ISO string
   zoomLink?: string;
-  initialRole?: "SELLER" | "BUYER" | "MODERATOR";
+  initialRole?: PracticeParticipantRole;
   close: () => void;
   setScenario: (id: number | undefined, title?: string) => void;
   setPracticeType: (type?: PracticeType) => void;
@@ -21,7 +22,7 @@ interface CreatePracticeState {
   setSkillNames: (names: string[]) => void;
   setStartAt: (iso?: string) => void;
   setZoom: (url: string) => void;
-  setRole: (r: "SELLER" | "BUYER" | "MODERATOR" | undefined) => void;
+  setRole: (r: PracticeParticipantRole | undefined) => void;
 }
 
 export const useCreatePracticeStore = create<CreatePracticeState>((set) => ({
@@ -48,14 +49,18 @@ export const useCreatePracticeStore = create<CreatePracticeState>((set) => ({
       zoomLink: "",
       initialRole: undefined,
     }),
-  setScenario: (id, title) => set({ scenarioId: id, scenarioTitle: title, caseId: undefined, caseTitle: undefined }),
+  setScenario: (id, title) =>
+    set({
+      scenarioId: id,
+      scenarioTitle: title,
+      caseId: undefined,
+      caseTitle: undefined,
+    }),
   setPracticeType: (type) => set({ practiceType: type }),
   setCase: (id, title) => set({ caseId: id ?? undefined, caseTitle: title }),
   setSkills: (ids) => set({ skillIds: ids }),
   setSkillNames: (names) => set({ skillNames: names }),
   setStartAt: (iso) => set({ startAt: iso }),
   setZoom: (url) => set({ zoomLink: url }),
-  setRole: (r) => set({ initialRole: r as any }),
+  setRole: (r) => set({ initialRole: r }),
 }));
-
-

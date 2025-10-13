@@ -31,14 +31,14 @@ export const MopProfilesAPI = {
   getMopProfileSkills: (params?: GetMopProfileParams) => {
     const searchParams = createSearchParams(params);
     return API.get("mop-profiles/profile/skills", { searchParams }).json<
-      GApiResponse<MopSkill[], false>
+      GApiResponse<MopSkill, true>
     >();
   },
 
   getMopProfilePractices: (params?: GetMopProfileParams) => {
     const searchParams = createSearchParams(params);
     return API.get("mop-profiles/profile/practices", { searchParams }).json<
-      GApiResponse<MopPractice[], false>
+      GApiResponse<MopPractice, true>
     >();
   },
 
@@ -48,14 +48,14 @@ export const MopProfilesAPI = {
   getMopProfileSkillsById: (id: number, params?: GetMopProfileParams) => {
     const searchParams = createSearchParams(params);
     return API.get(`mop-profiles/${id}/skills`, { searchParams }).json<
-      GApiResponse<MopSkill[], false>
+      GApiResponse<MopSkill, true>
     >();
   },
 
   getMopProfilePracticesById: (id: number, params?: GetMopProfileParams) => {
     const searchParams = createSearchParams(params);
     return API.get(`mop-profiles/${id}/practices`, { searchParams }).json<
-      GApiResponse<MopPractice[], false>
+      GApiResponse<MopPractice, true>
     >();
   },
 };
