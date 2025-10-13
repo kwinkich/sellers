@@ -6,24 +6,58 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Badge, ClientIcon, TimerIcon, getRoleLabel } from "@/shared";
+import {
+  Badge,
+  ClientIcon,
+  TimerIcon,
+  getRoleLabel,
+  useUserRole,
+} from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type {
   PracticeParticipantRole,
   PracticeRole,
 } from "@/entities/practices";
 import { practicesMutationOptions } from "@/entities/practices";
+import { mopProfilesQueryOptions } from "@/entities/mop";
 import { useTermsStore } from "../model/terms.store";
 import { useSuccessDrawerStore } from "../model/successDrawer.store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { usePracticeJoinStore } from "../model/joinDrawer.store";
+
+// Function to check if role is available based on repScore
+const isRoleAvailableByRep = (
+  role: PracticeParticipantRole,
+  repScore: number
+): boolean => {
+  switch (role) {
+    case "OBSERVER":
+      return true; // Always available
+    case "BUYER":
+      return repScore >= 2;
+    case "SELLER":
+    case "MODERATOR":
+      return repScore >= 3;
+    default:
+      return false;
+  }
+};
 
 export const PracticeJoinDrawer = () => {
   const qc = useQueryClient();
   const { isOpen, practice, close, setPractice } = usePracticeJoinStore();
   const [selectedRole, setSelectedRole] =
     useState<PracticeParticipantRole | null>(null);
+  const { role } = useUserRole();
+
+  // Get MOP profile info for MOP users
+  const { data: mopProfileRes } = useQuery({
+    ...mopProfilesQueryOptions.profileInfo(),
+    enabled: role === "MOP",
+  });
+  const mopProfile = mopProfileRes?.data;
+  const repScore = mopProfile?.repScore ?? 0;
 
   useEffect(() => {
     if (!isOpen) setSelectedRole(null);
@@ -39,13 +73,34 @@ export const PracticeJoinDrawer = () => {
   const roleStatus = useMemo(() => {
     const available = new Set(practice?.freeRoles ?? []);
     const myRole = practice?.myRole ?? null;
-    return roles.map((r) => ({
-      role: r,
-      // OBSERVER is always selectable; others depend on backend freeRoles
-      isAvailable: r === "OBSERVER" ? true : available.has(r as PracticeRole),
-      isMine: myRole === r,
-    }));
-  }, [practice]);
+
+    return roles.map((r) => {
+      // If this is my current role, it should be available for switching
+      const isMyCurrentRole = myRole === r;
+
+      // For OBSERVER, always available (can always observe)
+      // For other roles, check if they're in freeRoles OR if it's my current role
+      const isBackendAvailable =
+        r === "OBSERVER"
+          ? true
+          : isMyCurrentRole || available.has(r as PracticeRole);
+
+      // For MOP users: always check rep requirements
+      // OBSERVER is always available, other roles need rep check
+      const isRepAvailable =
+        role === "MOP" && r !== "OBSERVER"
+          ? isRoleAvailableByRep(r, repScore)
+          : true;
+      const isAvailable = isBackendAvailable && isRepAvailable;
+
+      return {
+        role: r,
+        isAvailable,
+        isMine: myRole === r,
+        isRepBlocked: role === "MOP" && !isRepAvailable,
+      };
+    });
+  }, [practice, role, repScore]);
 
   const join = useMutation({
     ...practicesMutationOptions.join(),
@@ -169,8 +224,7 @@ export const PracticeJoinDrawer = () => {
           <div className="w-full mt-4 bg-second-bg p-3 rounded-2xl">
             <p className="text-base-gray mb-2">Выберите стартовую роль</p>
             <div className="divide-y divide-second-bg">
-              {roleStatus.map(({ role, isAvailable, isMine }) => {
-                const taken = !isAvailable;
+              {roleStatus.map(({ role, isMine, isRepBlocked }) => {
                 const isSelected = selectedRole === role;
                 const label = getRoleLabel(role);
                 const repMin =
@@ -181,6 +235,14 @@ export const PracticeJoinDrawer = () => {
                     : role === "SELLER"
                     ? 3
                     : 4;
+
+                // Determine if role is actually taken (not available on backend)
+                const isBackendAvailable =
+                  role === "OBSERVER"
+                    ? true
+                    : isMine ||
+                      (practice?.freeRoles ?? []).includes(role as any);
+                const isActuallyTaken = !isBackendAvailable && !isMine;
 
                 return (
                   <div
@@ -198,7 +260,7 @@ export const PracticeJoinDrawer = () => {
                     <div className="min-w-[96px] flex items-center justify-center">
                       {isMine ? (
                         <span className="text-sm text-base-main">Моя роль</span>
-                      ) : taken ? (
+                      ) : isActuallyTaken ? (
                         <span className="text-sm text-red-400">Занято</span>
                       ) : (
                         <Button
@@ -207,6 +269,10 @@ export const PracticeJoinDrawer = () => {
                           text={isSelected ? "white" : "main"}
                           onClick={() => setSelectedRole(role)}
                           className="rounded-lg px-3"
+                          disabled={isRepBlocked}
+                          title={
+                            isRepBlocked ? "Недостаточно репутации" : undefined
+                          }
                         >
                           Выбрать
                         </Button>
