@@ -12,6 +12,7 @@ import {
   useUserRole,
   openExternalUrl,
 } from "@/shared";
+import { getFullApiUrl } from "@/shared/lib/api-config";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
 import type { ReactNode } from "react";
@@ -54,9 +55,7 @@ export const PracticePastCard = ({ data }: Props) => {
   const onDownloadReport = () => {
     try {
       // URL для скачивания с параметром dl=1 для attachment disposition
-      const downloadUrl = `${import.meta.env.VITE_API_URL}/api/v1/practices/${
-        data.id
-      }/report?dl=1`;
+      const downloadUrl = `${getFullApiUrl()}/practices/${data.id}/report?dl=1`;
 
       // Используем готовую функцию для открытия во внешнем браузере
       openExternalUrl(downloadUrl);
