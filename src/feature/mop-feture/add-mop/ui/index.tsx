@@ -15,7 +15,7 @@ import { AddPeopleIcon } from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 interface AddMopDrawerProps {
 	open: boolean;
@@ -35,9 +35,7 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
 			queryClient.invalidateQueries({ queryKey: ["clients", "profile"] });
 			queryClient.invalidateQueries({ queryKey: ["clients", "mop-profiles"] });
 
-			toast.success("МОП успешно добавлен", {
-				description: `Участник ${mopName} подключен к системе`,
-			});
+			toast.success("МОП успешно добавлен");
 
 			setMopName("");
 			setMopUsername("");
@@ -45,26 +43,20 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
 		},
 		onError: (error) => {
 			console.error("Ошибка при добавлении МОП:", error);
-			toast.error("Ошибка при добавлении МОП", {
-				description: "Проверьте введенные данные и попробуйте снова",
-			});
+			toast.error("Ошибка при добавлении МОП");
 		},
 	});
 
 	const handleAddMop = () => {
 		if (!clientProfile?.data) {
-			toast.error("Ошибка", {
-				description: "Не удалось получить данные профиля",
-			});
+			toast.error("Ошибка");
 			return;
 		}
 
 		const availableLicenses =
 			clientProfile.data.totalLicenses - clientProfile.data.activeLicenses;
 		if (availableLicenses <= 0) {
-			toast.error("Нет доступных лицензий", {
-				description: "Все лицензии уже используются",
-			});
+			toast.error("Нет доступных лицензий");
 			return;
 		}
 
