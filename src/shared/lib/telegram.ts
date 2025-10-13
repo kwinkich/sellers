@@ -2,13 +2,13 @@ import WebApp from "@twa-dev/sdk";
 
 // Type declaration for Telegram WebApp API
 declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        openLink: (url: string) => void;
-      };
-    };
-  }
+	interface Window {
+		Telegram?: {
+			WebApp?: {
+				openLink: (url: string) => void;
+			};
+		};
+	}
 }
 
 /**
@@ -33,12 +33,12 @@ export function getTelegramStartParam(): string | null {
  * @param url - The URL to open
  */
 export function openExternalUrl(url: string): void {
-  // Check if we're in Telegram WebApp environment
-  if (window.Telegram?.WebApp?.openLink) {
-    // Use Telegram WebApp API to open in external browser
-    window.Telegram.WebApp.openLink(url);
-  } else {
-    // Fallback to regular browser behavior - open in new tab
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
+	// Check if we're in Telegram WebApp environment
+	if (window.Telegram?.WebApp?.openLink) {
+		// Use Telegram WebApp API to open in external browser
+		window.Telegram.WebApp.openLink(url);
+	} else {
+		// Fallback to regular browser behavior - open in new tab
+		window.open(url, "_blank", "noopener,noreferrer");
+	}
 }

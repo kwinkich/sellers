@@ -152,6 +152,7 @@ export const ClientHomePage = () => {
 						rounded="3xl"
 						direction="row"
 						className="h-[90px] col-span-2"
+						onClick={() => navigate("/mop/education/courses")}
 					>
 						<CoursesListIcon size={36} fill="#06935F" />
 						<p className="font-medium text-white leading-[100%]">

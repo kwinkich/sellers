@@ -4,11 +4,12 @@ import { useActivePracticeStore } from "@/feature/practice-feature/model/activeP
 import { useFinishedPracticeStore } from "@/feature/practice-feature/model/finishedPractice.store";
 import { useFinishPracticeStore } from "@/feature/practice-feature/model/finishPractice.store";
 import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
+import { CaseInfoDrawer } from "@/feature/practice-feature/ui/CaseInfoDrawer";
 import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
 import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
 import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
-import { CaseInfoDrawer } from "@/feature/practice-feature/ui/CaseInfoDrawer";
+import { BlockedPage } from "@/pages/Blocked";
 import { useAppInit } from "@/shared";
 import { UserRoleProvider } from "@/shared/contexts/UserRoleContext";
 import { sseClient } from "@/shared/lib/sse";
@@ -159,20 +160,7 @@ export const AppInitLayout = () => {
 
 	// Обработка ошибок авторизации
 	if (isError) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="text-center">
-					<h2 className="text-xl font-semibold mb-2">Ошибка авторизации</h2>
-					<p className="text-gray-600 mb-4">Не удалось войти в систему</p>
-					<button
-						onClick={() => window.location.reload()}
-						className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-					>
-						Перезагрузить
-					</button>
-				</div>
-			</div>
-		);
+		return <BlockedPage />;
 	}
 
 	return (
