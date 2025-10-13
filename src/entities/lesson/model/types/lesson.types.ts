@@ -12,6 +12,7 @@ export interface Lesson {
 	title: string;
 	shortDesc: string;
 	orderIndex: number;
+	completed: boolean;
 	contentBlocks: ContentBlock[];
 }
 

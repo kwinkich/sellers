@@ -3,16 +3,17 @@ import { lessonsQueryOptions, type ContentBlock } from "@/entities";
 import { ArrowIcon, HeadText } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const LessonDetailsPage = () => {
-	const { id } = useParams<{ id: string }>();
+	const { lessonId } = useParams<{ lessonId: string }>();
+	const navigate = useNavigate();
 
 	const {
 		data: lessonResponse,
 		isLoading,
 		error,
-	} = useQuery(lessonsQueryOptions.byId(parseInt(id!)));
+	} = useQuery(lessonsQueryOptions.byId(Number(lessonId)));
 
 	if (isLoading) {
 		return (
@@ -128,7 +129,11 @@ export const LessonDetailsPage = () => {
 			</div>
 
 			<div className="w-full px-2">
-				<Button className="w-full" size="sm">
+				<Button
+					className="w-full"
+					size="sm"
+					onClick={() => navigate(`/mop/education/quizzes/${lesson.quizId}`)}
+				>
 					Пройти завершающий тест
 					<ArrowIcon />
 				</Button>

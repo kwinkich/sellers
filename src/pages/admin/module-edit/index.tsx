@@ -85,23 +85,6 @@ export const ModuleEditPage = () => {
 				</Button>
 			</div>
 
-			{/* Информация о модуле */}
-			<div className="px-4 mb-6">
-				<Box variant="white" align="start" className="p-4">
-					<div className="flex w-full items-center justify-between mb-3">
-						<Badge
-							variant="gray-opacity"
-							label={`Модуль ${module.orderIndex}`}
-						/>
-						<Badge
-							variant="gray-opacity"
-							label={`${module.lessonsCount} урока`}
-						/>
-					</div>
-					<p className="text-sm text-gray-600 mb-3">{module.shortDesc}</p>
-				</Box>
-			</div>
-
 			{/* Список уроков */}
 			<div className="px-4">
 				<h3 className="text-lg font-semibold mb-4">Уроки модуля</h3>
