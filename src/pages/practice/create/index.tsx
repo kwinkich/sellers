@@ -296,7 +296,7 @@ const PracticeCreatePage = () => {
 
 	return (
 		<div className="bg-white text-black min-h-screen flex flex-col pb-24">
-			<div className="px-4 py-4 h-[80dvh] overflow-y-auto">
+			<div className="px-4 py-4 flex-1">
 				<h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
 				<div className="space-y-3">
@@ -500,7 +500,7 @@ const PracticeCreatePage = () => {
 			</div>
 
 			{/* Footer / Next */}
-			<div className="fixed inset-x-0 bottom-24 p-4 pb-0">
+			<div className="px-4">
 				<Button className="w-full" disabled={!canProceed} onClick={handleNext}>
 					Следующий шаг
 				</Button>

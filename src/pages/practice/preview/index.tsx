@@ -196,7 +196,7 @@ const PracticePreviewPage = () => {
 				</div>
 			</div>
 
-			<div className="fixed inset-x-0 bottom-24 p-4 pb-0">
+			<div className="px-3">
 				<Button
 					className="w-full"
 					disabled={create.isPending || !initialRole || !zoomLink}
