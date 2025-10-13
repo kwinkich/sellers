@@ -54,8 +54,18 @@ export const PracticePastCard = ({ data }: Props) => {
 
   const onDownloadReport = () => {
     try {
-      // URL для скачивания с параметром dl=1 для attachment disposition
-      const downloadUrl = `${getFullApiUrl()}/practices/${data.id}/report?dl=1`;
+      // Получаем данные пользователя для авторизации
+      const { role, userId } = useUserRole();
+
+      if (!role || !userId) {
+        console.error("User role or ID not available");
+        return;
+      }
+
+      // URL для скачивания с обязательными параметрами согласно схеме бэкенда
+      const downloadUrl = `${getFullApiUrl()}/practices/${
+        data.id
+      }/report?dl=1&userId=${userId}&userRole=${role}`;
 
       // Используем готовую функцию для открытия во внешнем браузере
       openExternalUrl(downloadUrl);
