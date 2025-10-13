@@ -160,7 +160,7 @@ export const MopProfilePage = () => {
                             ? practice.repDelta > 0
                               ? `+${practice.repDelta} rep`
                               : `${practice.repDelta} rep`
-                            : "rep"}
+                            : ""}
                         </span>
                       </div>
                       <p className="text-lg font-medium text-white">
@@ -233,7 +233,7 @@ export const MopProfilePage = () => {
 
   return (
     <div className="bg-second-bg min-h-dvh">
-      <div className="flex flex-col gap-3 bg-base-bg rounded-b-3xl px-2 pb-3">
+      <div className="flex flex-col gap-3 bg-base-bg rounded-b-3xl px-2 pb-3 pt-2">
         <div className="flex items-center justify-between mb-2">
           <HeadText
             className="gap-0.5 pl-2 pt-2"

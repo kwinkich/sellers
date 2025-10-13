@@ -164,7 +164,7 @@ export const CreateLessonPage = () => {
 					/>
 				</div>
 
-				<div className="flex flex-col gap-4 flex-1 justify-center">
+				<div className="flex flex-col gap-4 flex-1 justify-end">
 					{/* Кнопка создания теста */}
 					{module?.testVariant !== "NONE" && (
 						<Button className="w-full" onClick={handleCreateTest}>

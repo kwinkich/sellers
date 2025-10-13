@@ -19,8 +19,16 @@ import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
 import { toast } from "sonner";
+import { useState } from "react";
 
-function PracticeInfoCardSimple({ data }: { data: any }) {
+function PracticeInfoCardSimple({ 
+  data, 
+  openCaseInfo 
+}: { 
+  data: any; 
+  openCaseInfo: (practice: any) => void; 
+}) {
+  const [isCopied, setIsCopied] = useState(false);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", {
     day: "2-digit",
@@ -40,6 +48,18 @@ function PracticeInfoCardSimple({ data }: { data: any }) {
     ) : (
       <PracticeNoCaseIcon size={32} cn="text-base-main" />
     );
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(data.zoomLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  const role = data.myRole ? getRoleLabel(data.myRole) : "—";
 
   return (
     <div className="bg-gray-100 rounded-2xl p-3 text-black">
@@ -92,7 +112,7 @@ function PracticeInfoCardSimple({ data }: { data: any }) {
           <div className="text-xs">
             <div className="text-base-gray">Ваша роль</div>
             <div className="text-black font-medium">
-              {data.myRole ? getRoleLabel(data.myRole) : "—"}
+              {role}
             </div>
           </div>
         </div>
@@ -106,11 +126,17 @@ function PracticeInfoCardSimple({ data }: { data: any }) {
           </div>
           {data.zoomLink && (
             <button
-              className="ml-2 text-base-main text-sm"
-              onClick={() => navigator.clipboard.writeText(data.zoomLink!)}
-              title="Скопировать"
+              className="ml-2 text-base-main text-sm flex items-center gap-1"
+              onClick={handleCopy}
+              title={isCopied ? "Скопировано!" : "Скопировать"}
             >
-              <CopyIcon size={16} fill="#06935F" />
+              {isCopied ? (
+                <>
+                  <span className="text-xs">Скопировано!</span>
+                </>
+              ) : (
+                <CopyIcon size={16} fill="#06935F" />
+              )}
             </button>
           )}
         </div>
@@ -122,9 +148,11 @@ function PracticeInfoCardSimple({ data }: { data: any }) {
               <div className="text-black font-medium">{data.case.title}</div>
             </div>
             <Button
-              className="bg-base-main"
+              className="bg-base-main h-8"
               size="2s"
-              onClick={() => useCaseInfoStore.getState().open(data)}
+              onClick={() => {
+                if (data.case) openCaseInfo(data);
+              }}
             >
               Изучить
             </Button>
@@ -139,6 +167,7 @@ export const PracticeFinishModal = () => {
   const { isOpen, practiceId, hide } = useFinishPracticeStore();
   const showFinished = useFinishedPracticeStore((s) => s.show);
   const queryClient = useQueryClient();
+  const openCaseInfo = useCaseInfoStore((s) => s.open);
 
   const { data: practiceRes } = useQuery({
     queryKey: ["practices", "detail", practiceId],
@@ -188,13 +217,13 @@ export const PracticeFinishModal = () => {
 
   return (
     <BlockingModal open={isOpen}>
-      <PracticeInfoCardSimple data={practice} />
+      <PracticeInfoCardSimple data={practice} openCaseInfo={openCaseInfo} />
       <div className="mt-4 space-y-2">
         <Button className="w-full h-12" onClick={handleConnect}>
           Подключиться
         </Button>
         <Button
-          className="w-full h-12 bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500"
+          className="w-full h-12 bg-red-500 hover:bg-red-600 focus-visible:ring-red-500"
           onClick={handleFinish}
           disabled={finishMutation.isPending}
           text="white"

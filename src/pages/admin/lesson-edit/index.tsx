@@ -29,7 +29,7 @@ import {
 	Video,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react"; // ИМПОРТИРУЕМ useEffect
 import { useNavigate, useParams } from "react-router-dom";
 
 export const LessonEditPage = () => {
@@ -72,17 +72,22 @@ export const LessonEditPage = () => {
 	const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-	// Инициализация данных при загрузке урока
-	useState(() => {
+	// ИСПРАВЛЕНИЕ: Используем useEffect для инициализации данных при загрузке урока
+	useEffect(() => {
 		if (lessonData?.data) {
 			const lesson = lessonData.data;
+			console.log("Initializing lesson data:", lesson);
+			console.log("Content blocks from API:", lesson.contentBlocks);
+
 			setFormData({
 				title: lesson.title,
 				shortDesc: lesson.shortDesc,
 			});
 			setContentBlocks(lesson.contentBlocks || []);
+
+			console.log("Content blocks after set:", lesson.contentBlocks || []);
 		}
-	});
+	}, [lessonData]); // Добавляем lessonData в зависимости
 
 	const handleEditStart = (): void => {
 		setIsEditing(true);
@@ -224,6 +229,11 @@ export const LessonEditPage = () => {
 
 	const lesson = lessonData.data;
 
+	// Добавим отладочную информацию
+	console.log("Current lesson:", lesson);
+	console.log("Current contentBlocks state:", contentBlocks);
+	console.log("Lesson contentBlocks from API:", lesson.contentBlocks);
+
 	return (
 		<div className="min-h-full flex flex-col pb-24 gap-6">
 			{/* Шапка с полями названия и описания */}
@@ -257,21 +267,12 @@ export const LessonEditPage = () => {
 								required
 							/>
 						</>
-					) : (
-						<>
-							<div className="text-lg font-semibold">{lesson.title}</div>
-							<div className="text-sm text-gray-600">{lesson.shortDesc}</div>
-						</>
-					)}
+					) : null}
 				</div>
 
-				<div className="flex flex-col items-start gap-4 mt-4">
-					<div className="text-xs text-gray-500">
-						Порядок: {lesson.orderIndex} • Блоков: {contentBlocks.length}
-					</div>
-
+				<div className="flex flex-col items-start w-full gap-4 mt-4">
 					{!isEditing ? (
-						<Button size="sm" onClick={handleEditStart}>
+						<Button size="sm" className="w-full" onClick={handleEditStart}>
 							<Edit className="h-4 w-4 mr-2" />
 							Редактировать
 						</Button>
@@ -312,7 +313,7 @@ export const LessonEditPage = () => {
 					onSubmit={handleSave}
 					className="flex flex-col flex-1 gap-6 h-full px-2"
 				>
-					{contentBlocks.length > 0 && (
+					{contentBlocks.length > 0 ? (
 						<div className="flex flex-col flex-1">
 							{/* Блоки контента */}
 							<div className="space-y-4 mb-4">
@@ -376,6 +377,10 @@ export const LessonEditPage = () => {
 									</Box>
 								))}
 							</div>
+						</div>
+					) : (
+						<div className="text-center py-8 text-gray-500">
+							<p>Нет контентных блоков для редактирования</p>
 						</div>
 					)}
 
@@ -485,9 +490,6 @@ export const LessonEditPage = () => {
 									<h4 className="text-sm font-medium text-green-900">
 										Тест прикреплен к уроку
 									</h4>
-									<p className="text-xs text-green-700 mt-1">
-										ID теста: {lesson.quizId}
-									</p>
 								</div>
 								<Button
 									size="sm"

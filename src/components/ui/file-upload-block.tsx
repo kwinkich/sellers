@@ -140,9 +140,6 @@ export const FileUploadBlock = ({
 					<div className="border-2 border-gray-200 rounded-xl p-4 text-center bg-gray-50">
 						<CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
 						<p className="text-sm text-gray-700">Файл загружен</p>
-						<p className="text-xs text-gray-500 mt-1">
-							ID: {block.storageObjectId}
-						</p>
 						{block.textContent && (
 							<Button
 								type="button"

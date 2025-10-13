@@ -8,6 +8,7 @@ import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiv
 import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
 import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
+import { CaseInfoDrawer } from "@/feature/practice-feature/ui/CaseInfoDrawer";
 import { useAppInit } from "@/shared";
 import { UserRoleProvider } from "@/shared/contexts/UserRoleContext";
 import { sseClient } from "@/shared/lib/sse";
@@ -187,6 +188,7 @@ export const AppInitLayout = () => {
 			<PracticeFinishedModal />
 			<PracticeUploadRecordingModal />
 			<PracticeFinishModal />
+			<CaseInfoDrawer />
 		</>
 	);
 };
