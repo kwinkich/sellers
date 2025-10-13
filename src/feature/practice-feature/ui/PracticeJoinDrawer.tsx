@@ -195,7 +195,7 @@ export const PracticeJoinDrawer = () => {
                         </span>
                       )}
                     </div>
-                    <div className="min-w-[96px] flex items-center justify-end">
+                    <div className="min-w-[96px] flex items-center justify-center">
                       {isMine ? (
                         <span className="text-sm text-base-main">Моя роль</span>
                       ) : taken ? (
