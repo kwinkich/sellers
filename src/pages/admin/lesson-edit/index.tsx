@@ -108,18 +108,26 @@ export const LessonEditPage = () => {
 	const handleSave = async (e?: React.FormEvent): Promise<void> => {
 		if (e) e.preventDefault();
 
+		const contentBlocksForSubmit = contentBlocks.map((block) => ({
+			orderIndex: block.orderIndex,
+			type: block.type,
+			textContent: block.textContent,
+			storageObjectId: block.storageObjectId || block.storageObject?.id || 0,
+		}));
+
 		const submitData = {
 			title: formData.title,
 			shortDesc: formData.shortDesc,
-			contentBlocks: contentBlocks,
+			contentBlocks: contentBlocksForSubmit,
 		};
+
+		console.log("Sending data:", submitData);
 
 		updateLessonMutation.mutate({
 			id: lessonId,
 			data: submitData,
 		});
 	};
-
 	const handleChange = (field: string, value: unknown): void => {
 		setFormData((prev) => ({
 			...prev,

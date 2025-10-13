@@ -2,12 +2,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModuleCard, modulesQueryOptions } from "@/entities";
 import { useQuery } from "@tanstack/react-query";
 
-export const ModulesList = () => {
+interface ModulesListProps {
+	courseId: number;
+}
+
+export const ModulesList = ({ courseId }: ModulesListProps) => {
 	const {
 		data: modulesData,
 		isLoading,
 		error,
-	} = useQuery(modulesQueryOptions.list());
+	} = useQuery(modulesQueryOptions.byCourse(courseId));
 
 	if (isLoading) {
 		return (
@@ -34,7 +38,9 @@ export const ModulesList = () => {
 
 	if (!modulesData?.data?.length) {
 		return (
-			<div className="text-center text-gray-500 py-4">Модули не найдены</div>
+			<div className="text-center text-gray-500 py-4">
+				В этом курсе пока нет модулей
+			</div>
 		);
 	}
 
