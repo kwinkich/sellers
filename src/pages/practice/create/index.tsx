@@ -21,7 +21,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import MultiSelectChips from "@/components/multi-select-chips";
 
-// Simple Zoom icon component
+/** Zoom icon */
 const ZoomIcon = ({
   size = 20,
   className = "",
@@ -44,101 +44,124 @@ const ZoomIcon = ({
   </svg>
 );
 
+/** Pagination helper that tolerates both page-based and boolean hasNext signatures */
+function getNextPageParamFromMeta(lastPage: any) {
+  const p = lastPage?.meta?.pagination as any;
+  if (!p) return undefined;
+  const currentPage = p.currentPage ?? p.page ?? 1;
+  const totalPages =
+    p.totalPages ??
+    (p.totalItems && p.limit ? Math.ceil(p.totalItems / p.limit) : undefined);
+
+  if (typeof totalPages === "number") {
+    return currentPage < totalPages ? currentPage + 1 : undefined;
+  }
+  if (typeof p?.hasNext === "boolean") {
+    return p.hasNext ? currentPage + 1 : undefined;
+  }
+  return undefined;
+}
+
+/** Convert local date + "HH:MM" to UTC ISO string */
+function toUtcIso(dateLocal: Date, hhmm: string): string {
+  const [hh, mm] = (hhmm || "00:00").split(":").map(Number);
+  const y = dateLocal.getFullYear();
+  const m = dateLocal.getMonth(); // 0-based
+  const d = dateLocal.getDate();
+  const localDateTime = new Date(y, m, d, hh, mm, 0, 0);
+  return localDateTime.toISOString();
+}
+
 const PracticeCreatePage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
-  const { scenarioId, caseId, skillIds, startAt, practiceType } = store;
+
+  // store keeps numeric IDs, UI uses strings to avoid equality glitches
+  const { scenarioId, caseId, skillIds, practiceType } = store;
 
   const { role } = useUserRole();
   const { connectToZoom, isConnecting } = useZoomConnection();
-  const [time, setTime] = React.useState<string>("15:00");
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
-    startAt ? new Date(startAt) : undefined
-  );
 
-  // Zoom status query for admin users
+  // Local date/time for stable UX; compute UTC on submit
+  const [dateLocal, setDateLocal] = React.useState<Date | undefined>(undefined);
+  const [timeLocal, setTimeLocal] = React.useState<string>("15:00");
+
+  // Used to visually reset the MultiSelectChips back to clean placeholder state
+  const [skillsResetVersion, setSkillsResetVersion] = React.useState(0);
+
+  // ---- Queries ----
+
+  // Zoom status
   const { data: zoomStatusData } = useQuery({
     ...adminsQueryOptions.zoomStatus(),
     enabled: role === "ADMIN",
   });
-
   const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
 
+  // Skills list (always available)
   const skills = useInfiniteQuery({
     queryKey: ["skills", "list"],
     queryFn: ({ pageParam = 1 }) =>
       SkillsAPI.getSkillsPaged({ page: pageParam as number, limit: 50 }),
-    getNextPageParam: (lastPage: any) => {
-      const p = lastPage?.meta?.pagination as any;
-      if (!p) return undefined;
-      const currentPage = p.currentPage ?? p.page ?? 1;
-      const totalPages =
-        p.totalPages ??
-        (p.totalItems && p.limit
-          ? Math.ceil(p.totalItems / p.limit)
-          : undefined);
-      if (typeof totalPages === "number")
-        return currentPage < totalPages ? currentPage + 1 : undefined;
-      if (typeof (p as any).hasNext === "boolean")
-        return (p as any).hasNext ? currentPage + 1 : undefined;
-      return undefined;
-    },
+    getNextPageParam: getNextPageParamFromMeta,
     initialPageParam: 1,
     staleTime: 5 * 60 * 1000,
   });
 
+  // MultiSelect options (string IDs)
   const skillOptions = React.useMemo(
     () =>
       (skills.data?.pages ?? [])
         .flatMap((pg: any) => pg?.data ?? [])
         .map((s: any) => ({
-          value: s.id,
+          value: String(s.id),
           label: s.name,
         })),
     [skills.data]
   );
+
+  // Scenarios: NOW enabled even without skills (skills are only filters)
   const scenarios = useInfiniteQuery({
     queryKey: [
       "scenarios",
       "list",
       {
-        caseId,
+        // only pass when present to avoid over-filtering
         skillIds: skillIds.length ? skillIds : undefined,
-        practiceType,
+        practiceType: practiceType || undefined,
       },
     ],
     queryFn: ({ pageParam = 1 }) =>
       ScenariosAPI.getScenarios({
-        caseId: caseId as any,
         skillIds: (skillIds.length ? (skillIds as any) : undefined) as any,
-        practiceType: practiceType as any,
+        practiceType: (practiceType || undefined) as any,
         page: pageParam as number,
         limit: 50,
       }),
-    getNextPageParam: (lastPage: any) => {
-      const p = lastPage?.meta?.pagination as any;
-      if (!p) return undefined;
-      const currentPage = p.currentPage ?? p.page ?? 1;
-      const totalPages =
-        p.totalPages ??
-        (p.totalItems && p.limit
-          ? Math.ceil(p.totalItems / p.limit)
-          : undefined);
-      if (typeof totalPages === "number")
-        return currentPage < totalPages ? currentPage + 1 : undefined;
-      if (typeof p.hasNext === "boolean")
-        return p.hasNext ? currentPage + 1 : undefined;
-      return undefined;
-    },
+    getNextPageParam: getNextPageParamFromMeta,
     initialPageParam: 1,
     staleTime: 5 * 60 * 1000,
+    // enabled: ALWAYS true → scenarios selectable without skills
+    enabled: true,
   });
 
+  const scenarioOptions = React.useMemo(
+    () =>
+      scenarios.data?.pages
+        ? scenarios.data.pages.flatMap((p: any) => p?.data ?? [])
+        : [],
+    [scenarios.data]
+  );
+
+  // Cases: depend on scenario; skills filter is optional; disabled for WITHOUT_CASE
   const cases = useInfiniteQuery({
     queryKey: [
       "cases",
       "list",
-      { scenarioId, skillIds: skillIds.length ? skillIds : undefined },
+      {
+        scenarioId: scenarioId || undefined,
+        skillIds: skillIds.length ? skillIds : undefined,
+      },
     ],
     queryFn: ({ pageParam = 1 }) =>
       CasesAPI.getCases({
@@ -147,34 +170,11 @@ const PracticeCreatePage = () => {
         page: pageParam as number,
         limit: 50,
       }),
-    getNextPageParam: (lastPage: any) => {
-      const p = lastPage?.meta?.pagination as any;
-      if (!p) return undefined;
-      const currentPage = p.currentPage ?? p.page ?? 1;
-      const totalPages =
-        p.totalPages ??
-        (p.totalItems && p.limit
-          ? Math.ceil(p.totalItems / p.limit)
-          : undefined);
-      if (typeof totalPages === "number")
-        return currentPage < totalPages ? currentPage + 1 : undefined;
-      if (typeof p.hasNext === "boolean")
-        return p.hasNext ? currentPage + 1 : undefined;
-      return undefined;
-    },
-    enabled: practiceType !== "WITHOUT_CASE",
+    getNextPageParam: getNextPageParamFromMeta,
     initialPageParam: 1,
     staleTime: 5 * 60 * 1000,
+    enabled: Boolean(scenarioId) && practiceType !== "WITHOUT_CASE",
   });
-
-  // Keep selections valid against current filters so placeholders stay visible
-  const scenarioOptions = React.useMemo(
-    () =>
-      scenarios.data?.pages
-        ? scenarios.data.pages.flatMap((p: any) => p?.data ?? [])
-        : [],
-    [scenarios.data]
-  );
 
   const caseOptions = React.useMemo(
     () =>
@@ -184,7 +184,59 @@ const PracticeCreatePage = () => {
     [cases.data]
   );
 
-  // Infinite scroll handlers for dropdown lists
+  // ---- Reset & validation policy ----
+
+  // If switching to WITHOUT_CASE -> ensure case cleared (keep scenario)
+  React.useEffect(() => {
+    if (practiceType === "WITHOUT_CASE" && caseId) {
+      store.setCase(undefined, undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practiceType]);
+
+  // Validate scenario against options after scenarios settle
+  React.useEffect(() => {
+    if (scenarios.isLoading || scenarios.isFetching) return;
+    if (
+      scenarioId &&
+      !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId))
+    ) {
+      store.setScenario(undefined, undefined);
+      store.setCase(undefined, undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioOptions, scenarios.isLoading, scenarios.isFetching]);
+
+  // Validate case against options after cases settle
+  React.useEffect(() => {
+    if (cases.isLoading || cases.isFetching) return;
+    if (caseId && !caseOptions.some((c: any) => Number(c.id) === Number(caseId))) {
+      store.setCase(undefined, undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caseOptions, cases.isLoading, cases.isFetching]);
+
+  // When skills change, if a skill was REMOVED → reset dependent selections
+  // and visually reset the skills control to placeholder (via key bump).
+  const prevSkillIdsRef = React.useRef<number[]>(skillIds);
+  React.useEffect(() => {
+    const prev = new Set(prevSkillIdsRef.current);
+    const curr = new Set(skillIds);
+    const removalHappened = [...prev].some((id) => !curr.has(id));
+    prevSkillIdsRef.current = skillIds;
+
+    if (removalHappened) {
+      // Drop scenario & case because filters changed in a narrowing direction
+      store.setScenario(undefined, undefined);
+      store.setCase(undefined, undefined);
+
+      // Force MultiSelectChips back to its initial, clean placeholder state
+      setSkillsResetVersion((v) => v + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skillIds]);
+
+  // ---- Infinite scroll handlers ----
   const SCROLL_LOAD_THRESHOLD_PX = 24;
 
   const handleScrollLoadMoreScenarios = React.useCallback(
@@ -194,19 +246,11 @@ const PracticeCreatePage = () => {
       const nearBottom =
         el.scrollHeight - el.scrollTop - el.clientHeight <
         SCROLL_LOAD_THRESHOLD_PX;
-      if (
-        nearBottom &&
-        scenarios.hasNextPage &&
-        !scenarios.isFetchingNextPage
-      ) {
+      if (nearBottom && scenarios.hasNextPage && !scenarios.isFetchingNextPage) {
         scenarios.fetchNextPage();
       }
     },
-    [
-      scenarios.hasNextPage,
-      scenarios.isFetchingNextPage,
-      scenarios.fetchNextPage,
-    ]
+    [scenarios.hasNextPage, scenarios.isFetchingNextPage, scenarios.fetchNextPage]
   );
 
   const handleScrollLoadMoreCases = React.useCallback(
@@ -223,51 +267,21 @@ const PracticeCreatePage = () => {
     [cases.hasNextPage, cases.isFetchingNextPage, cases.fetchNextPage]
   );
 
-  React.useEffect(() => {
-    if (scenarios.isLoading || scenarios.isFetching) return;
-    if (
-      scenarioId &&
-      !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId))
-    ) {
-      store.setScenario(undefined, undefined);
-    }
-  }, [scenarioId, scenarioOptions, scenarios.isLoading, scenarios.isFetching]);
+  // ---- Form validity / Next button ----
+  const canProceed = React.useMemo(() => {
+    if (!practiceType) return false;
+    if (!scenarioId) return false;
+    if (practiceType === "WITH_CASE" && !caseId) return false;
+    if (!dateLocal || !timeLocal) return false;
+    return true;
+  }, [practiceType, scenarioId, caseId, dateLocal, timeLocal]);
 
-  React.useEffect(() => {
-    if (cases.isLoading || cases.isFetching) return;
-    if (
-      caseId &&
-      !caseOptions.some((c: any) => Number(c.id) === Number(caseId))
-    ) {
-      store.setCase(undefined, undefined);
-    }
-  }, [caseId, caseOptions, cases.isLoading, cases.isFetching]);
-
-  const updateStartAt = React.useCallback(
-    (date: Date | undefined, t: string) => {
-      if (!date) {
-        store.setStartAt(undefined);
-        return;
-      }
-      const [hh, mm] = (t || "00:00").split(":").map((x) => Number(x));
-      const y = date.getFullYear();
-      const m = date.getMonth() + 1; // month is 0-based
-      const d = date.getDate();
-      // Construct a LOCAL datetime and convert to UTC ISO for backend storage
-      const localDateTime = new Date(
-        Number(y),
-        Number(m) - 1,
-        Number(d),
-        Number(hh),
-        Number(mm),
-        0,
-        0
-      );
-      const utcIso = localDateTime.toISOString();
-      store.setStartAt(utcIso);
-    },
-    [store]
-  );
+  const handleNext = React.useCallback(() => {
+    if (!canProceed || !dateLocal || !timeLocal) return;
+    const startAtUTC = toUtcIso(dateLocal, timeLocal);
+    store.setStartAt(startAtUTC);
+    navigate("/practice/preview");
+  }, [canProceed, dateLocal, timeLocal, store, navigate]);
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
@@ -275,13 +289,17 @@ const PracticeCreatePage = () => {
         <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
         <div className="space-y-3">
+          {/* Skills (optional filters). When cleared or reduced, we reset downstream selections. */}
           <div>
             <MultiSelectChips
+              key={skillsResetVersion} // remount to restore placeholder/input state after reset
               options={skillOptions}
-              value={skillIds}
+              // UI uses string IDs; convert store numeric skillIds -> string[]
+              value={skillIds.map((id) => String(id))}
               onChange={(next) => {
                 const ids = next.map((v) => Number(v));
                 store.setSkills(ids);
+
                 const labelMap = new Map(
                   skillOptions.map((o) => [String(o.value), o.label])
                 );
@@ -289,8 +307,13 @@ const PracticeCreatePage = () => {
                   .map((v) => labelMap.get(String(v)))
                   .filter(Boolean) as string[];
                 store.setSkillNames(names);
+
+                // If user cleared all skills manually, ensure “placeholdery” look is preserved
+                if (ids.length === 0) {
+                  setSkillsResetVersion((v) => v + 1);
+                }
               }}
-              placeholder={"Выберите навыки"}
+              placeholder="Выберите навыки"
               onLoadMore={() => {
                 if (skills.hasNextPage && !skills.isFetchingNextPage)
                   skills.fetchNextPage();
@@ -300,16 +323,18 @@ const PracticeCreatePage = () => {
             />
           </div>
 
+          {/* Practice type */}
           <div>
             <Select
               onValueChange={(t) => {
                 const pt = t as PracticeType;
                 store.setPracticeType(pt);
+
                 if (pt === "WITHOUT_CASE") {
-                  store.setCase(undefined);
+                  store.setCase(undefined, undefined);
                 }
               }}
-              value={practiceType as any}
+              value={(practiceType ?? "") as any}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Тип практики" />
@@ -328,8 +353,11 @@ const PracticeCreatePage = () => {
             </Select>
           </div>
 
+          {/* Scenario (enabled even without skills) */}
           <div>
             <Select
+              // remount when skills were reduced to restore placeholder feel
+              key={`scenario-${skillsResetVersion}`}
               onValueChange={(id) => {
                 const s = scenarioOptions.find(
                   (x: any) => String(x.id) === String(id)
@@ -337,7 +365,8 @@ const PracticeCreatePage = () => {
                 store.setScenario(Number(id), s?.title);
                 if (s?.practiceType) store.setPracticeType(s.practiceType);
               }}
-              value={scenarioId ? String(scenarioId) : undefined}
+              value={scenarioId ? String(scenarioId) : ""}
+              disabled={false}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите сценарий практики" />
@@ -356,7 +385,7 @@ const PracticeCreatePage = () => {
                     ))
                   ) : (
                     <SelectItem disabled value="__none">
-                      Нет сценариев для текущего навыка и кейса
+                      Нет сценариев
                     </SelectItem>
                   )}
                   {scenarios.isFetchingNextPage ? (
@@ -369,22 +398,26 @@ const PracticeCreatePage = () => {
             </Select>
           </div>
 
+          {/* Case (depends on scenario; disabled for WITHOUT_CASE) */}
           <div>
             <Select
+              key={`case-${skillsResetVersion}-${scenarioId ?? 0}`}
               onValueChange={(id) => {
                 const c = caseOptions.find(
                   (x: any) => String(x.id) === String(id)
                 );
                 store.setCase(Number(id), c?.title);
               }}
-              disabled={practiceType === "WITHOUT_CASE"}
-              value={caseId ? String(caseId) : undefined}
+              disabled={practiceType === "WITHOUT_CASE" || !scenarioId}
+              value={caseId ? String(caseId) : ""}
             >
               <SelectTrigger>
                 <SelectValue
                   placeholder={
                     practiceType === "WITHOUT_CASE"
                       ? "Тип без кейса — выбор не требуется"
+                      : !scenarioId
+                      ? "Сначала выберите сценарий"
                       : "Выберите кейс практики"
                   }
                 />
@@ -403,7 +436,7 @@ const PracticeCreatePage = () => {
                     ))
                   ) : (
                     <SelectItem disabled value="__none">
-                      Нет кейсов для текущего навыка и сценария
+                      Нет кейсов для выбранного сценария
                     </SelectItem>
                   )}
                   {cases.isFetchingNextPage ? (
@@ -416,23 +449,18 @@ const PracticeCreatePage = () => {
             </Select>
           </div>
 
+          {/* Date & Time (local) */}
           <div className="flex flex-row gap-2">
             <DatePickerFloatingLabel
               className="w-3/5"
               placeholder="Дата проведения (локальная)"
-              value={selectedDate}
-              onValueChange={(d) => {
-                setSelectedDate(d);
-                updateStartAt(d, time);
-              }}
+              value={dateLocal}
+              onValueChange={(d) => setDateLocal(d)}
             />
             <input
               type="time"
-              value={time}
-              onChange={(e) => {
-                setTime(e.target.value);
-                updateStartAt(selectedDate, e.target.value);
-              }}
+              value={timeLocal}
+              onChange={(e) => setTimeLocal(e.target.value)}
               className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
               placeholder="Время (локальное)"
               step={300}
@@ -442,7 +470,7 @@ const PracticeCreatePage = () => {
             />
           </div>
 
-          {/* Zoom Connect Button for Admin Users */}
+          {/* Zoom Connect (Admin only) */}
           {role === "ADMIN" && !isZoomAuthorized && (
             <div>
               <Button
@@ -460,17 +488,9 @@ const PracticeCreatePage = () => {
         </div>
       </div>
 
+      {/* Footer / Next */}
       <div className="fixed inset-x-0 bottom-24 p-4 pb-0">
-        <Button
-          className="w-full"
-          disabled={
-            !practiceType ||
-            !scenarioId ||
-            (practiceType === "WITH_CASE" && !caseId) ||
-            !startAt
-          }
-          onClick={() => navigate("/practice/preview")}
-        >
+        <Button className="w-full" disabled={!canProceed} onClick={handleNext}>
           Следующий шаг
         </Button>
       </div>
