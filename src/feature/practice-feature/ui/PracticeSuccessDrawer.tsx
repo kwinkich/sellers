@@ -107,8 +107,8 @@ export const PracticeSuccessDrawer = () => {
   if (!practice) return null;
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
-      <DrawerContent className="bg-white text-black rounded-t-[48px]">
-        <DrawerHeader className="items-center text-center">
+      <DrawerContent className="bg-white text-black rounded-t-[48px] flex flex-col max-h-[90dvh] overflow-y-auto">
+        <DrawerHeader className="items-center text-center shrink-0">
           <DrawerTitle className="sr-only">Успешно</DrawerTitle>
           <div className="w-14 h-14 rounded-full bg-base-opacity10-main flex items-center justify-center">
             <SuccessIcon size={64} cn="text-base-main" />
@@ -121,7 +121,7 @@ export const PracticeSuccessDrawer = () => {
           <PracticeInfoCard data={practice} />
         </div>
 
-        <DrawerFooter>
+        <DrawerFooter className="shrink-0 px-4 pb-16">
           <Button onClick={close}>Закрыть</Button>
         </DrawerFooter>
       </DrawerContent>
