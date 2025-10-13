@@ -1,16 +1,20 @@
 import { BlockingModal } from "@/components/ui/blocking-modal";
 import { Button } from "@/components/ui/button";
-import { Badge, ClientIcon, TimerIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, CopyIcon } from "@/shared";
+import { Badge, ClientIcon, TimerIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, CopyIcon, getRoleLabel } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import { useCaseInfoStore } from "../model/caseInfo.store";
 import { useActivePracticeStore } from "../model/activePractice.store";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function PracticeInfoCardSimple({
   data,
+  openCaseInfo,
 }: {
   data: any;
+  openCaseInfo: (practice: any) => void;
 }) {
+  const [isCopied, setIsCopied] = useState(false);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
   const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -22,6 +26,18 @@ function PracticeInfoCardSimple({
   ) : (
     <PracticeNoCaseIcon size={32} cn="text-base-main" />
   );
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(data.zoomLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  const role = data.myRole ? getRoleLabel(data.myRole) : "—";
 
   return (
     <div className="bg-gray-100 rounded-2xl p-3 text-black">
@@ -60,7 +76,7 @@ function PracticeInfoCardSimple({
         <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
           <div className="text-xs">
             <div className="text-base-gray">Ваша роль</div>
-            <div className="text-black font-medium">{data.myRole ?? "—"}</div>
+            <div className="text-black font-medium">{role}</div>
           </div>
         </div>
 
@@ -71,11 +87,17 @@ function PracticeInfoCardSimple({
           </div>
           {data.zoomLink && (
             <button
-              className="ml-2 text-base-main text-sm"
-              onClick={() => navigator.clipboard.writeText(data.zoomLink!)}
-              title="Скопировать"
+              className="ml-2 text-base-main text-sm flex items-center gap-1"
+              onClick={handleCopy}
+              title={isCopied ? "Скопировано!" : "Скопировать"}
             >
-              <CopyIcon size={16} fill="#06935F" />
+              {isCopied ? (
+                <>
+                  <span className="text-xs">Скопировано!</span>
+                </>
+              ) : (
+                <CopyIcon size={16} fill="#06935F" />
+              )}
             </button>
           )}
         </div>
@@ -86,8 +108,12 @@ function PracticeInfoCardSimple({
               <div className="text-base-gray">Название кейса</div>
               <div className="text-black font-medium">{data.case.title}</div>
             </div>
-            <Button className="bg-base-main" size="2s"
-              onClick={() => useCaseInfoStore.getState().open(data)}
+            <Button 
+              className="bg-base-main h-8" 
+              size="2s"
+              onClick={() => {
+                if (data.case) openCaseInfo(data);
+              }}
             >
               Изучить
             </Button>
@@ -101,6 +127,7 @@ function PracticeInfoCardSimple({
 export const PracticeActiveModal = () => {
   const navigate = useNavigate();
   const { blocking, practice } = useActivePracticeStore();
+  const openCaseInfo = useCaseInfoStore((s) => s.open);
 
   if (!practice) return null;
 
@@ -114,7 +141,7 @@ export const PracticeActiveModal = () => {
 
   return (
     <BlockingModal open={blocking}>
-      <PracticeInfoCardSimple data={practice} />
+      <PracticeInfoCardSimple data={practice} openCaseInfo={openCaseInfo} />
       <div className="mt-4">
         <Button className="w-full h-12" onClick={handleConnect}>
           Подключиться

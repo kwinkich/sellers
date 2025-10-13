@@ -15,7 +15,7 @@ export const CaseInfoDrawer = () => {
 
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
-      <DrawerContent className="bg-white text-black rounded-t-[48px]">
+      <DrawerContent className="bg-white text-black rounded-t-[48px] z-[1001] [&>div]:z-[1001]">
         <DrawerHeader className="items-center text-center">
           <DrawerTitle className="sr-only">Информация о кейсе</DrawerTitle>
           <p className="text-xl font-semibold mt-2">{detail?.title ?? "Кейс"}</p>
