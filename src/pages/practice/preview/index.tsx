@@ -7,10 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AdminsAPI,
-  adminsQueryOptions,
-} from "@/entities/admin/model/api/admin.api";
 import { mopProfilesQueryOptions } from "@/entities/mop";
 import { practicesMutationOptions } from "@/entities/practices";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
@@ -25,7 +21,7 @@ import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
 import type { PracticeParticipantRole } from "@/shared/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Function to get available roles based on repScore
@@ -63,8 +59,6 @@ const PracticePreviewPage = () => {
     : undefined;
 
   const { role } = useUserRole();
-  const [zoomError, setZoomError] = useState<string>("");
-  const isZoomMeetingCreatedRef = useRef<boolean>(false);
 
   // Get MOP profile info for MOP users
   const { data: mopProfileRes } = useQuery({
@@ -73,14 +67,6 @@ const PracticePreviewPage = () => {
   });
   const mopProfile = mopProfileRes?.data;
   const repScore = mopProfile?.repScore ?? 0;
-
-  // Zoom status query for admin users
-  const { data: zoomStatusData } = useQuery({
-    ...adminsQueryOptions.zoomStatus(),
-    enabled: role === "ADMIN",
-  });
-
-  const isZoomAuthorized = zoomStatusData?.data?.connected ?? false;
 
   // Auto-set role to MODERATOR for ADMIN users
   useEffect(() => {
@@ -102,42 +88,6 @@ const PracticePreviewPage = () => {
       }
     }
   }, [role, mopProfile, repScore, initialRole, store]);
-
-  // Auto-create Zoom meeting for admin users when authorized
-  useEffect(() => {
-    const createZoomMeeting = async () => {
-      if (
-        role === "ADMIN" &&
-        isZoomAuthorized &&
-        startAt &&
-        scenarioTitle &&
-        zoomLink === "" &&
-        !isZoomMeetingCreatedRef.current
-      ) {
-        try {
-          setZoomError("");
-          isZoomMeetingCreatedRef.current = true; // Set flag immediately to prevent duplicate calls
-
-          const response = await AdminsAPI.zoomCreateMeeting({
-            start_time: startAt,
-            topic: scenarioTitle,
-          });
-
-          if (response.data?.join_url) {
-            store.setZoom(response.data.join_url);
-          } else {
-            setZoomError("Генерация ссылки недоступна");
-          }
-        } catch (error) {
-          console.error("Error creating Zoom meeting:", error);
-          setZoomError("Генерация ссылки недоступна");
-          isZoomMeetingCreatedRef.current = false; // Reset flag on error so user can retry
-        }
-      }
-    };
-
-    createZoomMeeting();
-  }, [role, isZoomAuthorized, startAt, scenarioTitle, zoomLink, store]);
 
   const create = useMutation({
     ...practicesMutationOptions.create(),
@@ -199,15 +149,9 @@ const PracticePreviewPage = () => {
           <input
             className="w-full h-16 rounded-2xl bg-gray-100 px-4 text-sm font-medium placeholder:text-second-gray"
             value={zoomLink}
-            onChange={(e) => {
-              store.setZoom(e.target.value);
-              setZoomError(""); // Clear error when user manually edits
-            }}
-            placeholder={zoomError || "Ссылка на встречу"}
+            onChange={(e) => store.setZoom(e.target.value)}
+            placeholder="Ссылка на встречу"
           />
-          {zoomError && (
-            <p className="text-red-500 text-sm mt-1">{zoomError}</p>
-          )}
         </div>
 
         <div>
