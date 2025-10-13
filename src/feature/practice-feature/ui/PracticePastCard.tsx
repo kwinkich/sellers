@@ -25,7 +25,7 @@ interface Props {
 
 export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
-  const { role: userRole } = useUserRole();
+  const { role: userRole, userId } = useUserRole();
   const navigate = useNavigate();
 
   const formatStart = (iso: string) => {
@@ -54,18 +54,23 @@ export const PracticePastCard = ({ data }: Props) => {
 
   const onDownloadReport = () => {
     try {
-      // Получаем данные пользователя для авторизации
-      const { role, userId } = useUserRole();
-
-      if (!role || !userId) {
-        console.error("User role or ID not available");
+      // Проверяем данные пользователя (уже получены на верхнем уровне)
+      if (!userRole || !userId) {
+        console.error("User role or ID not available", { userRole, userId });
         return;
       }
 
       // URL для скачивания с обязательными параметрами согласно схеме бэкенда
       const downloadUrl = `${getFullApiUrl()}/practices/${
         data.id
-      }/report?dl=1&userId=${userId}&userRole=${role}`;
+      }/report?dl=1&userId=${userId}&userRole=${userRole}`;
+
+      console.log("Downloading report:", {
+        downloadUrl,
+        practiceId: data.id,
+        userRole,
+        userId,
+      });
 
       // Используем готовую функцию для открытия во внешнем браузере
       openExternalUrl(downloadUrl);
