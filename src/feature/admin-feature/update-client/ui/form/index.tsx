@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
 	updateClientSchema,
@@ -33,6 +33,7 @@ interface UpdateClientFormProps {
 export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 	const queryClient = useQueryClient();
 	const { clientId } = useParams<{ clientId: string }>();
+	const navigate = useNavigate();
 
 	const { mutate: updateClient, isPending: isUpdating } = useMutation({
 		...clientsMutationOptions.update(),
@@ -45,6 +46,8 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 			toast.success("Данные клиента обновлены", {
 				description: `Компания "${clientData.displayName}" успешно обновлена`,
 			});
+
+			navigate("/admin/home", { replace: true });
 		},
 		onError: (error) => {
 			console.error("Ошибка при обновлении клиента:", error);
@@ -71,10 +74,18 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 		},
 	});
 
+	// Normalize level coming from API (could be 3/4 or "LEVEL_3"/"LEVEL_4")
+	const normalizeLevel = (level: unknown) => {
+		if (level === "LEVEL_3" || level === "LEVEL_4") return level as UpdateClientFormData["level"];
+		if (level === 3 || level === "3") return "LEVEL_3" as UpdateClientFormData["level"];
+		if (level === 4 || level === "4") return "LEVEL_4" as UpdateClientFormData["level"];
+		return "LEVEL_3" as UpdateClientFormData["level"];
+	};
+
 	const form = useForm<UpdateClientFormData>({
 		resolver: zodResolver(updateClientSchema),
 		defaultValues: {
-			level: clientData.level,
+			level: normalizeLevel(clientData.level as unknown),
 			telegramUsername: clientData.telegramUsername,
 			companyName: clientData.displayName,
 			inn: clientData.inn,
@@ -84,7 +95,8 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 	});
 
 	const onSubmit = (formData: UpdateClientFormData) => {
-		if (!clientId) return;
+		const targetId = clientId ? parseInt(clientId) : (clientData as any)?.id;
+		if (!targetId || Number.isNaN(targetId)) return;
 
 		const requestData: UpdateClientRequest = {
 			level: formData.level,
@@ -93,7 +105,9 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 			inn: formData.inn,
 		};
 
-		updateClient({ id: parseInt(clientId), data: requestData });
+		// debug: verify submit fires
+		console.debug("UpdateClientForm submit", { targetId, requestData });
+		updateClient({ id: targetId, data: requestData });
 	};
 
 	const handleAddLicenses = (licenseCount: number, licenseExpiresAt: Date) => {
@@ -122,7 +136,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 		);
 	};
 
-	const isPending = isUpdating || isAddingLicenses;
+	const isMutating = isUpdating || isAddingLicenses;
 
 	return (
 		<Form {...form}>
@@ -140,7 +154,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 									<InputFloatingLabel
 										placeholder="Название компании"
 										{...field}
-										disabled={isPending}
+										disabled={isMutating}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -157,7 +171,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 									<InputFloatingLabel
 										placeholder="Telegram username администратора"
 										{...field}
-										disabled={isPending}
+										disabled={isMutating}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -190,7 +204,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 						<AddLicensesDrawer
 							onSave={handleAddLicenses}
 							currentLicenseCount={form.watch("licenseCount")}
-							disabled={isPending}
+							disabled={isMutating}
 						/>
 					</div>
 
@@ -207,7 +221,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 										{ value: "LEVEL_3", label: "Уровень 3" },
 										{ value: "LEVEL_4", label: "Уровень 4" },
 									]}
-									disabled={isPending}
+									disabled={isMutating}
 								/>
 								<FormMessage />
 							</FormItem>
@@ -224,7 +238,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 										placeholder="ИНН компании"
 										{...field}
 										maxLength={10}
-										disabled={isPending}
+										disabled={isMutating}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -233,8 +247,8 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 					/>
 				</div>
 
-				<Button type="submit" className="w-full" disabled={isPending}>
-					{isPending ? (
+				<Button type="submit" className="w-full" disabled={isUpdating}>
+					{isUpdating ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							Сохранение...

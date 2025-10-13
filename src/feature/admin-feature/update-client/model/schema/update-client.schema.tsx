@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const updateClientSchema = z.object({
-	level: z.enum(["LEVEL_3", "LEVEL_4"], {
-		error: "Выберите уровень компании",
-	}),
+    level: z.enum(["LEVEL_3", "LEVEL_4"], {
+        error: "Выберите уровень компании",
+    }),
 	telegramUsername: z
 		.string()
 		.min(1, "Telegram username обязателен")
