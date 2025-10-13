@@ -26,18 +26,10 @@ export const PracticeHomePage = () => {
   const LIMIT = 20;
   const navigate = useNavigate();
   const { role } = useUserRole();
-
-  // Показываем загрузку, если роль еще не определена
-  if (!role) {
-    return (
-      <div className="bg-second-bg min-h-dvh flex items-center justify-center">
-        <div className="text-center text-sm text-base-gray">Загрузка...</div>
-      </div>
-    );
-  }
+  const roleReady = Boolean(role);
 
   const tabs: Array<{ key: TabKey; label: string }> =
-    role === "CLIENT"
+    roleReady && role === "CLIENT"
       ? [
           { key: "all", label: "Все практики" },
           { key: "past", label: "Прошедшие" },
@@ -68,7 +60,7 @@ export const PracticeHomePage = () => {
   });
   const mineQ = useQuery({
     ...practicesQueryOptions.mine({ page: pageMine, limit: LIMIT }),
-    enabled: role !== "CLIENT",
+    enabled: roleReady && role !== "CLIENT",
   });
   const pastQ = useQuery({
     ...practicesQueryOptions.past({ page: pagePast, limit: LIMIT }),
@@ -176,6 +168,14 @@ export const PracticeHomePage = () => {
     return () => observer.disconnect();
   }, [tab, pastQ.isLoading, pastPg?.currentPage, pastPg?.totalPages]);
 
+  if (!roleReady) {
+    return (
+      <div className="bg-second-bg min-h-dvh flex items-center justify-center">
+        <div className="text-center text-sm text-base-gray">Загрузка...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-second-bg min-h-dvh">
       <div className="flex flex-col gap-3 px-2 pb-5">
@@ -205,7 +205,7 @@ export const PracticeHomePage = () => {
             );
           })}
         </div>
-        {tab === "all" && role !== "CLIENT" && (
+        {tab === "all" && roleReady && role !== "CLIENT" && (
           <Button
             size="xs"
             rounded="3xl"
