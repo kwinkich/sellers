@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import InputFloatingLabel from "@/components/ui/inputFloating";
+import { MultiSelect } from "@/components/ui/multiSelect";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
-import { coursesMutationOptions } from "@/entities";
+import { clientsQueryOptions, coursesMutationOptions } from "@/entities";
 import { HeadText } from "@/shared";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const CreateCoursePage = () => {
@@ -19,7 +20,54 @@ export const CreateCoursePage = () => {
 		clientIds: [] as number[],
 	});
 
-	const [clientIdsInput, setClientIdsInput] = useState("");
+	// Запросы для получения всех типов клиентов
+	const { data: activeClientsData, isLoading: isLoadingActive } = useQuery({
+		...clientsQueryOptions.activeList(),
+	});
+
+	const { data: expiredClientsData, isLoading: isLoadingExpired } = useQuery({
+		...clientsQueryOptions.expiredList(),
+	});
+
+	const { data: expiringClientsData, isLoading: isLoadingExpiring } = useQuery({
+		...clientsQueryOptions.expiringList(),
+	});
+
+	// Объединяем всех клиентов в один список
+	const allClients = useMemo(() => {
+		const clients = [
+			...(activeClientsData?.data || []),
+			...(expiredClientsData?.data || []),
+			...(expiringClientsData?.data || []),
+		];
+
+		// Убираем дубликаты по ID
+		const uniqueClients = clients.reduce((acc, client) => {
+			if (!acc.find((c) => c.id === client.id)) {
+				acc.push(client);
+			}
+			return acc;
+		}, [] as any[]);
+
+		return uniqueClients;
+	}, [
+		activeClientsData?.data,
+		expiredClientsData?.data,
+		expiringClientsData?.data,
+	]);
+
+	// Преобразуем клиентов в опции для селекта
+	const clientOptions = useMemo(
+		() =>
+			allClients.map((client) => ({
+				value: client.id.toString(),
+				label: `${client.companyName} (${client.tgUsername})`,
+			})),
+		[allClients]
+	);
+
+	const isLoadingClients =
+		isLoadingActive || isLoadingExpired || isLoadingExpiring;
 
 	const createCourseMutation = useMutation({
 		...coursesMutationOptions.create(),
@@ -35,12 +83,6 @@ export const CreateCoursePage = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		// Парсим ID клиентов из строки
-		const parsedClientIds = clientIdsInput
-			.split(",")
-			.map((id) => parseInt(id.trim()))
-			.filter((id) => !isNaN(id) && id > 0);
-
 		// Создаем объект для отправки
 		const submitData: any = {
 			title: formData.title,
@@ -49,7 +91,7 @@ export const CreateCoursePage = () => {
 		};
 
 		if (formData.accessScope === "SELECTED") {
-			submitData.clientIds = parsedClientIds;
+			submitData.clientIds = formData.clientIds;
 		}
 
 		createCourseMutation.mutate(submitData);
@@ -62,10 +104,13 @@ export const CreateCoursePage = () => {
 		}));
 	};
 
-	const handleClientIdsChange = (value: string) => {
-		setClientIdsInput(value);
-		const cleanValue = value.replace(/[^\d,]/g, "");
-		setClientIdsInput(cleanValue);
+	const handleClientSelection = (selectedValues: string[]) => {
+		// Преобразуем строковые значения обратно в числа
+		const selectedIds = selectedValues.map((value) => parseInt(value));
+		setFormData((prev) => ({
+			...prev,
+			clientIds: selectedIds,
+		}));
 	};
 
 	const accessScopeOptions = [
@@ -78,7 +123,7 @@ export const CreateCoursePage = () => {
 		formData.shortDesc.trim() &&
 		formData.shortDesc.length <= 120 &&
 		(formData.accessScope === "ALL" ||
-			(formData.accessScope === "SELECTED" && clientIdsInput.trim() !== ""));
+			(formData.accessScope === "SELECTED" && formData.clientIds.length > 0));
 
 	const remainingChars = 120 - formData.shortDesc.length;
 	const isNearLimit = remainingChars <= 20;
@@ -146,31 +191,23 @@ export const CreateCoursePage = () => {
 						className="w-full"
 					/>
 
-					{/* Поле для ID клиентов */}
+					{/* MultiSelect для выбора клиентов */}
 					{formData.accessScope === "SELECTED" && (
 						<div>
-							<InputFloatingLabel
-								type="text"
-								value={clientIdsInput}
-								onChange={(e) => handleClientIdsChange(e.target.value)}
-								placeholder="ID клиентов через запятую (например: 1, 2, 3)"
-								className="w-full"
-								required
-							/>
-							<p className="text-xs text-gray-500 mt-1">
-								Введите числовые ID клиентов, разделенные запятыми
-							</p>
-							{clientIdsInput && (
-								<div className="mt-2">
-									<p className="text-xs text-gray-600 mb-1">
-										Распознанные ID:{" "}
-										{clientIdsInput
-											.split(",")
-											.map((id) => parseInt(id.trim()))
-											.filter((id) => !isNaN(id) && id > 0)
-											.join(", ") || "нет"}
-									</p>
+							{isLoadingClients ? (
+								<div className="flex items-center justify-center py-4">
+									<Loader2 className="h-4 w-4 animate-spin mr-2" />
+									Загрузка клиентов...
 								</div>
+							) : (
+								<MultiSelect
+									label="Выберите клиентов"
+									values={formData.clientIds.map((id) => id.toString())}
+									onValuesChange={handleClientSelection}
+									options={clientOptions}
+									variant="default"
+									className="w-full"
+								/>
 							)}
 						</div>
 					)}
@@ -179,7 +216,11 @@ export const CreateCoursePage = () => {
 				<Button
 					type="submit"
 					className="w-full"
-					disabled={!isFormValid || createCourseMutation.isPending}
+					disabled={
+						!isFormValid ||
+						createCourseMutation.isPending ||
+						(formData.accessScope === "SELECTED" && isLoadingClients)
+					}
 				>
 					{createCourseMutation.isPending ? (
 						<>
