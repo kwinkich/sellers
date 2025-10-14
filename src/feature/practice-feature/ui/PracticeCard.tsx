@@ -40,7 +40,10 @@ export const PracticeCard = ({ data }: Props) => {
   const { date, time } = formatStart(data.startAt as string);
 
   return (
-    <div className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3">
+    <div
+      id={`practice-card-${data.id}`}
+      className="w-full bg-base-bg rounded-2xl p-4 flex flex-col gap-3"
+    >
       <div className="flex items-center gap-5">
         {(() => {
           const iconByType: Record<PracticeType, ReactNode> = {

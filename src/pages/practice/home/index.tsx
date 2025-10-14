@@ -9,7 +9,7 @@ import {
   PracticePastCard,
   PracticeMineCard,
 } from "@/feature/practice-feature";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { practicesQueryOptions } from "@/entities/practices";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,38 @@ import { useUserRole } from "@/shared";
 type TabKey = "all" | "mine" | "past";
 
 export const PracticeHomePage = () => {
-  const [tab, setTab] = useState<TabKey>("all");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // --- читаем начальные параметры из URL
+  const params = new URLSearchParams(location.search);
+  const urlTab = (params.get("tab") as TabKey | null) ?? null;
+  const scrollTo = params.get("scrollTo");
+
+  const [tab, setTab] = useState<TabKey>(() => {
+    // если в URL явно tab=mine — приоритетно
+    if (urlTab === "mine" || urlTab === "all" || urlTab === "past")
+      return urlTab;
+    // иначе дефолт как раньше
+    return "all";
+  });
   // Pagination state per tab
   const [pageAll, setPageAll] = useState<number>(1);
   const [pageMine, setPageMine] = useState<number>(1);
   const [pagePast, setPagePast] = useState<number>(1);
   const LIMIT = 20;
-  const navigate = useNavigate();
   const { role } = useUserRole();
   const roleReady = Boolean(role);
+
+  // Функция для синхронизации табов с URL
+  const setTabAndUrl = (next: TabKey) => {
+    setTab(next);
+    const u = new URL(window.location.href);
+    u.searchParams.set("tab", next);
+    // scrollTo одноразовый — чистим если был
+    u.searchParams.delete("scrollTo");
+    navigate(u.pathname + u.search, { replace: true });
+  };
 
   const tabs: Array<{ key: TabKey; label: string }> =
     roleReady && role === "CLIENT"
@@ -168,6 +191,149 @@ export const PracticeHomePage = () => {
     return () => observer.disconnect();
   }, [tab, pastQ.isLoading, pastPg?.currentPage, pastPg?.totalPages]);
 
+  // Помощник: есть ли карточка в DOM?
+  const findCardEl = (practiceId: number) =>
+    document.getElementById(`practice-card-${practiceId}`);
+
+  // Если нужно скроллить к practice_{id}, заставим включить "mine"
+  useEffect(() => {
+    if (!scrollTo) return;
+    const m = scrollTo.match(/^practice_(\d+)$/);
+    if (!m) return;
+
+    if (role === "CLIENT") {
+      // форсим на "all", скроллим там (карточке тоже дать id в PracticeList)
+      if (tab !== "all") setTab("all");
+      return;
+    }
+
+    if (tab !== "mine") setTab("mine");
+  }, [scrollTo, tab, role]);
+
+  // Основной эффект скролла: догружаем страницы, пока не найдём карточку или страницы не закончатся
+  useEffect(() => {
+    if (!scrollTo || tab !== "mine") return;
+    const m = scrollTo.match(/^practice_(\d+)$/);
+    if (!m) return;
+    const targetId = Number(m[1]);
+    if (!Number.isFinite(targetId)) return;
+
+    let cancelled = false;
+
+    const attemptScroll = () => {
+      const el = findCardEl(targetId);
+      if (el) {
+        // небольшой rAF, чтобы список "устаканился"
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          // очищаем scrollTo из URL (одноразовый скролл)
+          const clean = new URL(window.location.href);
+          clean.searchParams.delete("scrollTo");
+          navigate(clean.pathname + clean.search, { replace: true });
+        });
+        return true;
+      }
+      return false;
+    };
+
+    // 1) Пробуем сразу
+    if (attemptScroll()) return;
+
+    // 2) Если ещё не нашли — будем подгружать страницы до тех пор, пока:
+    //    - карточка не появится
+    //    - или не закончатся страницы
+    const loadMoreIfNeeded = async () => {
+      if (cancelled) return;
+
+      // если уже идёт загрузка, подождём
+      if (mineQ.isLoading) {
+        setTimeout(loadMoreIfNeeded, 100);
+        return;
+      }
+
+      // попробуем снова (вдруг догрузилось)
+      if (attemptScroll()) return;
+
+      // если есть ещё страницы — попросим следующую
+      if (minePg && minePg.currentPage < minePg.totalPages) {
+        setPageMine((p) => p + 1);
+        // после инкремента дадим времени подзагрузиться и снова проверим
+        setTimeout(loadMoreIfNeeded, 200);
+        return;
+      }
+
+      // страницы кончились — ничего не делаем
+    };
+
+    loadMoreIfNeeded();
+
+    return () => {
+      cancelled = true;
+    };
+    // важно: следим за мин. зависимостями пагинации/загрузки
+  }, [
+    scrollTo,
+    tab,
+    mineQ.isLoading,
+    minePg?.currentPage,
+    minePg?.totalPages,
+    navigate,
+  ]);
+
+  // Аналогичная логика для вкладки "all" (для CLIENT роли)
+  useEffect(() => {
+    if (!scrollTo || tab !== "all" || role !== "CLIENT") return;
+    const m = scrollTo.match(/^practice_(\d+)$/);
+    if (!m) return;
+    const targetId = Number(m[1]);
+    if (!Number.isFinite(targetId)) return;
+
+    let cancelled = false;
+
+    const attemptScroll = () => {
+      const el = findCardEl(targetId);
+      if (el) {
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          const clean = new URL(window.location.href);
+          clean.searchParams.delete("scrollTo");
+          navigate(clean.pathname + clean.search, { replace: true });
+        });
+        return true;
+      }
+      return false;
+    };
+
+    if (attemptScroll()) return;
+
+    const loadMoreIfNeeded = async () => {
+      if (cancelled) return;
+      if (cardsQ.isLoading) {
+        setTimeout(loadMoreIfNeeded, 100);
+        return;
+      }
+      if (attemptScroll()) return;
+      if (cardsPg && cardsPg.currentPage < cardsPg.totalPages) {
+        setPageAll((p) => p + 1);
+        setTimeout(loadMoreIfNeeded, 200);
+        return;
+      }
+    };
+
+    loadMoreIfNeeded();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    scrollTo,
+    tab,
+    role,
+    cardsQ.isLoading,
+    cardsPg?.currentPage,
+    cardsPg?.totalPages,
+    navigate,
+  ]);
+
   if (!roleReady) {
     return (
       <div className="bg-second-bg min-h-dvh flex items-center justify-center">
@@ -192,7 +358,7 @@ export const PracticeHomePage = () => {
             return (
               <button
                 key={t.key}
-                onClick={() => setTab(t.key as TabKey)}
+                onClick={() => setTabAndUrl(t.key as TabKey)}
                 className={
                   "flex-1 h-[calc(100%-1px)] rounded-md px-3 py-2 text-sm font-medium transition-colors " +
                   (active

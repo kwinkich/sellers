@@ -4,5 +4,6 @@ export * from "./getAuthToken";
 export * from "./getPracticeTypeLabel";
 export * from "./pTimeout";
 export * from "./roleTranslations";
+export * from "./startParam";
 export * from "./telegram";
 export * from "./unauthorizedInterceptor";
