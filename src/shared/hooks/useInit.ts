@@ -74,9 +74,13 @@ export const useAppInit = (): UseAppInitReturn => {
     if (pending?.type === "practice") {
       // переходим на список практик: вкладка mine + якорь
       const scrollKey = `practice_${pending.id}`;
-      navigate(`/practice?tab=mine&scrollTo=${encodeURIComponent(scrollKey)}`, {
-        replace: true,
-      });
+      const tab = ok.data.user.role === "CLIENT" ? "all" : "mine";
+      navigate(
+        `/practice?tab=${tab}&scrollTo=${encodeURIComponent(scrollKey)}`,
+        {
+          replace: true,
+        }
+      );
       return;
     }
 

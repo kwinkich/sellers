@@ -25,7 +25,7 @@ export function getTelegramInitData(): string {
 
 // Если нужен start_param — только из SDK (без URL-фолбэков)
 export function getTelegramStartParam(): string | null {
-  return WebApp?.initDataUnsafe?.start_param ?? null;
+  return WebApp?.initDataUnsafe?.start_param || null;
 }
 
 /**
