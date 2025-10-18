@@ -6,10 +6,13 @@ import {
   PracticeWithCaseIcon,
   MiniGameIcon,
   PracticeNoCaseIcon,
-  CopyIcon,
+  CopyButton,
   getRoleLabel,
+  useUserRole,
 } from "@/shared";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useRef } from "react";
 import type {
   PracticeCard as PracticeCardType,
   PracticeRole,
@@ -26,8 +29,9 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices";
+import { mopProfilesQueryOptions } from "@/entities/mop";
 import {} from "react";
 
 interface Props {
@@ -41,9 +45,37 @@ const ALL_ROLES: PracticeParticipantRole[] = [
   "OBSERVER",
 ];
 
+// Function to check if role is available based on repScore
+const isRoleAvailableByRep = (
+  role: PracticeParticipantRole,
+  repScore: number
+): boolean => {
+  switch (role) {
+    case "OBSERVER":
+      return true; // Always available
+    case "BUYER":
+      return repScore >= 2;
+    case "SELLER":
+    case "MODERATOR":
+      return repScore >= 3;
+    default:
+      return false;
+  }
+};
+
 export const PracticeMineCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
   const qc = useQueryClient();
+  const { role } = useUserRole();
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Get MOP profile info for MOP users
+  const { data: mopProfileRes } = useQuery({
+    ...mopProfilesQueryOptions.profileInfo(),
+    enabled: role === "MOP",
+  });
+  const mopProfile = mopProfileRes?.data;
+  const repScore = mopProfile?.repScore ?? 0;
   const switchRole = useMutation({
     ...practicesMutationOptions.switchRole(),
     onSuccess: async () => {
@@ -78,15 +110,25 @@ export const PracticeMineCard = ({ data }: Props) => {
       window.open(data.zoomLink, "_blank", "noopener,noreferrer");
   };
 
-  const onCopyLink = () => {
-    if (!data.zoomLink) return;
-    void navigator.clipboard?.writeText(data.zoomLink).catch(() => {});
-  };
-
   const isAllowed = (r: PracticeParticipantRole): boolean => {
-    if (r === "OBSERVER") return true;
+    // If it's my current role, always allow (can switch back to it)
     if (r === data.myRole) return true;
-    return data.freeRoles?.includes(r as PracticeRole) ?? false;
+
+    // For ADMIN users: can only be MODERATOR (no exceptions)
+    if (role === "ADMIN" && r !== "MODERATOR") return false;
+
+    // For OBSERVER, always available (can always observe) - but not for admin
+    if (r === "OBSERVER" && role !== "ADMIN") return true;
+
+    // Check if role is available on backend (not taken by others)
+    const isRoleNotTaken = data.freeRoles?.includes(r as PracticeRole) ?? false;
+    if (!isRoleNotTaken) return false;
+
+    // For MOP users: check reputation requirements
+    const isRepAvailable =
+      role === "MOP" ? isRoleAvailableByRep(r, repScore) : true;
+
+    return isRepAvailable;
   };
 
   return (
@@ -182,24 +224,31 @@ export const PracticeMineCard = ({ data }: Props) => {
       </div>
 
       {/* Zoom link with copy */}
-      <div className="bg-second-bg rounded-2xl p-3 text-sm flex items-center justify-between gap-2">
+      <div
+        className={cn(
+          "bg-second-bg rounded-2xl p-3 text-sm flex items-center justify-between gap-2",
+          "transition-all duration-200 cursor-pointer",
+          "hover:bg-second-bg/80 hover:shadow-sm"
+        )}
+        onClick={() => {
+          if (data.zoomLink && copyButtonRef.current) {
+            copyButtonRef.current.click();
+          }
+        }}
+      >
         <div className="flex flex-col min-w-0 gap-1">
           <span className="text-base-gray text-xs">Ссылка на встречу</span>
           <div className="w-full rounded-lg flex items-center text-white text-sm truncate">
             {data.zoomLink ?? "—"}
           </div>
         </div>
-        <Button
-          size="xs"
-          className="bg-transparent"
-          rounded="3xl"
-          variant="main-opacity10"
-          text="main"
-          onClick={onCopyLink}
+        <CopyButton
+          ref={copyButtonRef}
+          text={data.zoomLink || ""}
+          className="bg-transparent rounded-3xl p-2"
+          size={24}
           disabled={!data.zoomLink}
-        >
-          <CopyIcon size={24} fill="#06935F" />
-        </Button>
+        />
       </div>
 
       {/* Additional materials: Case */}

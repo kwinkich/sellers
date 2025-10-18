@@ -16,6 +16,7 @@ import {
   ScenarioIcon,
   SkillsIcon,
   useUserRole,
+  getRoleLabel,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
@@ -171,10 +172,7 @@ const PracticePreviewPage = () => {
                 <SelectGroup>
                   {getAvailableRoles(repScore).map((availableRole) => (
                     <SelectItem key={availableRole} value={availableRole}>
-                      {availableRole === "SELLER" && "Продавец"}
-                      {availableRole === "BUYER" && "Покупатель"}
-                      {availableRole === "MODERATOR" && "Модератор"}
-                      {availableRole === "OBSERVER" && "Наблюдатель"}
+                      {getRoleLabel(availableRole)}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -190,10 +188,16 @@ const PracticePreviewPage = () => {
               </SelectTrigger>
               <SelectContent side="bottom" align="start">
                 <SelectGroup>
-                  <SelectItem value="SELLER">Продавец</SelectItem>
-                  <SelectItem value="BUYER">Покупатель</SelectItem>
-                  <SelectItem value="MODERATOR">Модератор</SelectItem>
-                  <SelectItem value="OBSERVER">Наблюдатель</SelectItem>
+                  <SelectItem value="SELLER">
+                    {getRoleLabel("SELLER")}
+                  </SelectItem>
+                  <SelectItem value="BUYER">{getRoleLabel("BUYER")}</SelectItem>
+                  <SelectItem value="MODERATOR">
+                    {getRoleLabel("MODERATOR")}
+                  </SelectItem>
+                  <SelectItem value="OBSERVER">
+                    {getRoleLabel("OBSERVER")}
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

@@ -1,5 +1,7 @@
 import { BlockingModal } from "@/components/ui/blocking-modal";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useRef } from "react";
 import {
   Badge,
   ClientIcon,
@@ -7,7 +9,7 @@ import {
   PracticeWithCaseIcon,
   MiniGameIcon,
   PracticeNoCaseIcon,
-  CopyIcon,
+  CopyButton,
   getRoleLabel,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
@@ -19,16 +21,15 @@ import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
 import { toast } from "sonner";
-import { useState } from "react";
 
-function PracticeInfoCardSimple({ 
-  data, 
-  openCaseInfo 
-}: { 
-  data: any; 
-  openCaseInfo: (practice: any) => void; 
+function PracticeInfoCardSimple({
+  data,
+  openCaseInfo,
+}: {
+  data: any;
+  openCaseInfo: (practice: any) => void;
 }) {
-  const [isCopied, setIsCopied] = useState(false);
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", {
     day: "2-digit",
@@ -48,16 +49,6 @@ function PracticeInfoCardSimple({
     ) : (
       <PracticeNoCaseIcon size={32} cn="text-base-main" />
     );
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(data.zoomLink);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
-    } catch (error) {
-      console.error("Failed to copy:", error);
-    }
-  };
 
   const role = data.myRole ? getRoleLabel(data.myRole) : "—";
 
@@ -111,13 +102,22 @@ function PracticeInfoCardSimple({
         <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
           <div className="text-xs">
             <div className="text-base-gray">Ваша роль</div>
-            <div className="text-black font-medium">
-              {role}
-            </div>
+            <div className="text-black font-medium">{role}</div>
           </div>
         </div>
 
-        <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
+        <div
+          className={cn(
+            "bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between",
+            "transition-all duration-200 cursor-pointer",
+            "hover:bg-white/80 hover:shadow-sm"
+          )}
+          onClick={() => {
+            if (data.zoomLink && copyButtonRef.current) {
+              copyButtonRef.current.click();
+            }
+          }}
+        >
           <div className="text-xs w-full">
             <div className="text-base-gray">Ссылка на встречу</div>
             <div className="text-black font-medium break-all">
@@ -125,19 +125,12 @@ function PracticeInfoCardSimple({
             </div>
           </div>
           {data.zoomLink && (
-            <button
-              className="ml-2 text-base-main text-sm flex items-center gap-1"
-              onClick={handleCopy}
-              title={isCopied ? "Скопировано!" : "Скопировать"}
-            >
-              {isCopied ? (
-                <>
-                  <span className="text-xs">Скопировано!</span>
-                </>
-              ) : (
-                <CopyIcon size={16} fill="#06935F" />
-              )}
-            </button>
+            <CopyButton
+              ref={copyButtonRef}
+              text={data.zoomLink}
+              className="ml-2 text-base-main text-sm"
+              size={16}
+            />
           )}
         </div>
 

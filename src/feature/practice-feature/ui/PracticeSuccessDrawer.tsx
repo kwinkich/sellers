@@ -1,6 +1,24 @@
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Badge, ClientIcon, TimerIcon, PracticeWithCaseIcon, MiniGameIcon, PracticeNoCaseIcon, SuccessIcon, CopyIcon } from "@/shared";
+import { cn } from "@/lib/utils";
+import { useRef } from "react";
+import {
+  Badge,
+  ClientIcon,
+  TimerIcon,
+  PracticeWithCaseIcon,
+  MiniGameIcon,
+  PracticeNoCaseIcon,
+  SuccessIcon,
+  CopyButton,
+  getRoleLabel,
+} from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import { useSuccessDrawerStore } from "../model/successDrawer.store";
 import type { PracticeCard } from "@/entities/practices";
@@ -8,17 +26,26 @@ import { usePracticeJoinStore } from "../model/joinDrawer.store";
 import { useCaseInfoStore } from "../model/caseInfo.store";
 
 function PracticeInfoCard({ data }: { data: PracticeCard }) {
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
   const start = new Date(data.startAt);
-  const date = start.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-  const time = start.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const date = start.toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const time = start.toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  const icon = data.practiceType === "MINI" ? (
-    <MiniGameIcon size={32} cn="text-base-main" />
-  ) : data.practiceType === "WITH_CASE" ? (
-    <PracticeWithCaseIcon size={32} cn="text-base-main" />
-  ) : (
-    <PracticeNoCaseIcon size={32} cn="text-base-main" />
-  );
+  const icon =
+    data.practiceType === "MINI" ? (
+      <MiniGameIcon size={32} cn="text-base-main" />
+    ) : data.practiceType === "WITH_CASE" ? (
+      <PracticeWithCaseIcon size={32} cn="text-base-main" />
+    ) : (
+      <PracticeNoCaseIcon size={32} cn="text-base-main" />
+    );
 
   const joinStoreOpen = usePracticeJoinStore((s) => s.open);
 
@@ -26,7 +53,12 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
     <div className="bg-gray-100 rounded-2xl p-3 text-black">
       <div className="flex items-center gap-2 mb-2">
         {icon}
-        <Badge label={getPracticeTypeLabel(data.practiceType as any)} variant="gray" size="md" className="bg-gray-300 text-gray-700" />
+        <Badge
+          label={getPracticeTypeLabel(data.practiceType as any)}
+          variant="gray"
+          size="md"
+          className="bg-gray-300 text-gray-700"
+        />
       </div>
       <p className="text-lg font-semibold mb-1">{data.title}</p>
       {data.description && (
@@ -36,7 +68,13 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
       {!!data.skills?.length && (
         <div className="flex flex-wrap gap-2 mb-2">
           {data.skills.map((s) => (
-            <Badge key={s.id} label={s.name} variant="gray" size="md" className="bg-gray-300 text-gray-700" />
+            <Badge
+              key={s.id}
+              label={s.name}
+              variant="gray"
+              size="md"
+              className="bg-gray-300 text-gray-700"
+            />
           ))}
         </div>
       )}
@@ -44,7 +82,9 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
       <div className="flex items-center justify-between text-xs text-base-gray">
         <div className="flex items-center gap-2">
           <ClientIcon size={16} fill="#A2A2A2" />
-          <span className="text-black font-medium">{data.participantsCount}</span>
+          <span className="text-black font-medium">
+            {data.participantsCount}
+          </span>
           <span>Участвуют</span>
         </div>
         <div className="flex items-center gap-1">
@@ -59,24 +99,43 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
         <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
           <div className="text-xs">
             <div className="text-base-gray">Ваша роль</div>
-            <div className="text-black font-medium">{data.myRole ?? "—"}</div>
+            <div className="text-black font-medium">
+              {data.myRole ? getRoleLabel(data.myRole) : "—"}
+            </div>
           </div>
-          <button className="text-base-main text-sm" onClick={() => joinStoreOpen(data)}>Изменить</button>
+          <button
+            className="text-base-main text-sm"
+            onClick={() => joinStoreOpen(data)}
+          >
+            Изменить
+          </button>
         </div>
 
-        <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
+        <div
+          className={cn(
+            "bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between",
+            "transition-all duration-200 cursor-pointer",
+            "hover:bg-white/80 hover:shadow-sm"
+          )}
+          onClick={() => {
+            if (data.zoomLink && copyButtonRef.current) {
+              copyButtonRef.current.click();
+            }
+          }}
+        >
           <div className="text-xs w-full">
             <div className="text-base-gray">Ссылка на встречу</div>
-            <div className="text-black font-medium break-all">{data.zoomLink ?? "—"}</div>
+            <div className="text-black font-medium break-all">
+              {data.zoomLink ?? "—"}
+            </div>
           </div>
           {data.zoomLink && (
-            <button
+            <CopyButton
+              ref={copyButtonRef}
+              text={data.zoomLink}
               className="ml-2 text-base-main text-sm"
-              onClick={() => navigator.clipboard.writeText(data.zoomLink!)}
-              title="Скопировать"
-            >
-              <CopyIcon size={16} fill="#06935F" />
-            </button>
+              size={16}
+            />
           )}
         </div>
 
@@ -128,5 +187,3 @@ export const PracticeSuccessDrawer = () => {
     </Drawer>
   );
 };
-
-

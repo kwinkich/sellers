@@ -61,7 +61,14 @@ const PracticeCreatePage = () => {
 
   // Local date/time for stable UX; compute UTC on submit
   const [dateLocal, setDateLocal] = React.useState<Date | undefined>(undefined);
-  const [timeLocal, setTimeLocal] = React.useState<string>("15:00");
+  const [timeLocal, setTimeLocal] = React.useState<string>(() => {
+    const now = new Date();
+    // Set time to 10 minutes in the future to ensure it passes validation
+    const futureTime = new Date(now.getTime() + 10 * 60 * 1000);
+    const hours = futureTime.getHours().toString().padStart(2, "0");
+    const minutes = futureTime.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  });
 
   // Used to visually reset the MultiSelectChips back to clean placeholder state
   const [skillsResetVersion, setSkillsResetVersion] = React.useState(0);
@@ -256,7 +263,7 @@ const PracticeCreatePage = () => {
     if (practiceType === "WITH_CASE" && !caseId) return false;
     if (!dateLocal || !timeLocal) return false;
 
-    // If selected date is today, ensure selected time is in the future
+    // If selected date is today, ensure selected time is at least 5 minutes in the future
     const now = new Date();
     const isSameDay =
       dateLocal.getFullYear() === now.getFullYear() &&
@@ -275,7 +282,9 @@ const PracticeCreatePage = () => {
         0,
         0
       );
-      if (candidate <= now) return false;
+      // Allow time to be at least 5 minutes in the future to account for setup time
+      const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+      if (candidate <= fiveMinutesFromNow) return false;
     }
 
     return true;
@@ -314,7 +323,7 @@ const PracticeCreatePage = () => {
   }, [canProceed, dateLocal, timeLocal, store, navigate, role, scenarioTitle]);
 
   return (
-    <div className="bg-white text-black min-h-screen flex flex-col pb-24">
+    <div className="bg-white text-black min-h-[100dvh] flex flex-col pb-24">
       <div className="px-4 py-4 flex-1">
         <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
@@ -491,7 +500,7 @@ const PracticeCreatePage = () => {
               type="time"
               value={timeLocal}
               onChange={(e) => setTimeLocal(e.target.value)}
-              className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-sm font-medium placeholder:text-second-gray"
+              className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-base font-medium placeholder:text-second-gray"
               placeholder="Время (локальное)"
               step={300}
               min="00:00"

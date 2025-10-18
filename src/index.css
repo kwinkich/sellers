@@ -4,28 +4,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-base-main: #06935F;
-  --color-base-opacity-main: #06935F33;
-  --color-base-opacity10-main: #06935F1A;
+  --color-base-main: #06935f;
+  --color-base-opacity-main: #06935f33;
+  --color-base-opacity10-main: #06935f1a;
 
-  --color-base-red: #F44F47;
-  --color-base-opacity-red: #F44F471A;
+  --color-base-red: #f44f47;
+  --color-base-opacity-red: #f44f471a;
 
-  --color-white-gray: #F5F5F5;
+  --color-white-gray: #f5f5f5;
 
-  --color-base-gray: #99A1A8;
-  --color-second-gray: #62686D;
+  --color-base-gray: #99a1a8;
+  --color-second-gray: #62686d;
   --color-third-gray: #616568;
-  --color-base-opacity10-gray: #99A1A81A;
-  --color-fourth-gray: #16181A;
-  --color-second-opacity10-gray: #16181A1A;
+  --color-base-opacity10-gray: #99a1a81a;
+  --color-fourth-gray: #16181a;
+  --color-second-opacity10-gray: #16181a1a;
 
-
-  --color-base-bg: #0A0C0E;
-  --color-second-bg: #14181B;
-
+  --color-base-bg: #0a0c0e;
+  --color-second-bg: #14181b;
 }
-
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -153,4 +150,13 @@
 [data-vaul-drawer][data-vaul-drawer-direction="bottom"]::after {
   content: none !important;
   height: 0 !important;
+}
+
+/* iOS/Telegram WebView fixes */
+@supports (-webkit-touch-callout: none) {
+  .tg-webapp input,
+  .tg-webapp select,
+  .tg-webapp textarea {
+    font-size: 16px !important;
+  }
 }
