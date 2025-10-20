@@ -40,15 +40,33 @@ export const MultiSelectChips: React.FC<MultiSelectChipsProps> = ({
   const [search, setSearch] = React.useState("");
   const listRef = React.useRef<HTMLDivElement | null>(null);
 
-  // Lock body scroll when popover is open to prevent background movement
+  // Custom portal container for better iOS/Telegram WebView compatibility
+  const portalEl = React.useMemo(() => {
+    if (typeof document === "undefined") return null;
+    return document.getElementById("portal-root");
+  }, []);
+
+  // Lock body scroll when popover is open to prevent background movement (iOS-safe)
   React.useEffect(() => {
-    if (open) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
+    if (!open) return;
+    const scrollY = window.scrollY;
+    const body = document.body;
+
+    // Лочим body фиксированной позицией, чтобы фон не дёргался
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
   }, [open]);
 
   const valueSet = React.useMemo(() => new Set(value.map(String)), [value]);
@@ -145,6 +163,8 @@ export const MultiSelectChips: React.FC<MultiSelectChipsProps> = ({
         </div>
       </PopoverTrigger>
       <PopoverContent
+        // @ts-ignore — если типы ругаются, оберни через as any
+        container={portalEl as any}
         className="z-[9999] p-2 w-[var(--radix-popper-anchor-width)] min-w-[var(--radix-popper-anchor-width)]"
         align="start"
       >
@@ -157,7 +177,15 @@ export const MultiSelectChips: React.FC<MultiSelectChipsProps> = ({
             className="w-full h-9 rounded-md border px-2 text-base"
             inputMode="search"
           />
-          <div ref={listRef} className="max-h-64 overflow-auto pr-1">
+          <div
+            ref={listRef}
+            className="max-h-64 overflow-auto pr-1"
+            style={{
+              WebkitOverflowScrolling: "touch", // iOS-моментум
+              overscrollBehavior: "contain", // не передавать скролл фону
+              contain: "content", // локализуем перерисовку
+            }}
+          >
             {filtered.length ? (
               <ul className="space-y-1">
                 {filtered.map((o) => {

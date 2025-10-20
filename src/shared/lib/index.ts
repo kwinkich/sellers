@@ -2,6 +2,7 @@ export * from "./api-config";
 export * from "./createSearchParams";
 export * from "./getAuthToken";
 export * from "./getPracticeTypeLabel";
+export * from "./jwt";
 export * from "./pTimeout";
 export * from "./roleTranslations";
 export * from "./startParam";

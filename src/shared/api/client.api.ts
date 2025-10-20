@@ -7,9 +7,10 @@ import {
 import { getTelegramInitData } from "../lib/telegram";
 import { handleUnauthorized } from "../lib/unauthorizedInterceptor";
 import { getFullApiUrl, getApiPrefixForPath } from "../lib/api-config";
+import type { GResponse } from "@/shared";
+import type { AuthResponse } from "@/entities";
 
-// — глобальный «замок» refresh
-let refreshing: Promise<void> | null = null;
+let refreshing: Promise<GResponse<AuthResponse>> | null = null;
 let refreshAttempts = 0;
 
 async function apiLogout() {
@@ -92,7 +93,7 @@ const base = ky.create({
   timeout: 10000, // <<— таймаут на любой запрос, чтобы не висло вечно
 });
 
-async function doRefresh() {
+async function doRefresh(): Promise<GResponse<AuthResponse>> {
   if (!refreshing) {
     refreshing = (async () => {
       console.log("🔄 KY: Выполняем refresh");
@@ -107,9 +108,10 @@ async function doRefresh() {
         throw new Error(`Refresh failed with status ${res.status}`);
       }
 
-      const json = await res.json<{ data: { accessToken: string } }>();
+      const json = await res.json<GResponse<AuthResponse>>();
       console.log("✅ KY: Refresh успешен", json.data);
       updateAuthToken(json.data.accessToken);
+      return json;
     })().finally(() => (refreshing = null));
   }
   return refreshing;
@@ -161,3 +163,5 @@ export const API = createAPI();
 
 export const SILENT_API = createAPI();
 export const FILE_API = createAPI();
+
+export { doRefresh };
