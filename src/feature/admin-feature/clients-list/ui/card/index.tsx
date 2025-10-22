@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { ClientListItem } from "@/entities";
-import { ArrowIcon, Badge, Box } from "@/shared";
-import WebApp from "@twa-dev/sdk";
+import { ArrowIcon, Badge, Box, openTelegramContact } from "@/shared";
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -50,16 +49,7 @@ export const ClientCard: FC<{ data: ClientListItem }> = ({ data }) => {
 
       <div className="flex w-full items-center gap-2">
         <Button
-          onClick={() => {
-            console.log("Opening Telegram link:", data.tgLink);
-            if (WebApp && WebApp.openTelegramLink) {
-              WebApp.openTelegramLink(data.tgLink);
-            } else {
-              console.error("WebApp is not available");
-              // Fallback: open in new tab
-              window.open(data.tgLink, "_blank");
-            }
-          }}
+          onClick={() => openTelegramContact(data.tgLink)}
           size="2s"
           variant="main-opacity"
           text="main"

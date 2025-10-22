@@ -7,4 +7,5 @@ export * from "./pTimeout";
 export * from "./roleTranslations";
 export * from "./startParam";
 export * from "./telegram";
+export * from "./telegramContact";
 export * from "./unauthorizedInterceptor";
