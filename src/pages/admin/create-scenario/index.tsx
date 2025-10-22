@@ -70,8 +70,7 @@ export const AdminScenariosCreatePage = () => {
   // Form data state
   const [formData, setFormData] = useState<{
     title: string;
-    caseIds: number[];
-  }>({ title: "", caseIds: [] });
+  }>({ title: "" });
 
   // Track if pre-built blocks have been initialized
   const prebuiltInitialized = useRef(false);
@@ -285,7 +284,6 @@ export const AdminScenariosCreatePage = () => {
 
     const requestData: CreateScenarioRequest = {
       title: formData.title,
-      caseIds: formData.caseIds.length > 0 ? formData.caseIds : undefined,
       forms: [
         {
           role: "SELLER",

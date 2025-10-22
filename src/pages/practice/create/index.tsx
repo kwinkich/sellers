@@ -131,27 +131,18 @@ const PracticeCreatePage = () => {
     [scenarios.data]
   );
 
-  // Cases: depend on scenario; skills filter is optional; disabled for WITHOUT_CASE
+  // Cases: independent of scenario; disabled for WITHOUT_CASE
   const cases = useInfiniteQuery({
-    queryKey: [
-      "cases",
-      "list",
-      {
-        scenarioId: scenarioId || undefined,
-        skillIds: skillIds?.length ? skillIds : undefined,
-      },
-    ],
+    queryKey: ["cases", "list"],
     queryFn: ({ pageParam = 1 }) =>
       CasesAPI.getCases({
-        scenarioId: scenarioId as any,
-        skillIds: (skillIds?.length ? (skillIds as any) : undefined) as any,
         page: pageParam as number,
         limit: 50,
       }),
     getNextPageParam: getNextPageParamFromMeta,
     initialPageParam: 1,
     staleTime: 5 * 60 * 1000,
-    enabled: Boolean(scenarioId) && practiceType !== "WITHOUT_CASE",
+    enabled: practiceType !== "WITHOUT_CASE",
   });
 
   const caseOptions = React.useMemo(
@@ -180,7 +171,6 @@ const PracticeCreatePage = () => {
       !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId))
     ) {
       store.setScenario(undefined, undefined);
-      store.setCase(undefined, undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioOptions, scenarios.isLoading, scenarios.isFetching]);
@@ -437,17 +427,17 @@ const PracticeCreatePage = () => {
             </Select>
           </div>
 
-          {/* Case (depends on scenario; disabled for WITHOUT_CASE) */}
+          {/* Case (independent of scenario; disabled for WITHOUT_CASE) */}
           <div>
             <Select
-              key={`case-${skillsResetVersion}-${scenarioId ?? 0}`}
+              key={`case-${skillsResetVersion}`}
               onValueChange={(id) => {
                 const c = caseOptions.find(
                   (x: any) => String(x.id) === String(id)
                 );
                 store.setCase(Number(id), c?.title);
               }}
-              disabled={practiceType === "WITHOUT_CASE" || !scenarioId}
+              disabled={practiceType === "WITHOUT_CASE"}
               value={caseId ? String(caseId) : ""}
             >
               <SelectTrigger>
@@ -455,8 +445,6 @@ const PracticeCreatePage = () => {
                   placeholder={
                     practiceType === "WITHOUT_CASE"
                       ? "Тип без кейса — выбор не требуется"
-                      : !scenarioId
-                      ? "Сначала выберите сценарий"
                       : "Выберите кейс практики"
                   }
                 />

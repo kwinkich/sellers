@@ -84,7 +84,9 @@ export const ClientMopsList = () => {
         onClose={() => setBlockDialog({ isOpen: false, mop: null })}
         onConfirm={handleConfirmBlock}
         title="Удалить МОПа"
-        description={`Вы уверены, что хотите удалить МОПа ${blockDialog.mop?.displayName}? После удаления он не сможет войти в систему.`}
+        description={`Вы уверены, что хотите удалить МОПа${
+          blockDialog.mop?.displayName ? ` ${blockDialog.mop.displayName}` : ""
+        }? После удаления он не сможет войти в систему.`}
         confirmText="Удалить"
         cancelText="Отмена"
         isLoading={isBlocking}

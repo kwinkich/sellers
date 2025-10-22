@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
 import type { FC } from "react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 export const AdminCard: FC<{ data: Admin }> = ({ data }) => {
   const queryClient = useQueryClient();
@@ -14,12 +13,10 @@ export const AdminCard: FC<{ data: Admin }> = ({ data }) => {
     ...adminsMutationOptions.block(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admins"] });
-      toast.success("Админ успешно заблокирован");
       setShowBlockDialog(false);
     },
     onError: (error) => {
-      console.error("Ошибка при блокировке админа:", error);
-      toast.error("Ошибка при блокировке админа");
+      console.error("Ошибка при удалении администратора:", error);
     },
   });
 
@@ -58,7 +55,9 @@ export const AdminCard: FC<{ data: Admin }> = ({ data }) => {
         onClose={() => setShowBlockDialog(false)}
         onConfirm={handleConfirmBlock}
         title="Удалить администратора"
-        description={`Вы уверены, что хотите удалить администратора ${data.displayName}? После удаления он не сможет войти в систему.`}
+        description={`Вы уверены, что хотите удалить администратора${
+          data.displayName ? ` ${data.displayName}` : ""
+        }? После удаления он не сможет войти в систему.`}
         confirmText="Удалить"
         cancelText="Отмена"
         isLoading={isBlocking}

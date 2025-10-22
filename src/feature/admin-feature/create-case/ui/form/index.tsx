@@ -9,17 +9,12 @@ import {
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import TextareaFloatingLabel from "@/components/ui/textareaFloating";
-import {
-  casesMutationOptions,
-  scenariosQueryOptions,
-  type CreateCaseRequest,
-} from "@/entities";
-import { useUserRole, RemoveIcon } from "@/shared";
+import { casesMutationOptions, type CreateCaseRequest } from "@/entities";
+import { useUserRole } from "@/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { createCaseSchema, type CreateCaseFormData } from "../../model";
@@ -28,22 +23,6 @@ export function CreateCaseForm() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { userId } = useUserRole();
-
-  // Fetch scenarios for dropdown with pagination
-  const { data: scenariosData, isLoading: scenariosLoading } = useQuery(
-    scenariosQueryOptions.list({ limit: 100 })
-  );
-
-  // Multi-scenario selection state (dynamic selectors)
-  const [scenarioSelects, setScenarioSelects] = useState<Array<number | null>>([
-    null,
-  ]);
-
-  // Build final selected ids (non-null)
-  const selectedScenarioIds = useMemo(
-    () => scenarioSelects.filter((v): v is number => typeof v === "number"),
-    [scenarioSelects]
-  );
 
   const { mutate: createCase, isPending } = useMutation({
     ...casesMutationOptions.create(),
@@ -88,15 +67,8 @@ export function CreateCaseForm() {
       return;
     }
 
-    // If no scenarios selected, go to scenarios/create
-    if (selectedScenarioIds.length === 0) {
-      navigate("/admin/scenarios/create");
-      return;
-    }
-
     const requestData: CreateCaseRequest = {
       title: formData.title,
-      scenarioIds: selectedScenarioIds,
       recommendedSellerLevel: formData.recommendedSellerLevel,
       situation: formData.situation,
       sellerLegend: formData.sellerLegend,
@@ -108,24 +80,8 @@ export function CreateCaseForm() {
     createCase(requestData);
   };
 
-  // Prepare scenario options for dropdown
-  const scenarioOptions =
-    scenariosData?.data?.map((scenario) => ({
-      value: scenario.id.toString(),
-      label: scenario.title,
-    })) || [];
-
-  // Track taken scenario ids for filtering (keeps current value visible)
-  const takenScenarioIds = useMemo(
-    () => new Set(selectedScenarioIds),
-    [selectedScenarioIds]
-  );
-
   // Get current admin ID from context
   const currentAdminId = userId;
-
-  // Determine button text and behavior based on multi-select
-  const isScenarioSelected = selectedScenarioIds.length > 0;
 
   return (
     <Form {...form}>
@@ -278,95 +234,16 @@ export function CreateCaseForm() {
           )}
         />
 
-        {/* 9. Выберите сценарий(и) - dynamic selectors */}
-        <div className="space-y-2">
-          {scenarioSelects.map((val, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <div className="flex-1">
-                <SelectFloatingLabel
-                  placeholder={
-                    idx === 0
-                      ? "Выберите сценарий"
-                      : "Добавьте ещё один сценарий (опционально)"
-                  }
-                  value={val ? String(val) : ""}
-                  onValueChange={(value) => {
-                    const num = parseInt(value);
-                    setScenarioSelects((prev) => {
-                      const next = [...prev];
-                      next[idx] = Number.isNaN(num) ? null : num;
-                      // If this is the last selector and user selected a value, append a new empty selector
-                      if (idx === prev.length - 1 && !Number.isNaN(num)) {
-                        next.push(null);
-                      }
-                      return next;
-                    });
-                  }}
-                  options={scenarioOptions.filter((o) => {
-                    // allow currently selected value for this selector
-                    if (val && String(val) === o.value) return true;
-                    // otherwise filter out already taken ids
-                    const id = parseInt(o.value);
-                    return !takenScenarioIds.has(id);
-                  })}
-                  disabled={isPending || scenariosLoading}
-                />
-              </div>
-              {(idx === 0 ? val : true) && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="2s"
-                  rounded="full"
-                  text="main"
-                  onClick={() => {
-                    setScenarioSelects((prev) => {
-                      const next = [...prev];
-                      
-                      if (val) {
-                        // If selector has a value, clear it
-                        next[idx] = null;
-                      } else {
-                        // If selector is empty, remove the entire selector
-                        // But keep at least one selector
-                        if (next.length > 1) {
-                          next.splice(idx, 1);
-                        }
-                      }
-                      
-                      return next;
-                    });
-                  }}
-                  disabled={isPending}
-                  className="shrink-0"
-                >
-                  <RemoveIcon />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {isScenarioSelected ? (
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {"Создание кейса..."}
-              </>
-            ) : (
-              "Создать кейс"
-            )}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            className="w-full"
-            onClick={() => navigate("/admin/scenarios/create")}
-          >
-            Создать сценарий
-          </Button>
-        )}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {"Создание кейса..."}
+            </>
+          ) : (
+            "Создать кейс"
+          )}
+        </Button>
       </form>
     </Form>
   );
