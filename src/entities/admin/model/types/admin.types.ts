@@ -13,6 +13,8 @@ export interface AdminProfile {
   role: "ADMIN";
   activeClientsTotal: number;
   scheduledPracticesTotal: number;
+  casesTotal: number;
+  scenariosTotal: number;
 }
 
 export interface CreateAdminRequest {

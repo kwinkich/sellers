@@ -53,8 +53,6 @@ export const useCreatePracticeStore = create<CreatePracticeState>((set) => ({
     set({
       scenarioId: id,
       scenarioTitle: title,
-      caseId: undefined,
-      caseTitle: undefined,
     }),
   setPracticeType: (type) => set({ practiceType: type }),
   setCase: (id, title) => set({ caseId: id ?? undefined, caseTitle: title }),

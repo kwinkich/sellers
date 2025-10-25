@@ -1,4 +1,4 @@
-import MultiSelectChips from "@/components/multi-select-chips";
+import MultiSelectChips from "@/components/ui/multi-select-chips";
 import { Button } from "@/components/ui/button";
 import { DatePickerFloatingLabel } from "@/components/ui/datePickerFloating";
 import {
@@ -9,6 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { AdminsAPI } from "@/entities/admin/model/api/admin.api";
 import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
@@ -131,6 +135,16 @@ const PracticeCreatePage = () => {
     [scenarios.data]
   );
 
+  // Convert scenario options to SearchableSelect format
+  const scenarioSelectOptions: SearchableSelectOption[] = React.useMemo(
+    () =>
+      scenarioOptions.map((s: any) => ({
+        value: s.id,
+        label: s.title,
+      })),
+    [scenarioOptions]
+  );
+
   // Cases: independent of scenario; disabled for WITHOUT_CASE
   const cases = useInfiniteQuery({
     queryKey: ["cases", "list"],
@@ -151,6 +165,16 @@ const PracticeCreatePage = () => {
         ? cases.data.pages.flatMap((p: any) => p?.data ?? [])
         : [],
     [cases.data]
+  );
+
+  // Convert case options to SearchableSelect format
+  const caseSelectOptions: SearchableSelectOption[] = React.useMemo(
+    () =>
+      caseOptions.map((c: any) => ({
+        value: c.id,
+        label: c.title,
+      })),
+    [caseOptions]
   );
 
   // ---- Reset & validation policy ----
@@ -197,10 +221,6 @@ const PracticeCreatePage = () => {
     prevSkillIdsRef.current = skillIds;
 
     if (removalHappened) {
-      // Drop scenario & case because filters changed in a narrowing direction
-      store.setScenario(undefined, undefined);
-      store.setCase(undefined, undefined);
-
       // Force MultiSelectChips back to its initial, clean placeholder state
       setSkillsResetVersion((v) => v + 1);
     }
@@ -208,43 +228,6 @@ const PracticeCreatePage = () => {
   }, [skillIds]);
 
   // ---- Infinite scroll handlers ----
-  const SCROLL_LOAD_THRESHOLD_PX = 24;
-
-  const handleScrollLoadMoreScenarios = React.useCallback(
-    (e: any) => {
-      const el = e?.target as HTMLElement | null;
-      if (!el) return;
-      const nearBottom =
-        el.scrollHeight - el.scrollTop - el.clientHeight <
-        SCROLL_LOAD_THRESHOLD_PX;
-      if (
-        nearBottom &&
-        scenarios.hasNextPage &&
-        !scenarios.isFetchingNextPage
-      ) {
-        scenarios.fetchNextPage();
-      }
-    },
-    [
-      scenarios.hasNextPage,
-      scenarios.isFetchingNextPage,
-      scenarios.fetchNextPage,
-    ]
-  );
-
-  const handleScrollLoadMoreCases = React.useCallback(
-    (e: any) => {
-      const el = e?.target as HTMLElement | null;
-      if (!el) return;
-      const nearBottom =
-        el.scrollHeight - el.scrollTop - el.clientHeight <
-        SCROLL_LOAD_THRESHOLD_PX;
-      if (nearBottom && cases.hasNextPage && !cases.isFetchingNextPage) {
-        cases.fetchNextPage();
-      }
-    },
-    [cases.hasNextPage, cases.isFetchingNextPage, cases.fetchNextPage]
-  );
 
   // ---- Form validity / Next button ----
   const canProceed = React.useMemo(() => {
@@ -384,96 +367,64 @@ const PracticeCreatePage = () => {
 
           {/* Scenario (enabled even without skills) */}
           <div>
-            <Select
-              // remount when skills were reduced to restore placeholder feel
-              key={`scenario-${skillsResetVersion}`}
-              onValueChange={(id) => {
-                const s = scenarioOptions.find(
-                  (x: any) => String(x.id) === String(id)
-                );
-                store.setScenario(Number(id), s?.title);
-                if (s?.practiceType) store.setPracticeType(s.practiceType);
+            <SearchableSelect
+              options={scenarioSelectOptions}
+              value={scenarioId}
+              onChange={(value) => {
+                if (value) {
+                  const s = scenarioOptions.find(
+                    (x: any) => Number(x.id) === Number(value)
+                  );
+                  store.setScenario(Number(value), s?.title);
+                  if (s?.practiceType) store.setPracticeType(s.practiceType);
+                } else {
+                  store.setScenario(undefined, undefined);
+                }
               }}
-              value={scenarioId ? String(scenarioId) : ""}
-              disabled={false}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите сценарий практики" />
-              </SelectTrigger>
-              <SelectContent
-                side="bottom"
-                align="start"
-                onScroll={handleScrollLoadMoreScenarios}
-              >
-                <SelectGroup>
-                  {scenarioOptions?.length ? (
-                    scenarioOptions.map((s: any) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {s.title}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled value="__none">
-                      Нет сценариев
-                    </SelectItem>
-                  )}
-                  {scenarios.isFetchingNextPage ? (
-                    <SelectItem disabled value="__loading_scenarios">
-                      Загрузка...
-                    </SelectItem>
-                  ) : null}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              placeholder="Выберите сценарий практики"
+              searchPlaceholder="Поиск сценариев..."
+              noResultsText="Нет сценариев"
+              onLoadMore={() => {
+                if (scenarios.hasNextPage && !scenarios.isFetchingNextPage) {
+                  scenarios.fetchNextPage();
+                }
+              }}
+              canLoadMore={Boolean(scenarios.hasNextPage)}
+              isLoadingMore={Boolean(scenarios.isFetchingNextPage)}
+            />
           </div>
 
           {/* Case (independent of scenario; disabled for WITHOUT_CASE) */}
           <div>
-            <Select
-              key={`case-${skillsResetVersion}`}
-              onValueChange={(id) => {
-                const c = caseOptions.find(
-                  (x: any) => String(x.id) === String(id)
-                );
-                store.setCase(Number(id), c?.title);
+            <SearchableSelect
+              options={caseSelectOptions}
+              value={caseId}
+              onChange={(value) => {
+                if (value) {
+                  const c = caseOptions.find(
+                    (x: any) => Number(x.id) === Number(value)
+                  );
+                  store.setCase(Number(value), c?.title);
+                } else {
+                  store.setCase(undefined, undefined);
+                }
               }}
+              placeholder={
+                practiceType === "WITHOUT_CASE"
+                  ? "Тип без кейса — выбор не требуется"
+                  : "Выберите кейс практики"
+              }
+              searchPlaceholder="Поиск кейсов..."
+              noResultsText="Нет кейсов"
               disabled={practiceType === "WITHOUT_CASE"}
-              value={caseId ? String(caseId) : ""}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    practiceType === "WITHOUT_CASE"
-                      ? "Тип без кейса — выбор не требуется"
-                      : "Выберите кейс практики"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent
-                side="bottom"
-                align="start"
-                onScroll={handleScrollLoadMoreCases}
-              >
-                <SelectGroup>
-                  {caseOptions?.length ? (
-                    caseOptions.map((c: any) => (
-                      <SelectItem key={c.id} value={String(c.id)}>
-                        {c.title}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled value="__none">
-                      Нет кейсов для выбранного сценария
-                    </SelectItem>
-                  )}
-                  {cases.isFetchingNextPage ? (
-                    <SelectItem disabled value="__loading_cases">
-                      Загрузка...
-                    </SelectItem>
-                  ) : null}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              onLoadMore={() => {
+                if (cases.hasNextPage && !cases.isFetchingNextPage) {
+                  cases.fetchNextPage();
+                }
+              }}
+              canLoadMore={Boolean(cases.hasNextPage)}
+              isLoadingMore={Boolean(cases.isFetchingNextPage)}
+            />
           </div>
 
           {/* Date & Time (local) */}
