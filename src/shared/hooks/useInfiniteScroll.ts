@@ -47,7 +47,7 @@ export function useInfiniteScroll<T>({
   const currentItems = data?.data ?? [];
   const pagination = data?.meta?.pagination;
   const hasNextPage = pagination
-    ? pagination.currentPage < pagination.totalPages
+    ? (pagination.currentPage ?? 0) < (pagination.totalPages ?? 0)
     : false;
 
   // Reset accumulation when resetKey changes (e.g., after a delete)
@@ -61,7 +61,7 @@ export function useInfiniteScroll<T>({
   useEffect(() => {
     if (!pagination) return;
 
-    const currentPage = pagination.currentPage;
+    const currentPage = pagination.currentPage ?? 0;
 
     if (currentPage === 1) {
       setAllItems(currentItems);

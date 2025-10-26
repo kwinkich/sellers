@@ -57,7 +57,7 @@ export const CreateQuizPage = () => {
   const updateLessonMutation = useMutation({
     ...lessonsMutationOptions.update(),
     onSuccess: (result) => {
-      if (result.success && result.data) {
+      if (result.success && result.data && module && lesson) {
         navigate(
           `/admin/content/courses/${module.courseId}/modules/${lesson.moduleId}/lessons/${lessonId}/edit`
         );

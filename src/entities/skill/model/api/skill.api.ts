@@ -15,7 +15,7 @@ export const SkillsAPI = {
   getSkillsPaged: ({ page, limit }: { page: number; limit: number }) =>
     API.get("skills", {
       searchParams: { page: String(page), limit: String(limit) },
-    }).json<GApiResponse<Skill[], true>>(),
+    }).json<GApiResponse<Skill, true>>(),
 
   getSkillById: (id: number) =>
     API.get(`skills/${id}`).json<GApiResponse<Skill>>(),
