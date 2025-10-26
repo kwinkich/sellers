@@ -25,7 +25,9 @@ export const ClientCard: FC<{ data: ClientListItem }> = ({ data }) => {
   return (
     <Box variant="dark" justify="start" className="gap-3 p-3">
       <div className="flex items-center w-full justify-between text-white">
-        <p className="text-lg font-medium leading-[100%]">{data.companyName}</p>
+        <p className="text-lg font-medium leading-[100%]">
+          {data.companyName} (#{data.id})
+        </p>
 
         <Badge
           variant="main-opacity"

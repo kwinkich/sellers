@@ -1,4 +1,10 @@
-import { ClientIcon, MainIcon, NavItem, PracticeIcon } from "@/shared";
+import {
+  AcademyIcon,
+  ClientIcon,
+  MainIcon,
+  NavItem,
+  PracticeIcon,
+} from "@/shared";
 import { useLocation } from "react-router-dom";
 
 export const ClientNavBar = () => {
@@ -19,8 +25,17 @@ export const ClientNavBar = () => {
         data={{
           route: "/client/list-mop",
           icon: <ClientIcon size={18} />,
-          label: "МОП",
+          label: "МОПы",
           isActive: location.pathname.includes("client/list-mop"),
+        }}
+      />
+
+      <NavItem
+        data={{
+          route: "/client/courses",
+          icon: <AcademyIcon size={18} />,
+          label: "Академия",
+          isActive: location.pathname.includes("client/courses"),
         }}
       />
 

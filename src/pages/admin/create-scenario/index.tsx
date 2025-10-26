@@ -85,21 +85,16 @@ export const AdminScenariosCreatePage = () => {
   // Create scenario mutation
   const { mutate: createScenario, isPending } = useMutation({
     ...scenariosMutationOptions.create(),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scenarios"] });
 
-      toast.success("Сценарий успешно создан", {
-        description: `Сценарий "${data.data.title}" добавлен в систему`,
-      });
+      toast.success("Сценарий успешно создан");
 
       navigate("/admin/home");
     },
     onError: (error) => {
       console.error("Ошибка при создании сценария:", error);
-      toast.error("Ошибка при создании сценария", {
-        description:
-          "Пожалуйста, проверьте введенные данные и попробуйте снова",
-      });
+      toast.error("Ошибка при создании сценария");
     },
   });
 
@@ -217,9 +212,7 @@ export const AdminScenariosCreatePage = () => {
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      toast.error("Ошибка валидации", {
-        description: "Название сценария обязательно",
-      });
+      toast.error("Ошибка валидации");
       return;
     }
 

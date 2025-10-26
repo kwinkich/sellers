@@ -10,7 +10,7 @@ import {
 import { Button } from "../../../components/ui/button";
 import type { FC } from "react";
 
-interface BlockConfirmationDialogProps {
+interface ConfirmationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -23,13 +23,13 @@ interface BlockConfirmationDialogProps {
   showCancelButton?: boolean;
 }
 
-export const BlockConfirmationDialog: FC<BlockConfirmationDialogProps> = ({
+export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
   title,
   description,
-  confirmText = "Заблокировать",
+  confirmText = "Подтвердить",
   cancelText = "Отмена",
   isLoading = false,
   userName,

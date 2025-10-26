@@ -6,7 +6,7 @@ export const ClientListMopPage = () => {
 		<div className="bg-second-bg px-2 pb-28">
 			<HeadText
 				className="gap-0.5 mb-8 pl-2 pt-2"
-				head="Список МОП"
+				head="Список МОПов"
 				label="Оттачивайте переговорные навыки"
 			/>
 
