@@ -174,17 +174,6 @@ export const ModuleEditPage = () => {
 										<Edit className="h-4 w-4 mr-2" />
 										Редактировать
 									</Button>
-									{module.testVariant !== "NONE" && (
-										<Button
-											size="2s"
-											className="flex-1"
-											onClick={() =>
-												navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/${lesson.id}/quizzes/create`)
-											}
-										>
-											Тест
-										</Button>
-									)}
 								</div>
 							</Box>
 						))}
@@ -193,25 +182,13 @@ export const ModuleEditPage = () => {
 			</div>
 
       {module.testVariant !== "NONE" && module.quizId > 0 && (
-        <div className="px-4 mb-2">
+        <div className="px-4 my-2">
           <Button
             className="w-full"
-            size="xs"
+            size="sm"
             onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/${module.quizId}/edit`)}>
-            <Edit />
-            Редактировать тест
-          </Button>
-        </div>
-      )}
-
-      {module.testVariant !== "NONE" && module.quizId === 0 && (
-        <div className="px-4 mb-2">
-          <Button
-            className="w-full"
-            size="xs"
-            onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/create`)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Создать тест для модуля
+            <Edit className="h-5 w-5 mr-2" />
+            Редактировать тест модуля
           </Button>
         </div>
       )}
