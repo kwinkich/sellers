@@ -159,15 +159,14 @@ export const CourseEditPage = () => {
 										{module.shortDesc}
 									</p>
 								</div>
-
-								<Button
-									size="2s"
-									variant="second"
-									className="w-full"
-									onClick={() => navigate(`/admin/module/${module.id}/edit`)}
-								>
-									Редактировать
-								</Button>
+                <Button
+                  size="2s"
+                  variant="second"
+                  className="w-full"
+                  onClick={() => navigate(`/admin/module/${module.id}/edit`)}
+                >
+                  Редактировать
+                </Button>
 							</Box>
 						))}
 					</div>

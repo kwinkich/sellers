@@ -102,6 +102,7 @@ const SelectFloatingLabel = React.forwardRef<
 							<SelectItem
 								key={option.value}
 								value={option.value}
+								aria-label={option.label}
 								className="py-3"
 							>
 								{option.label}

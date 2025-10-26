@@ -85,7 +85,7 @@ export const ModuleEditPage = () => {
 	return (
 		<div className="min-h-full pb-24">
 			{/* Шапка с названием модуля */}
-			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
+			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-4">
 				<div className="flex items-center justify-between px-2 mb-6">
 					<HeadText head={module.title} label="Редактирование модуля" className="px-0 mb-0" />
 					<Button size="xs" className="text-base-main bg-transparent text-md" onClick={() => navigate(`/admin/module/${moduleId}/detail-edit`)}>
@@ -187,6 +187,30 @@ export const ModuleEditPage = () => {
 					</div>
 				)}
 			</div>
+
+      {module.testVariant !== "NONE" && module.quizId > 0 && (
+        <div className="px-4 mb-2">
+          <Button
+            className="w-full"
+            size="xs"
+            onClick={() => navigate(`/admin/quiz/${module.quizId}/edit`)}>
+            <Edit />
+            Редактировать тест
+          </Button>
+        </div>
+      )}
+
+      {module.testVariant !== "NONE" && module.quizId === 0 && (
+        <div className="px-4 mb-2">
+          <Button
+            className="w-full"
+            size="xs"
+            onClick={() => navigate(`/admin/module/${moduleId}/quiz/create`)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Создать тест для модуля
+          </Button>
+        </div>
+      )}
 
 			<ConfirmationDialog
 				isOpen={confirmState.isOpen}

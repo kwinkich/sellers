@@ -27,10 +27,12 @@ export const ModuleDetailEditPage = () => {
 
 	useEffect(() => {
 		if (moduleData?.data) {
+			const incomingVariant = moduleData.data.testVariant;
+			const normalizedVariant = incomingVariant === "QUIZ" ? "QUIZ" : "NONE";
 			setFormData({
 				title: moduleData.data.title,
 				shortDesc: moduleData.data.shortDesc,
-				testVariant: moduleData.data.testVariant,
+				testVariant: normalizedVariant,
 				unlockRule: moduleData.data.unlockRule,
 			});
 		}
@@ -145,8 +147,12 @@ export const ModuleDetailEditPage = () => {
 
 					<SelectFloatingLabel
 						placeholder="Выберите вариант тестирования"
-						value={formData.testVariant}
-						onValueChange={(value) => handleChange("testVariant", value)}
+						value={String(formData.testVariant)}
+						onValueChange={(value) => {
+							if (value === "NONE" || value === "QUIZ") {
+								handleChange("testVariant", value);
+							}
+						}}
 						options={testVariantOptions}
 						variant="default"
 						className="w-full"
