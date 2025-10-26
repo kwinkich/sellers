@@ -33,7 +33,7 @@ export function InfiniteScrollList<T>({
 }: InfiniteScrollListProps<T>) {
   if (isLoading && items.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-4">
         <div className="text-base-gray">{loadingMessage}</div>
       </div>
     );
@@ -41,7 +41,7 @@ export function InfiniteScrollList<T>({
 
   if (isError && items.length === 0) {
     return (
-      <div className="text-center py-8 text-destructive">
+      <div className="text-center py-4 text-destructive">
         {errorMessage}: {error?.message || "Неизвестная ошибка"}
       </div>
     );
@@ -49,7 +49,7 @@ export function InfiniteScrollList<T>({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-4 text-muted-foreground px-2">
         {emptyMessage}
       </div>
     );

@@ -1,13 +1,13 @@
 import type { PracticeCard as PracticeCardType } from "@/entities/practices";
 import { PracticesAPI } from "@/entities/practices";
 import { useInfiniteScroll, InfiniteScrollList } from "@/shared";
-import { PracticeCard } from "./PracticeCard";
+import { PracticePastCard } from "./PracticePastCard";
 
 interface Props {
   searchQuery?: string;
 }
 
-export const PracticeList = ({ searchQuery = "" }: Props) => {
+export const PracticePastList = ({ searchQuery = "" }: Props) => {
   const {
     items: practices,
     isLoading,
@@ -17,8 +17,8 @@ export const PracticeList = ({ searchQuery = "" }: Props) => {
     sentinelRef,
     isFetchingNextPage,
   } = useInfiniteScroll<PracticeCardType>({
-    queryKey: ["practices", "cards"],
-    queryFn: (page, limit) => PracticesAPI.getPracticeCards({ page, limit }),
+    queryKey: ["practices", "past"],
+    queryFn: (page, limit) => PracticesAPI.getPastPractices({ page, limit }),
     limit: 20,
   });
 
@@ -33,7 +33,7 @@ export const PracticeList = ({ searchQuery = "" }: Props) => {
     <InfiniteScrollList
       items={filteredPractices}
       renderItem={(practice) => (
-        <PracticeCard key={practice.id} data={practice} />
+        <PracticePastCard key={practice.id} data={practice} />
       )}
       isLoading={isLoading}
       isError={isError}
