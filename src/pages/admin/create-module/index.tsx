@@ -13,17 +13,17 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const CreateModulePage = () => {
-	const { id } = useParams<{ id: string }>();
-	const navigate = useNavigate();
-	const courseId = parseInt(id!);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const courseId = parseInt(id!);
 
-	const { data: modulesData } = useQuery(
-		modulesQueryOptions.byCourse(courseId)
-	);
+  const { data: modulesData } = useQuery(
+    modulesQueryOptions.byCourse(courseId)
+  );
 
-	const modules = modulesData?.data || [];
+  const modules = modulesData?.data || [];
 
-	const nextOrderIndex = modules.length + 1;
+  const nextOrderIndex = modules.length + 1;
 
 	const [formData, setFormData] = useState({
 		title: "",
@@ -93,15 +93,15 @@ export const CreateModulePage = () => {
 			orderIndex: nextOrderIndex,
 		};
 
-		createModuleMutation.mutate(submitData);
-	};
+    createModuleMutation.mutate(submitData);
+  };
 
-	const handleChange = (field: string, value: unknown) => {
-		setFormData((prev) => ({
-			...prev,
-			[field]: value,
-		}));
-	};
+  const handleChange = (field: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
 	const addQuizQuestion = (): void => {
 		const newQuestion: QuizQuestion = {
@@ -203,12 +203,15 @@ export const CreateModulePage = () => {
 		{ value: "QUIZ", label: "Тест (квиз)" },
 	];
 
-	const unlockRuleOptions = [
-		{ value: "ALL", label: "Всем" },
-		{ value: "LEVEL_3", label: "От уровня 3 и выше" },
-		{ value: "LEVEL_4", label: "От уровня 4 и выше" },
-    { value: "AFTER_PREV_MODULE", label: "После прохождения предыдущего модуля"}
-	];
+  const unlockRuleOptions = [
+    { value: "ALL", label: "Всем" },
+    { value: "LEVEL_3", label: "От уровня 3 и выше" },
+    { value: "LEVEL_4", label: "От уровня 4 и выше" },
+    {
+      value: "AFTER_PREV_MODULE",
+      label: "После прохождения предыдущего модуля",
+    },
+  ];
 
 	const isQuizValid =
 		quizFormData.questions.length > 0 &&
@@ -226,64 +229,64 @@ export const CreateModulePage = () => {
 		formData.shortDesc.length <= 1000 &&
 		(formData.testVariant === "NONE" || (formData.testVariant === "QUIZ" && isQuizValid));
 
-	const remainingChars = 1000 - formData.shortDesc.length;
-	const isNearLimit = remainingChars <= 20;
-	const isOverLimit = remainingChars < 0;
+  const remainingChars = 1000 - formData.shortDesc.length;
+  const isNearLimit = remainingChars <= 20;
+  const isOverLimit = remainingChars < 0;
 
-	return (
-		<div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
-			<HeadText
-				head={`Создание модуля`}
-				label="Заполните данные модуля"
-				variant="black-gray"
-				className="px-2"
-			/>
+  return (
+    <div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
+      <HeadText
+        head={`Создание модуля`}
+        label="Заполните данные модуля"
+        variant="black-gray"
+        className="px-2"
+      />
 
-			<form
-				onSubmit={handleSubmit}
-				className="flex flex-col flex-1 gap-6 h-full"
-			>
-				<div className="flex flex-col gap-6 flex-1">
-					{/* Название модуля */}
-					<InputFloatingLabel
-						type="text"
-						value={formData.title}
-						onChange={(e) => handleChange("title", e.target.value)}
-						placeholder="Введите название модуля"
-						className="w-full"
-						required
-					/>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col flex-1 gap-6 h-full"
+      >
+        <div className="flex flex-col gap-6 flex-1">
+          {/* Название модуля */}
+          <InputFloatingLabel
+            type="text"
+            value={formData.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+            placeholder="Введите название модуля"
+            className="w-full"
+            required
+          />
 
-					{/* Описание */}
-					<div className="relative">
-						<Textarea
-							value={formData.shortDesc}
-							onChange={(e) => handleChange("shortDesc", e.target.value)}
-							placeholder="Введите описание модуля"
-							className={`w-full resize-none pr-16 ${
-								isOverLimit ? "border-red-300 focus:border-red-500" : ""
-							}`}
-							rows={4}
-							maxLength={1000}
-							required
-						/>
-						<div
-							className={`absolute bottom-2 right-2 text-xs ${
-								isOverLimit
-									? "text-red-500 font-semibold"
-									: isNearLimit
-									? "text-amber-500"
-									: "text-gray-400"
-							}`}
-						>
-							{remainingChars}
-						</div>
-					</div>
-					{isOverLimit && (
-						<p className="text-xs text-red-500 -mt-4">
-							Превышено максимальное количество символов
-						</p>
-					)}
+          {/* Описание */}
+          <div className="relative">
+            <Textarea
+              value={formData.shortDesc}
+              onChange={(e) => handleChange("shortDesc", e.target.value)}
+              placeholder="Введите описание модуля"
+              className={`w-full resize-none pr-16 ${
+                isOverLimit ? "border-red-300 focus:border-red-500" : ""
+              }`}
+              rows={4}
+              maxLength={1000}
+              required
+            />
+            <div
+              className={`absolute bottom-2 right-2 text-xs ${
+                isOverLimit
+                  ? "text-red-500 font-semibold"
+                  : isNearLimit
+                  ? "text-amber-500"
+                  : "text-gray-400"
+              }`}
+            >
+              {remainingChars}
+            </div>
+          </div>
+          {isOverLimit && (
+            <p className="text-xs text-red-500 -mt-4">
+              Превышено максимальное количество символов
+            </p>
+          )}
 
 				{/* Вариант тестирования */}
 				<SelectFloatingLabel

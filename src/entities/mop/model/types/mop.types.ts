@@ -65,7 +65,7 @@ export interface MopProfileInfo {
 export interface MopSkill {
   id: number;
   name: string;
-  status: "HALF" | "FULL" | "NONE";
+  status: "HALF" | "YES" | "NO";
 }
 
 export interface MopPractice {
@@ -73,9 +73,13 @@ export interface MopPractice {
   practiceType: string;
   title: string;
   startAt: string;
-  endAt: string;
+  finishedAt: string;
   status: string;
-  role: "SELLER" | "BUYER" | "OBSERVER";
+  role: "SELLER" | "BUYER" | "MODERATOR" | "OBSERVER" | null;
+  evaluationResult: {
+    positivePercent: number;
+    isPositive: boolean;
+  } | null;
   repChanged: boolean;
   repDelta: number;
 }

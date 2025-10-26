@@ -15,6 +15,8 @@ import { toast } from "sonner";
 
 export const ClientMopsList = () => {
   const queryClient = useQueryClient();
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [excludeIds, setExcludeIds] = useState<number[]>([]);
   const [blockDialog, setBlockDialog] = useState<{
     isOpen: boolean;
     mop: ClientMop | null;
@@ -32,13 +34,23 @@ export const ClientMopsList = () => {
     queryKey: ["clients", "mop-profiles"],
     queryFn: (page, limit) => ClientsAPI.getClientMopProfiles({ page, limit }),
     limit: 20,
+    resetKey: refreshToken,
+    excludeIds,
   });
 
   const { mutate: blockMop, isPending: isBlocking } = useMutation({
     ...clientsMutationOptions.blockMopProfile(),
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
+      // Instant hide the deleted item
+      setExcludeIds((prev) => [...prev, deletedId]);
+
+      // Reset accumulation to rebuild from page 1
+      setRefreshToken((t) => t + 1);
+
+      // Invalidate queries for eventual consistency
       queryClient.invalidateQueries({ queryKey: ["clients", "mop-profiles"] });
       queryClient.invalidateQueries({ queryKey: ["clients", "profile"] });
+
       toast.success("МОП успешно удален");
       setBlockDialog({ isOpen: false, mop: null });
     },
@@ -62,9 +74,9 @@ export const ClientMopsList = () => {
     <>
       <InfiniteScrollList
         items={mops}
+        getKey={(mop) => mop.id}
         renderItem={(mop) => (
           <ClientMopCard
-            key={mop.id}
             data={mop}
             onDelete={handleBlockMop}
             isDeleting={isBlocking}

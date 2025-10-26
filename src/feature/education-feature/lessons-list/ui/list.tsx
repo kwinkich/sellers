@@ -21,7 +21,8 @@ export const LessonsList: FC<{ moduleId: number }> = ({ moduleId }) => {
   return (
     <InfiniteScrollList
       items={lessons}
-      renderItem={(lesson) => <LessonCard key={lesson.id} lesson={lesson} />}
+      getKey={(lesson) => lesson.id}
+      renderItem={(lesson) => <LessonCard lesson={lesson} />}
       isLoading={isLoading}
       isError={isError}
       error={error}

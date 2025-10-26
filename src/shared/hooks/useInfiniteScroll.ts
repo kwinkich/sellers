@@ -10,6 +10,8 @@ interface UseInfiniteScrollOptions<T> {
   ) => Promise<GResponse<T[]> | GArrResponse<T>>;
   limit?: number;
   enabled?: boolean;
+  resetKey?: any;
+  excludeIds?: Array<number>;
 }
 
 interface UseInfiniteScrollReturn<T> {
@@ -28,6 +30,8 @@ export function useInfiniteScroll<T>({
   queryFn,
   limit = 20,
   enabled = true,
+  resetKey,
+  excludeIds = [],
 }: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> {
   const [page, setPage] = useState(1);
   const [allItems, setAllItems] = useState<T[]>([]);
@@ -43,14 +47,21 @@ export function useInfiniteScroll<T>({
   const currentItems = data?.data ?? [];
   const pagination = data?.meta?.pagination;
   const hasNextPage = pagination
-    ? (pagination.currentPage || 1) < (pagination.totalPages || 1)
+    ? pagination.currentPage < pagination.totalPages
     : false;
+
+  // Reset accumulation when resetKey changes (e.g., after a delete)
+  useEffect(() => {
+    setPage(1);
+    setAllItems([]);
+    setLastAppendedPage(0);
+  }, [resetKey]);
 
   // Accumulate items for infinite scroll
   useEffect(() => {
     if (!pagination) return;
 
-    const currentPage = pagination.currentPage || 1;
+    const currentPage = pagination.currentPage;
 
     if (currentPage === 1) {
       setAllItems(currentItems);
@@ -89,8 +100,13 @@ export function useInfiniteScroll<T>({
     return () => observer.disconnect();
   }, [hasNextPage, isFetching]);
 
+  const base = allItems.length > 0 ? allItems : currentItems;
+  const items = excludeIds.length
+    ? base.filter((item: any) => !excludeIds.includes(item?.id))
+    : base;
+
   return {
-    items: allItems.length > 0 ? allItems : currentItems,
+    items,
     isLoading,
     isError,
     error,

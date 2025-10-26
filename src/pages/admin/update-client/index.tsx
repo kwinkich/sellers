@@ -6,10 +6,10 @@ import { Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export const AdminUpdateClientPage = () => {
-  const { clientId } = useParams<{ clientId: string }>();
+  const { id } = useParams<{ id: string }>();
 
   const { data, isLoading, error } = useQuery(
-    clientsQueryOptions.byId(parseInt(clientId!))
+    clientsQueryOptions.byId(parseInt(id!))
   );
 
   if (isLoading) {
@@ -45,15 +45,13 @@ export const AdminUpdateClientPage = () => {
   }
 
   const clientName =
-    data.data.displayName ||
-    data.data.telegramUsername ||
-    `Клиент #${clientId}`;
+    data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
   return (
     <div className="flex flex-col gap-6 px-2 pt-4 h-full pb-40">
       <HeadText
         head="Редактирование клиента"
-        label={`Обновите данные компании <strong>${clientName} (#${clientId})</strong>`}
+        label={`Обновите данные компании <strong>${clientName} (#${id})</strong>`}
         labelSize="sm"
         variant="black-gray"
       />

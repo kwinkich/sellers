@@ -46,7 +46,7 @@ export const MopProfilePage = () => {
 
   const { data: skillsRes, isLoading: isLoadingSkills } = useQuery(
     mopProfilesQueryOptions.profileSkills({
-      offset: (currentPage - 1) * limit,
+      page: currentPage,
       limit,
     })
   );
@@ -88,7 +88,7 @@ export const MopProfilePage = () => {
 
   const getSkillClasses = (status: MopSkill["status"]) => {
     switch (status) {
-      case "FULL":
+      case "YES":
         return "bg-base-opacity10-main font-medium text-base-main";
       case "HALF":
         return "bg-[#FFFFFF14] text-gray-400";
@@ -150,7 +150,7 @@ export const MopProfilePage = () => {
             <>
               {allSkills.map((s) => (
                 <div
-                  key={s.id}
+                  key={`skill-${s.id}`}
                   className="w-full flex items-center justify-between bg-second-bg p-2 rounded-[8px]"
                 >
                   <p className="text-white">{s.name}</p>
@@ -160,7 +160,7 @@ export const MopProfilePage = () => {
                     )}`}
                   >
                     <p className="text-xs leading-[100%]">
-                      {s.status === "FULL"
+                      {s.status === "YES"
                         ? "Да"
                         : s.status === "HALF"
                         ? "50/50"
@@ -190,12 +190,15 @@ export const MopProfilePage = () => {
         </p>
       ),
       content: (
-        <div className="flex flex-col gap-3 pt-2 pb-16">
+        <div className="flex flex-col gap-3 pt-2">
           {practices.length === 0 ? (
             <p className="text-xs text-base-gray">Практик пока нет</p>
           ) : (
             practices.map((practice: MopPractice) => (
-              <Card key={practice.id} className="bg-second-bg border-none">
+              <Card
+                key={`practice-${practice.id}`}
+                className="bg-second-bg border-none"
+              >
                 <CardHeader className="py-2 px-2">
                   <div className="flex items-start gap-3">
                     {getPracticeIcon(practice.practiceType)}
@@ -260,14 +263,16 @@ export const MopProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 px-2 pt-4">
-        <HeadText
-          head="Профиль МОПа"
-          label="Загрузка данных..."
-          variant="black-gray"
-        />
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="bg-second-bg min-h-[calc(100vh-4rem)]">
+        <div className="flex flex-col gap-6 px-2 pt-4">
+          <HeadText
+            head="Профиль МОПа"
+            label="Загрузка данных..."
+            variant="black-gray"
+          />
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
         </div>
       </div>
     );
@@ -275,21 +280,23 @@ export const MopProfilePage = () => {
 
   if (error || !profileRes) {
     return (
-      <div className="flex flex-col gap-6 px-2 pt-4">
-        <HeadText
-          head="Профиль МОПа"
-          label="Ошибка загрузки профиля"
-          variant="black-gray"
-        />
-        <div className="text-center py-8 text-destructive">
-          {(error as any)?.message || "Профиль не найден"}
+      <div className="bg-second-bg min-h-[calc(100vh-4rem)]">
+        <div className="flex flex-col gap-6 px-2 pt-4">
+          <HeadText
+            head="Профиль МОПа"
+            label="Ошибка загрузки профиля"
+            variant="black-gray"
+          />
+          <div className="text-center py-8 text-destructive">
+            {(error as any)?.message || "Профиль не найден"}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-second-bg min-h-dvh">
+    <div className="bg-second-bg min-h-[calc(100vh-4rem)]">
       <div className="flex flex-col gap-3 bg-base-bg rounded-b-3xl px-2 pb-3 pt-2">
         <div className="flex items-center justify-between mb-2">
           <HeadText
@@ -350,7 +357,7 @@ export const MopProfilePage = () => {
 
                 return (
                   <div
-                    key={idx}
+                    key={`progress-segment-${idx}`}
                     className="h-2 rounded-full w-full bg-[#FFFFFF0A] overflow-hidden"
                   >
                     <div
@@ -392,6 +399,9 @@ export const MopProfilePage = () => {
           contentClassName="px-0"
         />
       </div>
+
+      {/* Reserve room for fixed navbar + iOS safe area + a bit of breathing space */}
+      <div className="h-[calc(var(--mop-navbar-h,64px)+env(safe-area-inset-bottom)+8px)]" />
 
       <MopNavBar />
     </div>

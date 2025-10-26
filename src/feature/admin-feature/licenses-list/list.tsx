@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { LicenseCard } from "./ui";
 
 export const AdminLicencesList = () => {
-  const { clientId } = useParams<{ clientId: string }>();
+  const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [confirmationDialog, setConfirmationDialog] = useState<{
     isOpen: boolean;
@@ -22,7 +22,7 @@ export const AdminLicencesList = () => {
   });
 
   const { data, isLoading, error } = useQuery(
-    clientsQueryOptions.licenses(parseInt(clientId!))
+    clientsQueryOptions.licenses(parseInt(id!))
   );
 
   const { mutate: removeSingleLicense, isPending: isRemovingSingle } =
@@ -31,7 +31,7 @@ export const AdminLicencesList = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["clients"] });
         queryClient.invalidateQueries({
-          queryKey: ["clients", "licenses", parseInt(clientId!)],
+          queryKey: ["clients", "licenses", parseInt(id!)],
         });
 
         toast.success("Лицензия удалена");
@@ -70,7 +70,7 @@ export const AdminLicencesList = () => {
   const licenses = data.data;
 
   const handleRemoveSingleLicense = (licenseId: number) => {
-    if (!clientId) return;
+    if (!id) return;
 
     const license = licenses.find((l) => l.id === licenseId);
     if (!license) return;
@@ -92,17 +92,17 @@ export const AdminLicencesList = () => {
     } else {
       // For inactive/expired licenses, remove directly
       removeSingleLicense({
-        id: parseInt(clientId),
+        id: parseInt(id),
         licenseIds: [licenseId],
       });
     }
   };
 
   const handleConfirmRemoval = () => {
-    if (!confirmationDialog.licenseId || !clientId) return;
+    if (!confirmationDialog.licenseId || !id) return;
 
     removeSingleLicense({
-      id: parseInt(clientId),
+      id: parseInt(id),
       licenseIds: [confirmationDialog.licenseId],
     });
   };

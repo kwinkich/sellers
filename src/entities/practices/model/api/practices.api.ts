@@ -29,28 +29,28 @@ export const PracticesAPI = {
   getPractices: (params?: GetPracticesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("practices", { searchParams }).json<
-      GApiResponse<Practice[], false>
+      GApiResponse<Practice[], true>
     >();
   },
 
   getPracticeCards: (params?: GetPracticeCardsParams) => {
     const searchParams = createSearchParams(params);
     return API.get("practices/cards", { searchParams }).json<
-      GApiResponse<PracticeCard[], false>
+      GApiResponse<PracticeCard[], true>
     >();
   },
 
   getMyPractices: (params?: GetMyPracticesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("practices/mine", { searchParams }).json<
-      GApiResponse<PracticeCard[], false>
+      GApiResponse<PracticeCard[], true>
     >();
   },
 
   getPastPractices: (params?: GetPastPracticesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("practices/past", { searchParams }).json<
-      GApiResponse<PracticeCard[], false>
+      GApiResponse<PracticeCard[], true>
     >();
   },
 

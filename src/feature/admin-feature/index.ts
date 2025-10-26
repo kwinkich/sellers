@@ -8,3 +8,5 @@ export * from "./licenses-list/index";
 export * from "./update-client/index";
 export * from "./update-case/index";
 export * from "./view-case/index";
+export * from "./view-scenario/index";
+export * from "./edit-scenario/index";

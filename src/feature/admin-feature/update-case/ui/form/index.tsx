@@ -9,7 +9,11 @@ import {
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import TextareaFloatingLabel from "@/components/ui/textareaFloating";
-import { casesMutationOptions, casesQueryOptions, type UpdateCaseRequest } from "@/entities";
+import {
+  casesMutationOptions,
+  casesQueryOptions,
+  type UpdateCaseRequest,
+} from "@/entities";
 import { useUserRole } from "@/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,7 +23,10 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ConfirmationDialog } from "@/shared";
-import { createCaseSchema, type CreateCaseFormData } from "../../../create-case/model";
+import {
+  createCaseSchema,
+  type CreateCaseFormData,
+} from "../../../create-case/model";
 
 interface UpdateCaseFormProps {
   caseId?: number;
@@ -38,7 +45,11 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
   const originalDataRef = useRef<CreateCaseFormData | null>(null);
 
   // Fetch case data
-  const { data: caseData, isLoading, isError } = useQuery({
+  const {
+    data: caseData,
+    isLoading,
+    isError,
+  } = useQuery({
     ...casesQueryOptions.byId(caseId!),
     enabled: !!caseId,
   });
@@ -53,9 +64,24 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
       // Navigate back to cases list
       navigate("/admin/cases");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Ошибка при обновлении кейса:", error);
-      toast.error("Ошибка при обновлении кейса");
+
+      // Handle unique constraint violation (409 Conflict)
+      if (error?.status === 409 || error?.error?.code === "CONFLICT") {
+        const errorMessage =
+          error?.error?.message || "Кейс с таким названием уже существует";
+        form.setError("title", {
+          type: "manual",
+          message: errorMessage,
+        });
+        toast.error(errorMessage);
+      } else {
+        // Handle other errors
+        const errorMessage =
+          error?.error?.message || "Ошибка при обновлении кейса";
+        toast.error(errorMessage);
+      }
     },
   });
 
@@ -85,7 +111,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
         sellerTask: caseInfo.sellerTask,
         buyerTask: caseInfo.buyerTask,
       };
-      
+
       // Use setValue for each field to ensure proper updates
       form.setValue("title", formData.title);
       form.setValue("recommendedSellerLevel", formData.recommendedSellerLevel);
@@ -94,7 +120,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
       form.setValue("buyerLegend", formData.buyerLegend);
       form.setValue("sellerTask", formData.sellerTask);
       form.setValue("buyerTask", formData.buyerTask);
-      
+
       originalDataRef.current = formData;
       setHasChanges(false);
       onFormChange?.(false);
@@ -105,12 +131,13 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
   useEffect(() => {
     const subscription = form.watch((value) => {
       if (originalDataRef.current) {
-        const hasFormChanges = JSON.stringify(value) !== JSON.stringify(originalDataRef.current);
+        const hasFormChanges =
+          JSON.stringify(value) !== JSON.stringify(originalDataRef.current);
         setHasChanges(hasFormChanges);
         onFormChange?.(hasFormChanges);
       }
     });
-    
+
     return () => subscription.unsubscribe();
   }, [form, onFormChange]);
 
@@ -338,7 +365,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
 
         {/* Dual buttons */}
         <div className="flex gap-2 mt-6">
-          <Button 
+          <Button
             type="button"
             onClick={handleClose}
             variant="second"
@@ -346,9 +373,9 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
           >
             Назад к списку кейсов
           </Button>
-          <Button 
-            type="submit" 
-            className="flex-1 h-12" 
+          <Button
+            type="submit"
+            className="flex-1 h-12"
             disabled={isPending || !hasChanges}
           >
             {isPending ? (

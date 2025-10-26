@@ -1,13 +1,39 @@
 import { AdminNavBar } from "@/widget";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 export const AdminLayout = () => {
-	return (
-		<div className="w-dvw h-dvh bg-white relative">
-			<div className="w-full h-full overflow-auto">
-				<Outlet />
-			</div>
-			<AdminNavBar />
-		</div>
-	);
+  const location = useLocation();
+
+  // Define routes that should have dark backgrounds (list/management pages)
+  const darkBackgroundRoutes = [
+    "/admin/clients",
+    "/admin/cases",
+    "/admin/content/scenarios",
+    "/admin/content/courses",
+    "/admin/admins",
+  ];
+
+  // Check if current route should have dark background
+  // Exclude create routes and edit routes from dark background
+  // But include licenses routes (they are list/management pages)
+  const shouldHaveDarkBackground =
+    darkBackgroundRoutes.some(
+      (route) =>
+        location.pathname.startsWith(route) &&
+        !location.pathname.includes("/create") &&
+        !location.pathname.includes("/edit")
+    ) || location.pathname.includes("/licenses");
+
+  const backgroundClass = shouldHaveDarkBackground
+    ? "bg-second-bg"
+    : "bg-white";
+
+  return (
+    <div className="w-dvw h-dvh bg-white relative">
+      <div className={`w-full h-full overflow-auto pb-16 ${backgroundClass}`}>
+        <Outlet />
+      </div>
+      <AdminNavBar />
+    </div>
+  );
 };

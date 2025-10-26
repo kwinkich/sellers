@@ -3,12 +3,14 @@ import {
   AdminCasesListPage,
   AdminClientsListPage,
   AdminCreateCasePage,
+  AdminEditScenarioPage,
   AdminHomePage,
   AdminLicensesListPage,
   AdminScenariosCreatePage,
   AdminScenariosListPage,
   AdminUpdateCasePage,
   AdminViewCasePage,
+  AdminViewScenarioPage,
   AdminsControlPage,
   AdminUpdateClientPage,
   ClientHomePage,
@@ -113,93 +115,167 @@ export const route = createBrowserRouter([
             path: "home",
             element: <AdminHomePage />,
           },
+          // Clients management
           {
             path: "clients",
-            element: <AdminClientsListPage />,
+            children: [
+              {
+                index: true,
+                element: <AdminClientsListPage />,
+              },
+              {
+                path: "create",
+                element: <AdminAddClientPage />,
+              },
+              {
+                path: ":id/edit",
+                element: <AdminUpdateClientPage />,
+              },
+              {
+                path: ":id/licenses",
+                element: <AdminLicensesListPage />,
+              },
+            ],
           },
+          // Cases management
           {
             path: "cases",
-            element: <AdminCasesListPage />,
+            children: [
+              {
+                index: true,
+                element: <AdminCasesListPage />,
+              },
+              {
+                path: "create",
+                element: <AdminCreateCasePage />,
+              },
+              {
+                path: ":id/edit",
+                element: <AdminUpdateCasePage />,
+              },
+              {
+                path: ":id/view",
+                element: <AdminViewCasePage />,
+              },
+            ],
           },
+          // Content management
           {
-            path: "scenarios",
-            element: <AdminScenariosListPage />,
+            path: "content",
+            children: [
+              // Courses management
+              {
+                path: "courses",
+                children: [
+                  {
+                    index: true,
+                    element: <AdminCourseListPage />,
+                  },
+                  {
+                    path: "create",
+                    element: <CreateCoursePage />,
+                  },
+                  {
+                    path: ":id/edit",
+                    element: <CourseEditPage />,
+                  },
+                  {
+                    path: ":id/detail-edit",
+                    element: <CourseDetailEditPage />,
+                  },
+                  // Modules within courses
+                  {
+                    path: ":courseId/modules",
+                    children: [
+                      {
+                        index: true,
+                        element: <div>Modules List</div>, // TODO: Create modules list page
+                      },
+                      {
+                        path: "create",
+                        element: <CreateModulePage />,
+                      },
+                      {
+                        path: ":id/edit",
+                        element: <ModuleEditPage />,
+                      },
+                      {
+                        path: ":id/detail-edit",
+                        element: <ModuleDetailEditPage />,
+                      },
+                      // Lessons within modules
+                      {
+                        path: ":moduleId/lessons",
+                        children: [
+                          {
+                            index: true,
+                            element: <div>Lessons List</div>, // TODO: Create lessons list page
+                          },
+                          {
+                            path: "create",
+                            element: <CreateLessonPage />,
+                          },
+                          {
+                            path: ":id/edit",
+                            element: <LessonEditPage />,
+                          },
+                          // Quizzes within lessons
+                          {
+                            path: ":lessonId/quizzes",
+                            children: [
+                              {
+                                index: true,
+                                element: <div>Quizzes List</div>, // TODO: Create quizzes list page
+                              },
+                              {
+                                path: "create",
+                                element: <CreateQuizPage />,
+                              },
+                              {
+                                path: ":id/edit",
+                                element: <EditQuizPage />,
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              // Scenarios management
+              {
+                path: "scenarios",
+                children: [
+                  {
+                    index: true,
+                    element: <AdminScenariosListPage />,
+                  },
+                  {
+                    path: "create",
+                    element: <AdminScenariosCreatePage />,
+                  },
+                  {
+                    path: ":id/edit",
+                    element: <AdminEditScenarioPage />,
+                  },
+                  {
+                    path: ":id/view",
+                    element: <AdminViewScenarioPage />,
+                  },
+                ],
+              },
+            ],
           },
+          // Admins management
           {
-            path: "courses/list",
-            element: <AdminCourseListPage />,
-          },
-          {
-            path: "clients/create",
-            element: <AdminAddClientPage />,
-          },
-          {
-            path: "clients/update/:clientId",
-            element: <AdminUpdateClientPage />,
-          },
-          {
-            path: "clients/licenses/:clientId",
-            element: <AdminLicensesListPage />,
-          },
-          {
-            path: "list",
-            element: <AdminsControlPage />,
-          },
-          {
-            path: "cases/create",
-            element: <AdminCreateCasePage />,
-          },
-          {
-            path: "cases/edit/:caseId",
-            element: <AdminUpdateCasePage />,
-          },
-          {
-            path: "cases/view/:caseId",
-            element: <AdminViewCasePage />,
-          },
-          {
-            path: "scenarios/create",
-            element: <AdminScenariosCreatePage />,
-          },
-          {
-            path: "course/create",
-            element: <CreateCoursePage />,
-          },
-          {
-            path: "course/:id/edit",
-            element: <CourseEditPage />,
-          },
-          {
-            path: "course/:id/detail-edit",
-            element: <CourseDetailEditPage />,
-          },
-          {
-            path: "course/:id/module/create",
-            element: <CreateModulePage />,
-          },
-          {
-            path: "module/:id/edit",
-            element: <ModuleEditPage />,
-          },
-          {
-            path: "module/:id/detail-edit",
-            element: <ModuleDetailEditPage />,
-          },
-          {
-            path: "module/:id/lesson/create",
-            element: <CreateLessonPage />,
-          },
-          {
-            path: "lesson/:id/edit",
-            element: <LessonEditPage />,
-          },
-          {
-            path: "lesson/:id/quiz/create",
-            element: <CreateQuizPage />,
-          },
-          {
-            path: "quiz/:id/edit",
-            element: <EditQuizPage />,
+            path: "admins",
+            children: [
+              {
+                index: true,
+                element: <AdminsControlPage />,
+              },
+            ],
           },
         ],
       },

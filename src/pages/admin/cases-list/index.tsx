@@ -8,7 +8,7 @@ export const AdminCasesListPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="bg-second-bg min-h-full pb-24">
+    <div className="min-h-full pb-3">
       <div className="bg-base-bg flex gap-5 text-white flex-col w-full rounded-b-3xl px-2 pb-4 pt-4 mb-2">
         <HeadText
           head="Список кейсов"

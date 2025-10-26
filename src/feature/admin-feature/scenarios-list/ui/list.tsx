@@ -15,6 +15,8 @@ interface ScenariosListProps {
 
 export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
   const queryClient = useQueryClient();
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [excludeIds, setExcludeIds] = useState<number[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     scenarioId: number | null;
@@ -37,12 +39,25 @@ export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
     queryKey: ["scenarios", "list"],
     queryFn: (page, limit) => ScenariosAPI.getScenarios({ page, limit }),
     limit: 20,
+    resetKey: refreshToken,
+    excludeIds,
   });
 
   const deleteScenarioMutation = useMutation({
     mutationFn: (id: number) => ScenariosAPI.deleteScenario(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+    onSuccess: (_, deletedId) => {
+      // Instant hide the deleted item
+      setExcludeIds((prev) => [...prev, deletedId]);
+
+      // Reset accumulation to rebuild from page 1
+      setRefreshToken((t) => t + 1);
+
+      // Invalidate queries for eventual consistency
+      queryClient.invalidateQueries({ queryKey: ["scenarios", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: ["scenarios", "detail", deletedId],
+      });
+
       setDeleteDialog({ isOpen: false, scenarioId: null, scenarioTitle: "" });
     },
   });
@@ -75,9 +90,9 @@ export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
     <>
       <InfiniteScrollList
         items={filteredScenarios}
+        getKey={(scenario) => scenario.id}
         renderItem={(scenario) => (
           <ScenarioCard
-            key={scenario.id}
             data={scenario}
             onDelete={(id) => handleDelete(id, scenario.title)}
           />
