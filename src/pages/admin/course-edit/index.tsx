@@ -1,9 +1,9 @@
-// pages/course/CourseEditPage.tsx
 import { Button } from "@/components/ui/button";
 import {
   coursesQueryOptions,
   modulesQueryOptions,
   modulesMutationOptions,
+  type Module,
 } from "@/entities";
 import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,7 +51,7 @@ export const CourseEditPage = () => {
   } = useQuery(modulesQueryOptions.byCourse(courseId));
 
   const course = courseData?.data;
-  const modules = modulesData?.data || [];
+  const modules: Module[] = modulesData?.data || [];
 
   if (courseLoading) {
     return (

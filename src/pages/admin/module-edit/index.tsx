@@ -1,6 +1,10 @@
-// pages/module/ModuleEditPage.tsx
 import { Button } from "@/components/ui/button";
-import { lessonsQueryOptions, modulesQueryOptions, lessonsMutationOptions } from "@/entities";
+import {
+  lessonsQueryOptions,
+  modulesQueryOptions,
+  lessonsMutationOptions,
+  type Lesson,
+} from "@/entities";
 import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
 import { X } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,8 +44,8 @@ export const ModuleEditPage = () => {
 		error: lessonsError,
 	} = useQuery(lessonsQueryOptions.byModule(moduleId));
 
-	const module = moduleData?.data;
-	const lessons = lessonsData?.data || [];
+  const module = moduleData?.data;
+  const lessons: Lesson[] = lessonsData?.data || [];
 
 	if (moduleLoading) {
 		return (
