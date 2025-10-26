@@ -1,17 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { CaseListItem } from "@/entities";
-import { ArrowIcon, Badge, Box, getSellerLevelLabel } from "@/shared";
+import type { ScenarioListItem } from "@/entities";
+import { ArrowIcon, Badge, Box } from "@/shared";
 import { X } from "lucide-react";
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface CaseCardProps {
-  data: CaseListItem;
+interface Skill {
+  id: number;
+  name: string;
+}
+
+interface ScenarioCardData extends ScenarioListItem {
+  skills?: Skill[];
+}
+
+interface ScenarioCardProps {
+  data: ScenarioCardData;
   onDelete: (id: number, title: string) => void;
 }
 
-export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
+export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
@@ -26,22 +35,21 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
   return (
     <Box variant="dark" justify="start" className="gap-3 p-3">
       <div className="flex items-center w-full justify-between text-white">
-        <p className="text-lg font-medium leading-[100%]">
-          {data.title} (#{data.id})
-        </p>
+        <div className="flex flex-col">
+          <p className="text-lg font-medium leading-[100%]">
+            {data.title} (#{data.id})
+          </p>
+          <p className="text-sm text-base-gray">Версия {data.version}</p>
+        </div>
 
         <div className="flex items-center gap-2">
-          <Badge
-            variant="main-opacity"
-            label={getSellerLevelLabel(data.recommendedSellerLevel)}
-          />
           <button
             onClick={() => onDelete(data.id, data.title)}
             className="
               p-1 rounded-full hover:bg-white/10 transition-colors
               flex items-center justify-center
             "
-            title="Удалить кейс"
+            title="Удалить сценарий"
           >
             <X className="h-4 w-4 text-white" />
           </button>
@@ -53,7 +61,20 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           variant="gray-opacity"
           label={`Создан: ${formatDate(data.createdAt)}`}
         />
+        <Badge
+          variant="gray-opacity"
+          label={`Обновлен: ${formatDate(data.updatedAt)}`}
+        />
       </div>
+
+      {/* Skills section */}
+      {data.skills && data.skills.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {data.skills.map((skill) => (
+            <Badge key={skill.id} label={skill.name} variant="gray" size="md" />
+          ))}
+        </div>
+      )}
 
       <Separator className="bg-[#FFFFFF1A]" />
 
@@ -63,7 +84,7 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           text="main"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/cases/edit/${data.id}`)}
+          onClick={() => navigate(`/admin/scenarios/edit/${data.id}`)}
         >
           Редактировать <ArrowIcon />
         </Button>
@@ -71,7 +92,7 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           variant="second"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/cases/view/${data.id}`)}
+          onClick={() => navigate(`/admin/scenarios/view/${data.id}`)}
         >
           Просмотр
         </Button>
