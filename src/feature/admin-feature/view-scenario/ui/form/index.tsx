@@ -68,7 +68,7 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   };
 
   const handleExit = () => {
-    navigate("/admin/scenarios");
+    navigate("/admin/content/scenarios");
   };
 
   if (isLoading) {

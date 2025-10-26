@@ -9,13 +9,13 @@ import InputFloatingLabel from "@/components/ui/inputFloating";
 import { X } from "lucide-react";
 
 export const AdminViewScenarioPage = () => {
-  const { scenarioId } = useParams<{ scenarioId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   // Fetch scenario data
   const { data: scenarioData } = useQuery({
-    ...scenariosQueryOptions.byId(scenarioId ? parseInt(scenarioId) : 0, true), // includeForms = true
-    enabled: !!scenarioId,
+    ...scenariosQueryOptions.byId(id ? parseInt(id) : 0, true), // includeForms = true
+    enabled: !!id,
   });
 
   // Telegram back button handler
@@ -71,9 +71,7 @@ export const AdminViewScenarioPage = () => {
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-2 pb-24 min-h-full">
-          <ViewScenarioForm
-            scenarioId={scenarioId ? parseInt(scenarioId) : undefined}
-          />
+          <ViewScenarioForm scenarioId={id ? parseInt(id) : undefined} />
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           text="main"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/cases/edit/${data.id}`)}
+          onClick={() => navigate(`/admin/cases/${data.id}/edit`)}
         >
           Редактировать <ArrowIcon />
         </Button>
@@ -75,7 +75,7 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           variant="second"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/cases/view/${data.id}`)}
+          onClick={() => navigate(`/admin/cases/${data.id}/view`)}
         >
           Просмотр
         </Button>
