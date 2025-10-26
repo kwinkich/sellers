@@ -187,7 +187,7 @@ export function Assess1to5Block({
                 </div>
               ))}
             </div>
-            <Button type="button" onClick={addSkill} className="h-12 gap-2 w-full text-center">
+            <Button type="button" variant="second" onClick={addSkill} className="h-12 gap-2 w-full text-center">
               <Plus className="h-4 w-4" /> Добавить навык
             </Button>
           </div>
