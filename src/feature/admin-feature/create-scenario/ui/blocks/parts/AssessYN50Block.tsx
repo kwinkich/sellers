@@ -141,7 +141,7 @@ export function AssessYN50Block({
                 </div>
               ))}
             </div>
-            <Button type="button" onClick={addQuestion} className="h-12 gap-2 w-full text-center">
+            <Button type="button" variant="second" onClick={addQuestion} className="h-12 gap-2 w-full text-center">
               <Plus className="h-4 w-4" /> Добавить вопрос
             </Button>
           </div>

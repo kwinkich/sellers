@@ -15,6 +15,7 @@ import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenari
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
+import WebApp from '@twa-dev/sdk';
 
 // Pre-built block configurations
 const PREBUILT_BLOCKS = {
@@ -72,8 +73,35 @@ export const AdminScenariosCreatePage = () => {
     title: string;
   }>({ title: "" });
 
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">("SELLER");
+
   // Track if pre-built blocks have been initialized
   const prebuiltInitialized = useRef(false);
+
+  // Telegram back button handler for tab navigation
+  useEffect(() => {
+    const onTelegramBack = () => {
+      // If not on first tab, go to previous tab
+      if (activeTab !== "SELLER") {
+        handlePrevTab();
+      } else {
+        // If on first tab, navigate back to previous page
+        navigate(-1);
+      }
+    };
+
+    if (WebApp?.BackButton) {
+      WebApp.BackButton.onClick(onTelegramBack);
+      WebApp.BackButton.show(); // Ensure back button is visible
+      
+      return () => {
+        try {
+          WebApp.BackButton.offClick(onTelegramBack);
+        } catch {}
+      };
+    }
+  }, [activeTab, navigate]);
 
   // Fetch skills to find IDs for pre-built blocks
   const { data: skillsData } = useQuery(skillsQueryOptions.list());
@@ -210,6 +238,33 @@ export const AdminScenariosCreatePage = () => {
       if (role === "MODERATOR") setModeratorBlocks((prev) => updateBlock(prev));
     };
 
+  // Tab navigation helpers
+  const handleNextTab = () => {
+    if (activeTab === "SELLER") {
+      setActiveTab("BUYER");
+    } else if (activeTab === "BUYER") {
+      setActiveTab("MODERATOR");
+    }
+  };
+
+  const handlePrevTab = () => {
+    if (activeTab === "BUYER") {
+      setActiveTab("SELLER");
+    } else if (activeTab === "MODERATOR") {
+      setActiveTab("BUYER");
+    }
+  };
+
+  // Check if next button should be enabled
+  const isNextEnabled = () => {
+    if (activeTab === "SELLER") {
+      return sellerBlocks.length >= 3;
+    } else if (activeTab === "BUYER") {
+      return buyerBlocks.length >= 1;
+    }
+    return false;
+  };
+
   const handleSubmit = () => {
     if (!formData.title.trim()) {
       toast.error("Ошибка валидации");
@@ -311,8 +366,8 @@ export const AdminScenariosCreatePage = () => {
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col pb-24 gap-6 px-2 min-h-full">
-          <Tabs defaultValue="SELLER">
-            <TabsList variant="second" className="grid grid-cols-3 w-full">
+          <Tabs value={activeTab}>
+            <TabsList variant="second" className="grid grid-cols-3 w-full pointer-events-none">
               <TabsTrigger variant="second" value="SELLER">
                 {getRoleLabel("SELLER")}
               </TabsTrigger>
@@ -362,15 +417,55 @@ export const AdminScenariosCreatePage = () => {
             </TabsContent>
           </Tabs>
 
-          {/* Submit button */}
+          {/* Navigation buttons */}
           <div className="sticky bottom-0 bg-white pt-4 pb-4">
-            <Button
-              onClick={handleSubmit}
-              disabled={isPending || !formData.title.trim()}
-              className="w-full h-12"
-            >
-              {isPending ? "Создание..." : "Создать сценарий"}
-            </Button>
+            {activeTab === "SELLER" && (
+              <Button
+                onClick={handleNextTab}
+                disabled={!isNextEnabled()}
+                className="w-full h-12"
+              >
+                Далее
+              </Button>
+            )}
+
+            {activeTab === "BUYER" && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handlePrevTab}
+                  variant="second" 
+                  className="flex-1 h-12"
+                >
+                  Назад
+                </Button>
+                <Button
+                  onClick={handleNextTab}
+                  disabled={!isNextEnabled()}
+                  className="flex-1 h-12"
+                >
+                  Далее
+                </Button>
+              </div>
+            )}
+
+            {activeTab === "MODERATOR" && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handlePrevTab}
+                  variant="second" 
+                  className="flex-1 h-12"
+                >
+                  Назад
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isPending || !formData.title.trim()}
+                  className="flex-1 h-12"
+                >
+                  {isPending ? "Создание..." : "Создать сценарий"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
