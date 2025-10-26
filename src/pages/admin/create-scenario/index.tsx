@@ -5,7 +5,7 @@ import {
   type BlockKind,
   type ScenarioBlockItem,
 } from "@/feature/admin-feature/create-scenario/ui/blocks/parts/BlocksContainer";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { HeadText, getRoleLabel } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
@@ -15,7 +15,7 @@ import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenari
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
-import WebApp from '@twa-dev/sdk';
+import WebApp from "@twa-dev/sdk";
 
 // Pre-built block configurations
 const PREBUILT_BLOCKS = {
@@ -73,8 +73,18 @@ export const AdminScenariosCreatePage = () => {
     title: string;
   }>({ title: "" });
 
+  // Error state for form
+  const [titleError, setTitleError] = useState<string>("");
+
+  // Memoized callback to clear title error
+  const clearTitleError = useCallback(() => {
+    setTitleError("");
+  }, []);
+
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">("SELLER");
+  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">(
+    "SELLER"
+  );
 
   // Track if pre-built blocks have been initialized
   const prebuiltInitialized = useRef(false);
@@ -94,7 +104,7 @@ export const AdminScenariosCreatePage = () => {
     if (WebApp?.BackButton) {
       WebApp.BackButton.onClick(onTelegramBack);
       WebApp.BackButton.show(); // Ensure back button is visible
-      
+
       return () => {
         try {
           WebApp.BackButton.offClick(onTelegramBack);
@@ -120,9 +130,22 @@ export const AdminScenariosCreatePage = () => {
 
       navigate("/admin/home");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Ошибка при создании сценария:", error);
-      toast.error("Ошибка при создании сценария");
+
+      // Handle unique constraint violation (409 Conflict)
+      if (error?.status === 409 || error?.error?.code === "CONFLICT") {
+        const errorMessage =
+          error?.error?.message || "Сценарий с таким названием уже существует";
+        setTitleError(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        // Handle other errors
+        const errorMessage =
+          error?.error?.message || "Ошибка при создании сценария";
+        setTitleError(""); // Clear title error for other types of errors
+        toast.error(errorMessage);
+      }
     },
   });
 
@@ -362,12 +385,19 @@ export const AdminScenariosCreatePage = () => {
     <div className="w-dvw h-dvh bg-white flex flex-col">
       <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4">
         <HeadText head="Создание сценария" label="Добавьте новый сценарий" />
-        <CreateScenarioForm onFormDataChange={setFormData} />
+        <CreateScenarioForm
+          onFormDataChange={setFormData}
+          titleError={titleError}
+          onTitleErrorClear={clearTitleError}
+        />
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col pb-24 gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
-            <TabsList variant="second" className="grid grid-cols-3 w-full pointer-events-none">
+            <TabsList
+              variant="second"
+              className="grid grid-cols-3 w-full pointer-events-none"
+            >
               <TabsTrigger variant="second" value="SELLER">
                 {getRoleLabel("SELLER")}
               </TabsTrigger>
@@ -433,7 +463,7 @@ export const AdminScenariosCreatePage = () => {
               <div className="flex gap-2">
                 <Button
                   onClick={handlePrevTab}
-                  variant="second" 
+                  variant="second"
                   className="flex-1 h-12"
                 >
                   Назад
@@ -452,7 +482,7 @@ export const AdminScenariosCreatePage = () => {
               <div className="flex gap-2">
                 <Button
                   onClick={handlePrevTab}
-                  variant="second" 
+                  variant="second"
                   className="flex-1 h-12"
                 >
                   Назад

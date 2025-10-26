@@ -32,9 +32,8 @@ export const PracticeList = ({ searchQuery = "" }: Props) => {
   return (
     <InfiniteScrollList
       items={filteredPractices}
-      renderItem={(practice) => (
-        <PracticeCard key={practice.id} data={practice} />
-      )}
+      getKey={(practice) => practice.id}
+      renderItem={(practice) => <PracticeCard data={practice} />}
       isLoading={isLoading}
       isError={isError}
       error={error}

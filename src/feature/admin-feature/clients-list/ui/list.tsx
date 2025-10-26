@@ -48,7 +48,8 @@ export const ClientsList = ({ type, searchQuery }: ClientsListProps) => {
   return (
     <InfiniteScrollList
       items={filteredClients}
-      renderItem={(client) => <ClientCard key={client.id} data={client} />}
+      getKey={(client) => client.id}
+      renderItem={(client) => <ClientCard data={client} />}
       isLoading={isLoading}
       isError={isError}
       error={error}

@@ -35,9 +35,24 @@ export function CreateCaseForm() {
       // Navigate to cases list or back to admin
       navigate("/admin/home");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Ошибка при создании кейса:", error);
-      toast.error("Ошибка при создании кейса");
+
+      // Handle unique constraint violation (409 Conflict)
+      if (error?.status === 409 || error?.error?.code === "CONFLICT") {
+        const errorMessage =
+          error?.error?.message || "Кейс с таким названием уже существует";
+        form.setError("title", {
+          type: "manual",
+          message: errorMessage,
+        });
+        toast.error(errorMessage);
+      } else {
+        // Handle other errors
+        const errorMessage =
+          error?.error?.message || "Ошибка при создании кейса";
+        toast.error(errorMessage);
+      }
     },
   });
 

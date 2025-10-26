@@ -15,6 +15,8 @@ interface CasesListProps {
 
 export const CasesList = ({ searchQuery }: CasesListProps) => {
   const queryClient = useQueryClient();
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [excludeIds, setExcludeIds] = useState<number[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     caseId: number | null;
@@ -37,12 +39,25 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
     queryKey: ["cases", "list"],
     queryFn: (page, limit) => CasesAPI.getCases({ page, limit }),
     limit: 20,
+    resetKey: refreshToken,
+    excludeIds,
   });
 
   const deleteCaseMutation = useMutation({
     mutationFn: (id: number) => CasesAPI.deleteCase(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cases"] });
+    onSuccess: (_, deletedId) => {
+      // Instant hide the deleted item
+      setExcludeIds((prev) => [...prev, deletedId]);
+
+      // Reset accumulation to rebuild from page 1
+      setRefreshToken((t) => t + 1);
+
+      // Invalidate queries for eventual consistency
+      queryClient.invalidateQueries({ queryKey: ["cases", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: ["cases", "detail", deletedId],
+      });
+
       setDeleteDialog({ isOpen: false, caseId: null, caseTitle: "" });
     },
   });
@@ -75,9 +90,9 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
     <>
       <InfiniteScrollList
         items={filteredCases}
+        getKey={(caseItem) => caseItem.id}
         renderItem={(caseItem) => (
           <CaseCard
-            key={caseItem.id}
             data={caseItem}
             onDelete={(id) => handleDelete(id, caseItem.title)}
           />

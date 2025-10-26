@@ -26,7 +26,8 @@ export const AdminsList = () => {
       />
       <InfiniteScrollList
         items={admins}
-        renderItem={(admin) => <AdminCard key={admin.id} data={admin} />}
+        getKey={(admin) => admin.id}
+        renderItem={(admin) => <AdminCard data={admin} />}
         isLoading={isLoading}
         isError={isError}
         error={error}

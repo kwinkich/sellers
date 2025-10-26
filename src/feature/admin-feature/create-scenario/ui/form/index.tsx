@@ -14,10 +14,14 @@ import { useEffect } from "react";
 
 interface CreateScenarioFormProps {
   onFormDataChange?: (data: { title: string }) => void;
+  titleError?: string;
+  onTitleErrorClear?: () => void;
 }
 
 export function CreateScenarioForm({
   onFormDataChange,
+  titleError,
+  onTitleErrorClear,
 }: CreateScenarioFormProps) {
   const form = useForm<CreateScenarioFormData>({
     resolver: zodResolver(createScenarioSchema),
@@ -30,6 +34,25 @@ export function CreateScenarioForm({
   useEffect(() => {
     onFormDataChange?.({ title });
   }, [title, onFormDataChange]);
+
+  // Set error when titleError prop changes
+  useEffect(() => {
+    if (titleError) {
+      form.setError("title", {
+        type: "manual",
+        message: titleError,
+      });
+    } else {
+      form.clearErrors("title");
+    }
+  }, [titleError, form]);
+
+  // Clear title error when user starts typing (separate effect to avoid loops)
+  useEffect(() => {
+    if (titleError && title && onTitleErrorClear) {
+      onTitleErrorClear();
+    }
+  }, [title, titleError, onTitleErrorClear]);
 
   return (
     <Form {...form}>

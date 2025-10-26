@@ -149,11 +149,11 @@ export const PracticeHomePage = () => {
 
   return (
     <div className="bg-second-bg min-h-[calc(100vh-4rem)] w-full">
-      <div className="flex flex-col gap-3 px-2 pb-5">
-        <div className="gap-0.5 pl-2 pt-2">
+      <div className="flex flex-col gap-3 px-2 pb-5 pt-4">
+        <div className="gap-0.5 pl-2">
           <HeadText
             head="Площадка практик"
-            label="Оттачивайте переговорные навыки"
+            label="Участвуйте в практиках и улучшайте свои навыки"
           />
         </div>
 

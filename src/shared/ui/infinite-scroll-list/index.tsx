@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 interface InfiniteScrollListProps<T> {
   items: T[];
   renderItem: (item: T, index: number) => ReactNode;
+  getKey?: (item: T, index: number) => React.Key;
   isLoading?: boolean;
   isError?: boolean;
   error?: Error | null;
@@ -19,6 +20,7 @@ interface InfiniteScrollListProps<T> {
 export function InfiniteScrollList<T>({
   items,
   renderItem,
+  getKey,
   isLoading = false,
   isError = false,
   error = null,
@@ -59,7 +61,10 @@ export function InfiniteScrollList<T>({
     <>
       <div className={className}>
         {items.map((item, index) => (
-          <div key={index} className={itemClassName}>
+          <div
+            key={getKey ? getKey(item, index) : (item as any)?.id ?? index}
+            className={itemClassName}
+          >
             {renderItem(item, index)}
           </div>
         ))}

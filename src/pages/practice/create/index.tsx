@@ -26,23 +26,27 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-/** Pagination helper that tolerates both page-based and boolean hasNext signatures */
+/** Pagination helper */
 function getNextPageParamFromMeta(lastPage: any) {
   if (!lastPage) return undefined;
-  const p = lastPage?.meta?.pagination as any;
-  if (!p) return undefined;
-  const currentPage = p.currentPage ?? p.page ?? 1;
-  const totalPages =
-    p.totalPages ??
-    (p.totalItems && p.limit ? Math.ceil(p.totalItems / p.limit) : undefined);
 
-  if (typeof totalPages === "number") {
-    return currentPage < totalPages ? currentPage + 1 : undefined;
+  // Check if lastPage has data array
+  const data = lastPage?.data;
+  if (!data || !Array.isArray(data)) {
+    return undefined;
   }
-  if (typeof p?.hasNext === "boolean") {
-    return p.hasNext ? currentPage + 1 : undefined;
+
+  // Get pagination info from meta (required by backend schema)
+  const pagination = lastPage?.meta?.pagination;
+  if (!pagination) {
+    return undefined;
   }
-  return undefined;
+
+  // Backend schema guarantees these fields exist
+  const { currentPage, totalPages } = pagination;
+
+  // Return next page number if there are more pages
+  return currentPage < totalPages ? currentPage + 1 : undefined;
 }
 
 /** Convert local date + "HH:MM" to UTC ISO string */
@@ -110,13 +114,11 @@ const PracticeCreatePage = () => {
       {
         // only pass when present to avoid over-filtering
         skillIds: skillIds?.length ? skillIds : undefined,
-        practiceType: practiceType || undefined,
       },
     ],
     queryFn: ({ pageParam = 1 }) =>
       ScenariosAPI.getScenarios({
         skillIds: (skillIds?.length ? (skillIds as any) : undefined) as any,
-        practiceType: (practiceType || undefined) as any,
         page: pageParam as number,
         limit: 50,
       }),

@@ -24,9 +24,9 @@ export const ModulesList = ({ courseId }: ModulesListProps) => {
   return (
     <InfiniteScrollList
       items={modules}
+      getKey={(module) => module.id}
       renderItem={(module) => (
         <ModuleCard
-          key={module.id}
           module={module}
           isOpen={module.unlockRule === "ALL" || module.progressPercent > 0}
         />

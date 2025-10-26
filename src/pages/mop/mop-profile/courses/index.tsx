@@ -2,15 +2,15 @@ import { CoursesList } from "@/feature";
 import { HeadText } from "@/shared";
 
 export const MopCoursesPage = () => {
-	return (
-		<div className="bg-second-bg px-2 min-h-full pb-24 pt-4">
-			<HeadText
-				head="Обучение"
-				label="Оттачивайте переговорные навыки"
-				className="px-2 mb-6"
-			/>
+  return (
+    <div className="bg-second-bg px-2 min-h-[calc(100vh-4rem)] pb-24 pt-4">
+      <HeadText
+        head="Обучение"
+        label="Оттачивайте переговорные навыки"
+        className="px-2 mb-6"
+      />
 
-			<CoursesList />
-		</div>
-	);
+      <CoursesList />
+    </div>
+  );
 };

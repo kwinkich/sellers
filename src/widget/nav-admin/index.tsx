@@ -10,6 +10,25 @@ import { useLocation } from "react-router-dom";
 export const AdminNavBar = () => {
   const location = useLocation();
 
+  // Define which routes should show each tab as active
+  const isContentActive = [
+    "course",
+    "cases",
+    "lessons",
+    "modules",
+    "scenarios",
+  ].some((path) => location.pathname.includes(path));
+  const isClientsActive = location.pathname.includes("clients");
+  const isPracticeActive = location.pathname.includes("practice");
+
+  // Home tab is active for admin/home or when no other tab is active
+  const isHomeActive =
+    location.pathname.includes("admin/home") ||
+    (!isContentActive &&
+      !isClientsActive &&
+      !isPracticeActive &&
+      location.pathname.startsWith("/admin"));
+
   return (
     <div className="w-full flex items-center justify-center h-16 bg-black rounded-t-3xl fixed bottom-0 z-50">
       <NavItem
@@ -17,7 +36,7 @@ export const AdminNavBar = () => {
           route: "/admin/home",
           icon: <MainIcon size={18} />,
           label: "Главная",
-          isActive: location.pathname.includes("admin/home"),
+          isActive: isHomeActive,
         }}
       />
 
@@ -26,9 +45,7 @@ export const AdminNavBar = () => {
           route: "/admin/courses/list",
           icon: <ContentIcon size={18} />,
           label: "Контент",
-          isActive: ["course", "cases", "lessons", "modukes", "scenarios"].some(
-            (path) => location.pathname.includes(path)
-          ),
+          isActive: isContentActive,
         }}
       />
 
@@ -37,7 +54,7 @@ export const AdminNavBar = () => {
           route: "/admin/clients",
           icon: <ClientIcon size={18} />,
           label: "Клиенты",
-          isActive: location.pathname.includes("clients"),
+          isActive: isClientsActive,
         }}
       />
 
@@ -46,7 +63,7 @@ export const AdminNavBar = () => {
           route: "/practice",
           icon: <PracticeIcon size={18} />,
           label: "Практика",
-          isActive: location.pathname.includes("practice"),
+          isActive: isPracticeActive,
         }}
       />
     </div>

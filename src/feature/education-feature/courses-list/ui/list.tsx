@@ -19,9 +19,9 @@ export const CoursesList = () => {
   return (
     <InfiniteScrollList
       items={courses}
+      getKey={(course) => course.id}
       renderItem={(course) => (
         <CourseCard
-          key={course.id}
           course={course}
           isOpen={course.accessScope === "ALL" || !course.isIntro}
         />
