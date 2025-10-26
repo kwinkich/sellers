@@ -143,7 +143,6 @@ export interface GetScenariosParams {
   page?: number;
   by?: "id" | "title" | "version" | "createdAt" | "updatedAt";
   order?: "asc" | "desc";
-  practiceType?: PracticeType;
   title?: string;
   createdByUserId?: number;
   skillIds?: number[];
