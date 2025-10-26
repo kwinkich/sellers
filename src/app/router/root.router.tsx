@@ -21,6 +21,7 @@ import {
   EvaluationReportPage,
   LessonDetailsPage,
   LessonEditPage,
+  CourseDetailEditPage,
   MopCoursesPage,
   MopDetailsPage,
   MopLessonsPage,
@@ -119,6 +120,10 @@ export const route = createBrowserRouter([
             element: <AdminCasesListPage />,
           },
           {
+            path: "scenarios",
+            element: <AdminScenariosListPage />,
+          },
+          {
             path: "courses/list",
             element: <AdminCourseListPage />,
           },
@@ -161,6 +166,10 @@ export const route = createBrowserRouter([
           {
             path: "course/:id/edit",
             element: <CourseEditPage />,
+          },
+          {
+            path: "course/:id/detail-edit",
+            element: <CourseDetailEditPage />,
           },
           {
             path: "course/:id/module/create",
