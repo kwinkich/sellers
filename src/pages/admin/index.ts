@@ -17,3 +17,4 @@ export * from "./update-client/index";
 export * from "./update-case/index";
 export * from "./view-case/index";
 export * from "./course-detail-edit/index";
+export * from "./module-detail-edit/index";

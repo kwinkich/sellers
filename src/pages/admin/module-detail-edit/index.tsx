@@ -1,4 +1,3 @@
-// pages/module/CreateModulePage.tsx
 import { Button } from "@/components/ui/button";
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
@@ -7,57 +6,42 @@ import { modulesMutationOptions, modulesQueryOptions } from "@/entities";
 import { HeadText } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export const CreateModulePage = () => {
+export const ModuleDetailEditPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
-	const courseId = parseInt(id!);
+	const moduleId = parseInt(id!);
 
-	const { data: modulesData } = useQuery(
-		modulesQueryOptions.byCourse(courseId)
+	const { data: moduleData, isLoading: isModuleLoading } = useQuery(
+		modulesQueryOptions.byId(moduleId)
 	);
-
-	const modules = modulesData?.data || [];
-
-	const nextOrderIndex = modules.length + 1;
 
 	const [formData, setFormData] = useState({
 		title: "",
 		shortDesc: "",
 		testVariant: "NONE" as "NONE" | "QUIZ",
-		unlockRule: "ALL" as "ALL" | "LEVEL_3" | "LEVEL_4",
+		unlockRule: "ALL" as "ALL" | "LEVEL_3" | "LEVEL_4" | "AFTER_PREV_MODULE",
 	});
 
-	const createModuleMutation = useMutation({
-		...modulesMutationOptions.create(),
-		onSuccess: (result) => {
-			if (result.success && result.data) {
-				navigate(`/admin/course/${courseId}/edit`);
-			} else {
-				// Обработка случая, когда API возвращает success: false
-				alert("Не удалось создать модуль. Попробуйте еще раз.");
-			}
-		},
-		onError: (error) => {
-			console.error("Error creating module:", error);
-			alert("Произошла ошибка при создании модуля. Попробуйте еще раз.");
+	useEffect(() => {
+		if (moduleData?.data) {
+			setFormData({
+				title: moduleData.data.title,
+				shortDesc: moduleData.data.shortDesc,
+				testVariant: moduleData.data.testVariant,
+				unlockRule: moduleData.data.unlockRule,
+			});
+		}
+	}, [moduleData?.data]);
+
+	const updateModuleMutation = useMutation({
+		...modulesMutationOptions.update(),
+		onSuccess: () => {
+			navigate(`/admin/module/${moduleId}/edit`);
 		},
 	});
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		const submitData = {
-			...formData,
-			courseId,
-			quizId: 0,
-			orderIndex: nextOrderIndex,
-		};
-
-		createModuleMutation.mutate(submitData);
-	};
 
 	const handleChange = (field: string, value: unknown) => {
 		setFormData((prev) => ({
@@ -66,7 +50,6 @@ export const CreateModulePage = () => {
 		}));
 	};
 
-	// Опции для селектов
 	const testVariantOptions = [
 		{ value: "NONE", label: "Нет тестирования" },
 		{ value: "QUIZ", label: "Тест (квиз)" },
@@ -76,7 +59,7 @@ export const CreateModulePage = () => {
 		{ value: "ALL", label: "Всем" },
 		{ value: "LEVEL_3", label: "От уровня 3 и выше" },
 		{ value: "LEVEL_4", label: "От уровня 4 и выше" },
-    { value: "AFTER_PREV_MODULE", label: "После прохождения предыдущего модуля"}
+		{ value: "AFTER_PREV_MODULE", label: "После прохождения предыдущего модуля" },
 	];
 
 	const isFormValid =
@@ -88,21 +71,39 @@ export const CreateModulePage = () => {
 	const isNearLimit = remainingChars <= 20;
 	const isOverLimit = remainingChars < 0;
 
+	if (isModuleLoading) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
 	return (
 		<div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
 			<HeadText
-				head={`Создание модуля`}
-				label="Заполните данные модуля"
+				head="Редактирование деталей модуля"
+				label="Обновите данные модуля"
 				variant="black-gray"
 				className="px-2"
 			/>
 
 			<form
-				onSubmit={handleSubmit}
+				onSubmit={(e) => {
+					e.preventDefault();
+					updateModuleMutation.mutate({
+						id: moduleId,
+						data: {
+							title: formData.title,
+							shortDesc: formData.shortDesc,
+							testVariant: formData.testVariant,
+							unlockRule: formData.unlockRule,
+						},
+					});
+				}}
 				className="flex flex-col flex-1 gap-6 h-full"
 			>
 				<div className="flex flex-col gap-6 flex-1">
-					{/* Название модуля */}
 					<InputFloatingLabel
 						type="text"
 						value={formData.title}
@@ -112,7 +113,6 @@ export const CreateModulePage = () => {
 						required
 					/>
 
-					{/* Описание */}
 					<div className="relative">
 						<Textarea
 							value={formData.shortDesc}
@@ -138,12 +138,11 @@ export const CreateModulePage = () => {
 						</div>
 					</div>
 					{isOverLimit && (
-						<p className="text-xs text-red-500 -mt-4">
+						<p className="text-xs text-red-500 mt-1">
 							Превышено максимальное количество символов
 						</p>
 					)}
 
-					{/* Вариант тестирования */}
 					<SelectFloatingLabel
 						placeholder="Выберите вариант тестирования"
 						value={formData.testVariant}
@@ -153,9 +152,8 @@ export const CreateModulePage = () => {
 						className="w-full"
 					/>
 
-					{/* Уровень доступа */}
 					<SelectFloatingLabel
-						placeholder="Выберите уровень доступа"
+						placeholder="Выберите правило доступа"
 						value={formData.unlockRule}
 						onValueChange={(value) => handleChange("unlockRule", value)}
 						options={unlockRuleOptions}
@@ -167,18 +165,20 @@ export const CreateModulePage = () => {
 				<Button
 					type="submit"
 					className="w-full"
-					disabled={!isFormValid || createModuleMutation.isPending}
+					disabled={!isFormValid || updateModuleMutation.isPending}
 				>
-					{createModuleMutation.isPending ? (
+					{updateModuleMutation.isPending ? (
 						<>
 							<Loader2 className="h-4 w-4 animate-spin mr-2" />
-							Создание...
+							Сохранение...
 						</>
 					) : (
-						"Создать модуль"
+						"Сохранить"
 					)}
 				</Button>
 			</form>
 		</div>
 	);
 };
+
+

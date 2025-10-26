@@ -121,11 +121,11 @@ export const CreateCoursePage = () => {
 	const isFormValid =
 		formData.title.trim() &&
 		formData.shortDesc.trim() &&
-		formData.shortDesc.length <= 120 &&
+		formData.shortDesc.length <= 1000 &&
 		(formData.accessScope === "ALL" ||
 			(formData.accessScope === "CLIENTS_LIST" && formData.clientIds.length > 0));
 
-	const remainingChars = 120 - formData.shortDesc.length;
+	const remainingChars = 1000 - formData.shortDesc.length;
 	const isNearLimit = remainingChars <= 20;
 	const isOverLimit = remainingChars < 0;
 
@@ -161,7 +161,7 @@ export const CreateCoursePage = () => {
 								isOverLimit ? "border-red-300 focus:border-red-500" : ""
 							}`}
 							rows={4}
-							maxLength={120}
+							maxLength={1000}
 							required
 						/>
 						<div
