@@ -1,15 +1,32 @@
 // pages/module/ModuleEditPage.tsx
 import { Button } from "@/components/ui/button";
-import { lessonsQueryOptions, modulesQueryOptions } from "@/entities";
-import { Badge, Box, HeadText } from "@/shared";
-import { useQuery } from "@tanstack/react-query";
+import { lessonsQueryOptions, modulesQueryOptions, lessonsMutationOptions } from "@/entities";
+import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
+import { X } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit, Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const ModuleEditPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const moduleId = parseInt(id!);
+    const queryClient = useQueryClient();
+    const [confirmState, setConfirmState] = useState<{ isOpen: boolean; lessonId: number | null; lessonTitle: string | null }>({ isOpen: false, lessonId: null, lessonTitle: null });
+
+    const { mutate: deleteLesson, isPending: isDeleting } = useMutation({
+        ...lessonsMutationOptions.delete(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["lessons", "by-module", moduleId] });
+            toast.success("Урок удалён");
+            setConfirmState({ isOpen: false, lessonId: null, lessonTitle: null });
+        },
+        onError: () => {
+            toast.error("Не удалось удалить урок");
+        }
+    });
 
 	const {
 		data: moduleData,
@@ -118,10 +135,20 @@ export const ModuleEditPage = () => {
 										variant="gray-opacity"
 										label={`Урок ${lesson.orderIndex}`}
 									/>
-									<Badge
-										variant="gray-opacity"
-										label={`${lesson.contentBlocks?.length || 0} блоков`}
-									/>
+									<div className="flex items-center gap-2">
+										<Badge
+											variant="gray-opacity"
+											label={`Количество блоков: ${lesson.contentBlocks?.length || 0}`}
+										/>
+										<button
+											onClick={() => setConfirmState({ isOpen: true, lessonId: lesson.id, lessonTitle: lesson.title })}
+											disabled={isDeleting}
+											className="disabled:opacity-50 w-6 h-6 rounded-full items-center flex justify-center"
+											aria-label="Удалить урок"
+										>
+											<X className="w-4 h-4 text-black" />
+										</button>
+									</div>
 								</div>
 								<div className="flex flex-col items-start gap-1 mb-4">
 									<h4 className="text-lg font-medium text-black leading-[100%]">
@@ -159,6 +186,19 @@ export const ModuleEditPage = () => {
 					</div>
 				)}
 			</div>
+
+			<ConfirmationDialog
+				isOpen={confirmState.isOpen}
+				onClose={() => setConfirmState({ isOpen: false, lessonId: null, lessonTitle: null })}
+				onConfirm={() => confirmState.lessonId && deleteLesson(confirmState.lessonId)}
+				title="Удалить урок"
+				description={`Вы уверены, что хотите удалить урок ${confirmState.lessonTitle ?? ""}? Это действие необратимо.`}
+				confirmText="Удалить"
+				cancelText="Отмена"
+				isLoading={isDeleting}
+				userName={confirmState.lessonTitle ?? undefined}
+				showCancelButton={false}
+			/>
 		</div>
 	);
 };

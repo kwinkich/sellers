@@ -7,6 +7,8 @@ import {
   AdminLicensesListPage,
   AdminScenariosCreatePage,
   AdminScenariosListPage,
+  AdminUpdateCasePage,
+  AdminViewCasePage,
   AdminsControlPage,
   AdminUpdateClientPage,
   ClientHomePage,
@@ -20,6 +22,7 @@ import {
   EvaluationReportPage,
   LessonDetailsPage,
   LessonEditPage,
+  CourseDetailEditPage,
   MopCoursesPage,
   MopDetailsPage,
   MopLessonsPage,
@@ -146,6 +149,14 @@ export const route = createBrowserRouter([
             element: <AdminCreateCasePage />,
           },
           {
+            path: "cases/edit/:caseId",
+            element: <AdminUpdateCasePage />,
+          },
+          {
+            path: "cases/view/:caseId",
+            element: <AdminViewCasePage />,
+          },
+          {
             path: "scenarios/create",
             element: <AdminScenariosCreatePage />,
           },
@@ -156,6 +167,10 @@ export const route = createBrowserRouter([
           {
             path: "course/:id/edit",
             element: <CourseEditPage />,
+          },
+          {
+            path: "course/:id/detail-edit",
+            element: <CourseDetailEditPage />,
           },
           {
             path: "course/:id/module/create",
