@@ -6,6 +6,7 @@ import {
   AdminHomePage,
   AdminLicensesListPage,
   AdminScenariosCreatePage,
+  AdminScenariosListPage,
   AdminUpdateCasePage,
   AdminViewCasePage,
   AdminsControlPage,
