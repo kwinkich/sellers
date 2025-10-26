@@ -34,9 +34,9 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const CreateLessonPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { moduleId: moduleIdParam } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
-  const moduleId = parseInt(id!);
+  const moduleId = parseInt(moduleIdParam!, 10);
 
   const { data: moduleData } = useQuery(modulesQueryOptions.byId(moduleId));
   const { data: lessonsData } = useQuery(

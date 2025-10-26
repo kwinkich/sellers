@@ -78,7 +78,7 @@ export const ModuleEditPage = () => {
 			<div className="flex justify-center items-center min-h-screen">
 				<div className="text-center">
 					<h2 className="text-lg font-semibold mb-2">Модуль не найден</h2>
-					<Button onClick={() => navigate("/admin/courses")}>
+					<Button onClick={() => navigate("/admin/content/courses")}>
 						Вернуться к курсам
 					</Button>
 				</div>
@@ -92,12 +92,12 @@ export const ModuleEditPage = () => {
 			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-4">
 				<div className="flex items-center justify-between px-2 mb-6">
 					<HeadText head={module.title} label="Редактирование модуля" className="px-0 mb-0" />
-					<Button size="xs" className="text-base-main bg-transparent text-md" onClick={() => navigate(`/admin/module/${moduleId}/detail-edit`)}>
+					<Button size="xs" className="text-base-main bg-transparent text-md" onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/detail-edit`)}>
 						изменить
 					</Button>
 				</div>
 				<Button
-					onClick={() => navigate(`/admin/module/${moduleId}/lesson/create`)}
+					onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/create`)}
 					className="w-full"
 					size="xs"
 					text="dark"
@@ -169,7 +169,7 @@ export const ModuleEditPage = () => {
 										size="2s"
 										variant="second"
 										className="flex-1"
-										onClick={() => navigate(`/admin/lesson/${lesson.id}/edit`)}
+										onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/${lesson.id}/edit`)}
 									>
 										<Edit className="h-4 w-4 mr-2" />
 										Редактировать
@@ -179,7 +179,7 @@ export const ModuleEditPage = () => {
 											size="2s"
 											className="flex-1"
 											onClick={() =>
-												navigate(`/admin/lesson/${lesson.id}/quiz/create`)
+												navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/${lesson.id}/quizzes/create`)
 											}
 										>
 											Тест
@@ -197,7 +197,7 @@ export const ModuleEditPage = () => {
           <Button
             className="w-full"
             size="xs"
-            onClick={() => navigate(`/admin/quiz/${module.quizId}/edit`)}>
+            onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/${module.quizId}/edit`)}>
             <Edit />
             Редактировать тест
           </Button>
@@ -209,7 +209,7 @@ export const ModuleEditPage = () => {
           <Button
             className="w-full"
             size="xs"
-            onClick={() => navigate(`/admin/module/${moduleId}/quiz/create`)}>
+            onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/create`)}>
             <Plus className="h-4 w-4 mr-2" />
             Создать тест для модуля
           </Button>

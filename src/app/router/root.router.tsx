@@ -203,6 +203,20 @@ export const route = createBrowserRouter([
                         path: ":id/detail-edit",
                         element: <ModuleDetailEditPage />,
                       },
+                      // Quizzes within modules
+                      {
+                        path: ":moduleId/quizzes",
+                        children: [
+                          {
+                            path: "create",
+                            element: <CreateQuizPage />,
+                          },
+                          {
+                            path: ":id/edit",
+                            element: <EditQuizPage />,
+                          },
+                        ],
+                      },
                       // Lessons within modules
                       {
                         path: ":moduleId/lessons",

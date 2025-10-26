@@ -13,9 +13,9 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const CreateModulePage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { courseId: courseIdParam } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const courseId = parseInt(id!);
+  const courseId = parseInt(courseIdParam!, 10);
 
   const { data: modulesData } = useQuery(
     modulesQueryOptions.byCourse(courseId)
@@ -41,7 +41,7 @@ export const CreateModulePage = () => {
 		...modulesMutationOptions.create(),
 		onSuccess: (result) => {
 			if (result.success && result.data) {
-				navigate(`/admin/course/${courseId}/edit`);
+				navigate(`/admin/content/courses/${courseId}/edit`);
 			} else {
 				alert("Не удалось создать модуль. Попробуйте еще раз.");
 			}

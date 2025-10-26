@@ -3,10 +3,12 @@ import { LessonsList } from "@/feature/education-feature/lessons-list";
 import { HeadText } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export const MopLessonsPage = () => {
 	const { moduleId } = useParams<{ moduleId: string }>();
+	const navigate = useNavigate();
 
 	const {
 		data: moduleResponse,
@@ -52,15 +54,31 @@ export const MopLessonsPage = () => {
 				className="px-2 mb-4"
 			/>
 
-			<div className="px-2 mb-4">
-				<div className="flex items-center gap-2 text-xs text-gray-500">
-					<span>Уроков: {moduleResponse?.data.lessonsCount}</span>
-					<span>•</span>
-					<span>Прогресс: {moduleResponse?.data.progressPercent}%</span>
-				</div>
+		<div className="px-2 mb-4">
+			<div className="flex items-center gap-2 text-xs text-gray-500">
+				<span>Уроков: {moduleResponse?.data.lessonsCount}</span>
+				<span>•</span>
+				<span>Прогресс: {moduleResponse?.data.progressPercent}%</span>
 			</div>
-
-			<LessonsList moduleId={Number(moduleId)} />
 		</div>
-	);
+
+		<LessonsList moduleId={Number(moduleId)} />
+
+		{moduleResponse?.data.testVariant === "QUIZ" &&
+			moduleResponse?.data.quizId && (
+				<div className="px-2 mt-6">
+					<Button
+            type="button"
+            size="xs"
+            className="w-full"
+						onClick={() =>
+							navigate(`/mop/education/quizzes/${moduleResponse.data.quizId}`)
+						}
+					>
+						Пройти тест
+					</Button>
+				</div>
+			)}
+	</div>
+);
 };
