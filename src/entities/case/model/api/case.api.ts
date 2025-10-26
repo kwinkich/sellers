@@ -17,7 +17,7 @@ export const CasesAPI = {
   getCases: (params?: GetCasesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("cases", { searchParams }).json<
-      GApiResponse<CaseListItem[], false>
+      GApiResponse<CaseListItem[], true>
     >();
   },
 
