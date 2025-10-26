@@ -27,4 +27,3 @@ export * from "./studio-icon/index";
 export * from "./timer-icon/index";
 export * from "./copy-icon/index";
 export * from "./remove-icon/index";
-export * from "./trash-bin-icon/index";

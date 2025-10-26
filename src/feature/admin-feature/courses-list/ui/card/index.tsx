@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Course } from "@/entities";
-import { Badge, Box, BlockConfirmationDialog } from "@/shared";
+import { Badge, Box, ConfirmationDialog } from "@/shared";
 import { useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrashBinIcon } from "@/shared";
+import { X } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesMutationOptions } from "@/entities";
 import { toast } from "sonner";
@@ -37,10 +37,10 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
                 <button
                     onClick={() => setIsConfirmOpen(true)}
                     disabled={isDeleting}
-                    className="disabled:opacity-50 w-8 h-8 rounded-full bg-red-200 items-center flex justify-center"
+                    className="disabled:opacity-50 w-8 h-8 rounded-full items-center flex justify-center"
                     aria-label="Удалить курс"
                 >
-                    <TrashBinIcon fill="#ef4444" />
+                    <X className="w-4 h-4 text-white" />
                 </button>
             </div>
 			<p className="text-lg font-medium leading-[100%] text-white">
@@ -64,7 +64,7 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
 				Редактировать
 			</Button>
 
-            <BlockConfirmationDialog
+            <ConfirmationDialog
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={() => deleteCourse(data.id)}

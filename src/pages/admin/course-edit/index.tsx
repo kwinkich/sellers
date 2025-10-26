@@ -1,13 +1,13 @@
 // pages/course/CourseEditPage.tsx
 import { Button } from "@/components/ui/button";
 import { coursesQueryOptions, modulesQueryOptions, modulesMutationOptions } from "@/entities";
-import { Badge, Box, HeadText, BlockConfirmationDialog } from "@/shared";
-import { TrashBinIcon } from "@/shared/icons/trash-bin-icon";
+import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
+import { X } from "lucide-react"
 
 export const CourseEditPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -86,11 +86,12 @@ export const CourseEditPage = () => {
 		<div className="min-h-full pb-24">
 			{/* Шапка с названием курса */}
 			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
-				<HeadText
-					head={course.title}
-					label="Редактирование курса"
-					className="px-2 mb-6"
-				/>
+				<div className="flex items-center justify-between px-2 mb-6">
+					<HeadText head={course.title} label="Редактирование курса" className="px-0 mb-0" />
+					<Button size="xs" className="text-base-main bg-transparent text-md" onClick={() => navigate(`/admin/course/${courseId}/detail-edit`)}>
+						изменить
+					</Button>
+				</div>
 				<Button
 					onClick={() => navigate(`/admin/course/${courseId}/module/create`)}
 					className="w-full"
@@ -143,10 +144,10 @@ export const CourseEditPage = () => {
 										<button
 											onClick={() => setConfirmState({ isOpen: true, moduleId: module.id, moduleTitle: module.title })}
 											disabled={isDeleting}
-											className="disabled:opacity-50 w-6 h-6 rounded-full bg-red-200 items-center flex justify-center"
+											className="disabled:opacity-50 w-6 h-6 rounded-full items-center flex justify-center"
 											aria-label="Удалить модуль"
 										>
-											<TrashBinIcon fill="#ef4444" size={16} />
+											<X className="w-4 h-4 text-black" />
 										</button>
 									</div>
 								</div>
@@ -173,7 +174,7 @@ export const CourseEditPage = () => {
 				)}
 			</div>
 
-			<BlockConfirmationDialog
+			<ConfirmationDialog
 				isOpen={confirmState.isOpen}
 				onClose={() => setConfirmState({ isOpen: false, moduleId: null, moduleTitle: null })}
 				onConfirm={() => confirmState.moduleId && deleteModule(confirmState.moduleId)}

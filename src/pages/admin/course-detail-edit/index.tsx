@@ -3,15 +3,21 @@ import InputFloatingLabel from "@/components/ui/inputFloating";
 import { MultiSelect } from "@/components/ui/multiSelect";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
-import { clientsQueryOptions, coursesMutationOptions } from "@/entities";
+import { clientsQueryOptions, coursesMutationOptions, coursesQueryOptions } from "@/entities";
 import { HeadText } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-export const CreateCoursePage = () => {
+export const CourseDetailEditPage = () => {
 	const navigate = useNavigate();
+	const { id } = useParams<{ id: string }>();
+	const courseId = Number(id);
+
+	const { data: courseData, isLoading: isCourseLoading } = useQuery(
+		coursesQueryOptions.byId(courseId)
+	);
 
 	const [formData, setFormData] = useState({
 		title: "",
@@ -20,7 +26,18 @@ export const CreateCoursePage = () => {
 		clientIds: [] as number[],
 	});
 
-	// Запросы для получения всех типов клиентов
+	useEffect(() => {
+		if (courseData?.data) {
+			const backendScope = (courseData.data.accessScope as unknown) as string;
+			setFormData((prev) => ({
+				...prev,
+				title: courseData.data.title,
+				shortDesc: courseData.data.shortDesc,
+				accessScope: backendScope === "CLIENTS_LIST" ? "SELECTED" : (courseData.data.accessScope as any),
+			}));
+		}
+	}, [courseData?.data]);
+
 	const { data: activeClientsData, isLoading: isLoadingActive } = useQuery({
 		...clientsQueryOptions.activeList(),
 	});
@@ -33,7 +50,6 @@ export const CreateCoursePage = () => {
 		...clientsQueryOptions.expiringList(),
 	});
 
-	// Объединяем всех клиентов в один список
 	const allClients = useMemo(() => {
 		const clients = [
 			...(activeClientsData?.data || []),
@@ -41,7 +57,6 @@ export const CreateCoursePage = () => {
 			...(expiringClientsData?.data || []),
 		];
 
-		// Убираем дубликаты по ID
 		const uniqueClients = clients.reduce((acc, client) => {
 			if (!acc.find((c) => c.id === client.id)) {
 				acc.push(client);
@@ -56,7 +71,6 @@ export const CreateCoursePage = () => {
 		expiringClientsData?.data,
 	]);
 
-	// Преобразуем клиентов в опции для селекта
 	const clientOptions = useMemo(
 		() =>
 			allClients.map((client) => ({
@@ -69,33 +83,12 @@ export const CreateCoursePage = () => {
 	const isLoadingClients =
 		isLoadingActive || isLoadingExpired || isLoadingExpiring;
 
-	const createCourseMutation = useMutation({
-		...coursesMutationOptions.create(),
-		onSuccess: (result) => {
-			navigate(`/admin/course/${result.data.id}/edit`);
-		},
-		onError: (error) => {
-			console.error("Error creating course:", error);
-			alert("Произошла ошибка при создании курса. Попробуйте еще раз.");
+	const updateCourseMutation = useMutation({
+		...coursesMutationOptions.update(),
+		onSuccess: () => {
+			navigate(`/admin/course/${courseId}/edit`);
 		},
 	});
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		// Создаем объект для отправки
-		const submitData: any = {
-			title: formData.title,
-			shortDesc: formData.shortDesc,
-			accessScope: formData.accessScope === "SELECTED" ? "CLIENTS_LIST" : "ALL",
-		};
-
-		if (formData.accessScope === "SELECTED") {
-			submitData.clientIds = formData.clientIds;
-		}
-
-		createCourseMutation.mutate(submitData);
-	};
 
 	const handleChange = (field: string, value: unknown) => {
 		setFormData((prev) => ({
@@ -105,7 +98,6 @@ export const CreateCoursePage = () => {
 	};
 
 	const handleClientSelection = (selectedValues: string[]) => {
-		// Преобразуем строковые значения обратно в числа
 		const selectedIds = selectedValues.map((value) => parseInt(value));
 		setFormData((prev) => ({
 			...prev,
@@ -129,17 +121,36 @@ export const CreateCoursePage = () => {
 	const isNearLimit = remainingChars <= 20;
 	const isOverLimit = remainingChars < 0;
 
+	if (isCourseLoading) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
 	return (
 		<div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
 			<HeadText
-				head="Создание курса"
-				label="Заполните основные данные"
+				head="Редактирование деталей курса"
+				label="Обновите основные данные"
 				variant="black-gray"
 				className="px-2"
 			/>
 
 			<form
-				onSubmit={handleSubmit}
+				onSubmit={(e) => {
+					e.preventDefault();
+					const submitData: any = {
+						title: formData.title,
+						shortDesc: formData.shortDesc,
+						accessScope: formData.accessScope === "SELECTED" ? "CLIENTS_LIST" : "ALL",
+					};
+					if (formData.accessScope === "SELECTED") {
+						submitData.clientIds = formData.clientIds;
+					}
+					updateCourseMutation.mutate({ id: courseId, data: submitData });
+				}}
 				className="flex flex-col flex-1 gap-6 h-full"
 			>
 				<div className="flex flex-col gap-6 flex-1">
@@ -191,7 +202,6 @@ export const CreateCoursePage = () => {
 						className="w-full"
 					/>
 
-					{/* MultiSelect для выбора клиентов */}
 					{formData.accessScope === "SELECTED" && (
 						<div>
 							{isLoadingClients ? (
@@ -216,22 +226,20 @@ export const CreateCoursePage = () => {
 				<Button
 					type="submit"
 					className="w-full"
-					disabled={
-						!isFormValid ||
-						createCourseMutation.isPending ||
-						(formData.accessScope === "SELECTED" && isLoadingClients)
-					}
+					disabled={!isFormValid || updateCourseMutation.isPending || (formData.accessScope === "SELECTED" && isLoadingClients)}
 				>
-					{createCourseMutation.isPending ? (
+					{updateCourseMutation.isPending ? (
 						<>
 							<Loader2 className="h-4 w-4 animate-spin mr-2" />
-							Создание...
+							Сохранение...
 						</>
 					) : (
-						"Создать курс"
+						"Сохранить"
 					)}
 				</Button>
 			</form>
 		</div>
 	);
 };
+
+

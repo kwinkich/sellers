@@ -1,8 +1,8 @@
 // pages/module/ModuleEditPage.tsx
 import { Button } from "@/components/ui/button";
 import { lessonsQueryOptions, modulesQueryOptions, lessonsMutationOptions } from "@/entities";
-import { Badge, Box, HeadText, BlockConfirmationDialog } from "@/shared";
-import { TrashBinIcon } from "@/shared/icons/trash-bin-icon";
+import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
+import { X } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit, Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -138,15 +138,15 @@ export const ModuleEditPage = () => {
 									<div className="flex items-center gap-2">
 										<Badge
 											variant="gray-opacity"
-											label={`${lesson.contentBlocks?.length || 0} блоков`}
+											label={`Количество блоков: ${lesson.contentBlocks?.length || 0}`}
 										/>
 										<button
 											onClick={() => setConfirmState({ isOpen: true, lessonId: lesson.id, lessonTitle: lesson.title })}
 											disabled={isDeleting}
-											className="disabled:opacity-50 w-6 h-6 rounded-full bg-red-200 items-center flex justify-center"
+											className="disabled:opacity-50 w-6 h-6 rounded-full items-center flex justify-center"
 											aria-label="Удалить урок"
 										>
-											<TrashBinIcon fill="#ef4444" size={16} />
+											<X className="w-4 h-4 text-black" />
 										</button>
 									</div>
 								</div>
@@ -187,7 +187,7 @@ export const ModuleEditPage = () => {
 				)}
 			</div>
 
-			<BlockConfirmationDialog
+			<ConfirmationDialog
 				isOpen={confirmState.isOpen}
 				onClose={() => setConfirmState({ isOpen: false, lessonId: null, lessonTitle: null })}
 				onConfirm={() => confirmState.lessonId && deleteLesson(confirmState.lessonId)}
