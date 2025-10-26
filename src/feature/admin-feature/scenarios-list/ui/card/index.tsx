@@ -25,15 +25,11 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
 
   return (
     <Box variant="dark" justify="start" className="gap-3 p-3">
-      <div className="flex items-center w-full justify-between text-white">
-        <div className="flex flex-col">
+      <div className="flex flex-col gap-1 w-full text-white">
+        <div className="flex items-center w-full justify-between">
           <p className="text-lg font-medium leading-[100%]">
             {data.title} (#{data.id})
           </p>
-          <p className="text-sm text-base-gray">Версия {data.version}</p>
-        </div>
-
-        <div className="flex items-center gap-2">
           <button
             onClick={() => onDelete(data.id, data.title)}
             className="
@@ -45,6 +41,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
             <X className="h-4 w-4 text-white" />
           </button>
         </div>
+        <p className="text-sm text-base-gray">Версия {data.version}</p>
       </div>
 
       <div className="w-full flex items-center gap-1">

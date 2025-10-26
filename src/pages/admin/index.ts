@@ -19,3 +19,4 @@ export * from "./view-case/index";
 export * from "./view-scenario/index";
 export * from "./edit-scenario/index";
 export * from "./course-detail-edit/index";
+export * from "./module-detail-edit/index";

@@ -25,6 +25,7 @@ import {
   LessonDetailsPage,
   LessonEditPage,
   CourseDetailEditPage,
+  ModuleDetailEditPage,
   MopCoursesPage,
   MopDetailsPage,
   MopLessonsPage,
@@ -189,6 +190,10 @@ export const route = createBrowserRouter([
           {
             path: "module/:id/edit",
             element: <ModuleEditPage />,
+          },
+          {
+            path: "module/:id/detail-edit",
+            element: <ModuleDetailEditPage />,
           },
           {
             path: "module/:id/lesson/create",

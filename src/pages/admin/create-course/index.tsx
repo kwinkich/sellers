@@ -16,7 +16,7 @@ export const CreateCoursePage = () => {
 	const [formData, setFormData] = useState({
 		title: "",
 		shortDesc: "",
-		accessScope: "ALL" as "ALL" | "SELECTED",
+		accessScope: "ALL" as "ALL" | "CLIENTS_LIST",
 		clientIds: [] as number[],
 	});
 
@@ -87,10 +87,10 @@ export const CreateCoursePage = () => {
 		const submitData: any = {
 			title: formData.title,
 			shortDesc: formData.shortDesc,
-			accessScope: formData.accessScope === "SELECTED" ? "CLIENTS_LIST" : "ALL",
+			accessScope: formData.accessScope,
 		};
 
-		if (formData.accessScope === "SELECTED") {
+		if (formData.accessScope === "CLIENTS_LIST") {
 			submitData.clientIds = formData.clientIds;
 		}
 
@@ -115,17 +115,17 @@ export const CreateCoursePage = () => {
 
 	const accessScopeOptions = [
 		{ value: "ALL", label: "Доступно всем клиентам" },
-		{ value: "SELECTED", label: "Только выбранным клиентам" },
+		{ value: "CLIENTS_LIST", label: "Только выбранным клиентам" },
 	];
 
 	const isFormValid =
 		formData.title.trim() &&
 		formData.shortDesc.trim() &&
-		formData.shortDesc.length <= 120 &&
+		formData.shortDesc.length <= 1000 &&
 		(formData.accessScope === "ALL" ||
-			(formData.accessScope === "SELECTED" && formData.clientIds.length > 0));
+			(formData.accessScope === "CLIENTS_LIST" && formData.clientIds.length > 0));
 
-	const remainingChars = 120 - formData.shortDesc.length;
+	const remainingChars = 1000 - formData.shortDesc.length;
 	const isNearLimit = remainingChars <= 20;
 	const isOverLimit = remainingChars < 0;
 
@@ -161,7 +161,7 @@ export const CreateCoursePage = () => {
 								isOverLimit ? "border-red-300 focus:border-red-500" : ""
 							}`}
 							rows={4}
-							maxLength={120}
+							maxLength={1000}
 							required
 						/>
 						<div
@@ -192,7 +192,7 @@ export const CreateCoursePage = () => {
 					/>
 
 					{/* MultiSelect для выбора клиентов */}
-					{formData.accessScope === "SELECTED" && (
+					{formData.accessScope === "CLIENTS_LIST" && (
 						<div>
 							{isLoadingClients ? (
 								<div className="flex items-center justify-center py-4">
@@ -219,7 +219,7 @@ export const CreateCoursePage = () => {
 					disabled={
 						!isFormValid ||
 						createCourseMutation.isPending ||
-						(formData.accessScope === "SELECTED" && isLoadingClients)
+						(formData.accessScope === "CLIENTS_LIST" && isLoadingClients)
 					}
 				>
 					{createCourseMutation.isPending ? (
