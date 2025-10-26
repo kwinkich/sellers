@@ -160,3 +160,15 @@
     font-size: 16px !important;
   }
 }
+
+/* Mobile keyboard padding utility class */
+.mobile-keyboard-padding {
+  padding-bottom: 6rem; /* 24 * 0.25rem = 6rem */
+}
+
+/* Ensure all pages with input fields have mobile keyboard padding */
+@media (max-width: 768px) {
+  .mobile-keyboard-padding {
+    padding-bottom: 6rem;
+  }
+}

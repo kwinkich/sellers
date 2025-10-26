@@ -27,18 +27,18 @@ export const ModuleDetailEditPage = () => {
     unlockRule: "ALL" as "ALL" | "LEVEL_3" | "LEVEL_4" | "AFTER_PREV_MODULE",
   });
 
-	useEffect(() => {
-		if (moduleData?.data) {
-			const incomingVariant = moduleData.data.testVariant;
-			const normalizedVariant = incomingVariant === "QUIZ" ? "QUIZ" : "NONE";
-			setFormData({
-				title: moduleData.data.title,
-				shortDesc: moduleData.data.shortDesc,
-				testVariant: normalizedVariant,
-				unlockRule: moduleData.data.unlockRule,
-			});
-		}
-	}, [moduleData?.data]);
+  useEffect(() => {
+    if (moduleData?.data) {
+      const incomingVariant = moduleData.data.testVariant;
+      const normalizedVariant = incomingVariant === "QUIZ" ? "QUIZ" : "NONE";
+      setFormData({
+        title: moduleData.data.title,
+        shortDesc: moduleData.data.shortDesc,
+        testVariant: normalizedVariant,
+        unlockRule: moduleData.data.unlockRule,
+      });
+    }
+  }, [moduleData?.data]);
 
   const updateModuleMutation = useMutation({
     ...modulesMutationOptions.update(),
@@ -91,7 +91,7 @@ export const ModuleDetailEditPage = () => {
   }
 
   return (
-    <div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
+    <div className="px-2 min-h-full flex flex-col mobile-keyboard-padding pt-6 gap-6">
       <HeadText
         head="Редактирование деталей модуля"
         label="Обновите данные модуля"
@@ -154,18 +154,18 @@ export const ModuleDetailEditPage = () => {
             </p>
           )}
 
-					<SelectFloatingLabel
-						placeholder="Выберите вариант тестирования"
-						value={String(formData.testVariant)}
-						onValueChange={(value) => {
-							if (value === "NONE" || value === "QUIZ") {
-								handleChange("testVariant", value);
-							}
-						}}
-						options={testVariantOptions}
-						variant="default"
-						className="w-full"
-					/>
+          <SelectFloatingLabel
+            placeholder="Выберите вариант тестирования"
+            value={String(formData.testVariant)}
+            onValueChange={(value) => {
+              if (value === "NONE" || value === "QUIZ") {
+                handleChange("testVariant", value);
+              }
+            }}
+            options={testVariantOptions}
+            variant="default"
+            className="w-full"
+          />
 
           <SelectFloatingLabel
             placeholder="Выберите правило доступа"

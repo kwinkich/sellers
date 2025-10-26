@@ -139,7 +139,7 @@ export const CreateCoursePage = () => {
   const isOverLimit = remainingChars < 0;
 
   return (
-    <div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
+    <div className="px-2 min-h-full flex flex-col mobile-keyboard-padding pt-6 gap-6">
       <HeadText
         head="Создание курса"
         label="Заполните основные данные"

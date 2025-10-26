@@ -14,7 +14,7 @@ export const AdminLicensesListPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col bg-second-bg min-h-full pb-24 gap-6 px-2 pt-4">
+      <div className="flex flex-col bg-second-bg min-h-full mobile-keyboard-padding gap-6 px-2 pt-4">
         <HeadText
           head="Лицензии клиента"
           label="Загрузка данных клиента..."
@@ -30,7 +30,7 @@ export const AdminLicensesListPage = () => {
 
   if (error || !data) {
     return (
-      <div className="flex flex-col bg-second-bg min-h-full pb-24 gap-6 px-2 pt-4">
+      <div className="flex flex-col bg-second-bg min-h-full mobile-keyboard-padding gap-6 px-2 pt-4">
         <HeadText
           head="Лицензии клиента"
           label="Ошибка загрузки данных клиента"
@@ -48,7 +48,7 @@ export const AdminLicensesListPage = () => {
     data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
   return (
-    <div className="flex flex-col bg-second-bg min-h-full pb-24 gap-6 px-2 pt-4">
+    <div className="flex flex-col bg-second-bg min-h-full mobile-keyboard-padding gap-6 px-2 pt-4">
       <HeadText
         head="Лицензии клиента"
         label={`Список всех лицензий клиента <strong>${clientName} (#${id})</strong>`}

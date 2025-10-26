@@ -53,7 +53,7 @@ export const AdminUpdateCasePage = () => {
   return (
     <div className="w-dvw h-dvh bg-white flex flex-col">
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 px-2 pt-4 pb-24 min-h-full">
+        <div className="flex flex-col gap-6 px-2 pt-4 mobile-keyboard-padding min-h-full">
           {/* Header with close button */}
           <div className="flex items-center justify-between">
             <HeadText

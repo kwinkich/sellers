@@ -5,20 +5,20 @@ import { Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export const EvaluationPage = () => {
-	const { practiceId } = useParams<{ practiceId: string }>();
-	const id = Number(practiceId);
+  const { practiceId } = useParams<{ practiceId: string }>();
+  const id = Number(practiceId);
 
-	// Fetch forms list for this practice (filtered by evaluator on backend)
-	const { data, isLoading } = useQuery(
-		practiceEvaluationQueryOptions.forms(id)
-	);
-	if (isLoading) {
-		return (
-			<div className="min-h-screen bg-gray-100 flex items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-			</div>
-		);
-	}
+  // Fetch forms list for this practice (filtered by evaluator on backend)
+  const { data, isLoading } = useQuery(
+    practiceEvaluationQueryOptions.forms(id)
+  );
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center mobile-keyboard-padding">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
 
-	return <EvaluationForm formsData={data?.data || []} practiceId={id} />;
+  return <EvaluationForm formsData={data?.data || []} practiceId={id} />;
 };

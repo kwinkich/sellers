@@ -148,7 +148,7 @@ export const CourseDetailEditPage = () => {
   }
 
   return (
-    <div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
+    <div className="px-2 min-h-full flex flex-col mobile-keyboard-padding pt-6 gap-6">
       <HeadText
         head="Редактирование деталей курса"
         label="Обновите основные данные"

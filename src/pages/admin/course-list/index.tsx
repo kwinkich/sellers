@@ -8,7 +8,7 @@ export const AdminCourseListPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-24 gap-6 px-2 pt-4">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] mobile-keyboard-padding gap-6 px-2 pt-4">
       <HeadText
         head="Список курсов"
         label={`Оттачивайте переговорные навыки`}

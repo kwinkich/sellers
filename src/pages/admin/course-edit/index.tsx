@@ -93,7 +93,7 @@ export const CourseEditPage = () => {
   }
 
   return (
-    <div className="min-h-full pb-24">
+    <div className="min-h-full mobile-keyboard-padding">
       {/* Шапка с названием курса */}
       <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
         <div className="flex items-center justify-between px-2 mb-6">

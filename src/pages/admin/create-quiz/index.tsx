@@ -208,7 +208,7 @@ export const CreateQuizPage = () => {
     createQuizMutation.isPending || updateLessonMutation.isPending;
 
   return (
-    <div className="min-h-full pb-24">
+    <div className="min-h-full mobile-keyboard-padding">
       <div className="w-full bg-base-bg rounded-b-3xl px-2 py-4 mb-6">
         <HeadText
           head="Создание теста"
