@@ -14,4 +14,6 @@ export * from "./lesson-edit/index.tsx";
 export * from "./licenses-list/index";
 export * from "./quiz-edit/index.tsx";
 export * from "./update-client/index";
+export * from "./update-case/index";
+export * from "./view-case/index";
 export * from "./course-detail-edit/index";

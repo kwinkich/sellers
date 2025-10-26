@@ -6,3 +6,5 @@ export * from "./create-scenario/index";
 export * from "./create-client/index";
 export * from "./licenses-list/index";
 export * from "./update-client/index";
+export * from "./update-case/index";
+export * from "./view-case/index";

@@ -7,6 +7,11 @@ export type BlockType =
   | "SCALE_SKILL_SINGLE"
   | "SCALE_SKILL_MULTI";
 
+export interface ScenarioSkill {
+  id: number;
+  name: string;
+}
+
 export interface ScenarioListItem {
   id: number;
   title: string;
@@ -14,6 +19,7 @@ export interface ScenarioListItem {
   createdAt: string;
   updatedAt: string;
   practiceType?: PracticeType;
+  skills: ScenarioSkill[];
 }
 
 export interface ScenarioForm {
@@ -137,7 +143,6 @@ export interface GetScenariosParams {
   page?: number;
   by?: "id" | "title" | "version" | "createdAt" | "updatedAt";
   order?: "asc" | "desc";
-  practiceType?: PracticeType;
   title?: string;
   createdByUserId?: number;
   skillIds?: number[];

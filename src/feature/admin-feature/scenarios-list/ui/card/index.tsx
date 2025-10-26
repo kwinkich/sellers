@@ -6,17 +6,8 @@ import { X } from "lucide-react";
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface Skill {
-  id: number;
-  name: string;
-}
-
-interface ScenarioCardData extends ScenarioListItem {
-  skills?: Skill[];
-}
-
 interface ScenarioCardProps {
-  data: ScenarioCardData;
+  data: ScenarioListItem;
   onDelete: (id: number, title: string) => void;
 }
 

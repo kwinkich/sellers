@@ -1,7 +1,11 @@
 import type { ScenarioListItem } from "@/entities";
-import { scenariosQueryOptions, ScenariosAPI } from "@/entities";
-import { ConfirmationDialog } from "@/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScenariosAPI } from "@/entities";
+import {
+  ConfirmationDialog,
+  useInfiniteScroll,
+  InfiniteScrollList,
+} from "@/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ScenarioCard } from "./card";
 
@@ -21,7 +25,19 @@ export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
     scenarioTitle: "",
   });
 
-  const { data, isLoading, error } = useQuery(scenariosQueryOptions.list());
+  const {
+    items: scenarios,
+    isLoading,
+    isError,
+    error,
+    hasNextPage,
+    sentinelRef,
+    isFetchingNextPage,
+  } = useInfiniteScroll<ScenarioListItem>({
+    queryKey: ["scenarios", "list"],
+    queryFn: (page, limit) => ScenariosAPI.getScenarios({ page, limit }),
+    limit: 20,
+  });
 
   const deleteScenarioMutation = useMutation({
     mutationFn: (id: number) => ScenariosAPI.deleteScenario(id),
@@ -49,58 +65,33 @@ export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
     setDeleteDialog({ isOpen: false, scenarioId: null, scenarioTitle: "" });
   };
 
-  if (isLoading) {
-    return <div className="text-center py-8">Загрузка сценариев...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-destructive">
-        Ошибка: {error.message}
-      </div>
-    );
-  }
-
-  const scenarios: ScenarioListItem[] = data?.data ?? [];
-
-  // TODO: Replace with real API data when backend includes skills in list response
-  // For now, using mock skills for demonstration
-  const scenariosWithSkills = scenarios.map((scenario) => ({
-    ...scenario,
-    skills: [
-      { id: 1, name: "Коммуникация" },
-      { id: 2, name: "Управление процессом" },
-      { id: 3, name: "Анализ" },
-      { id: 4, name: "Тайминг" },
-      { id: 5, name: "Обаяние" },
-    ].slice(0, Math.floor(Math.random() * 3) + 1), // Random 1-3 skills
-  }));
-
-  const filteredScenarios = scenariosWithSkills.filter(
+  const filteredScenarios = scenarios.filter(
     (scenario) =>
       scenario.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       scenario.id.toString().includes(searchQuery)
   );
 
-  if (filteredScenarios.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        {searchQuery ? "Ничего не найдено" : "Нет сценариев"}
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="flex flex-col gap-2 p-2">
-        {filteredScenarios.map((scenario) => (
+      <InfiniteScrollList
+        items={filteredScenarios}
+        renderItem={(scenario) => (
           <ScenarioCard
             key={scenario.id}
             data={scenario}
             onDelete={(id) => handleDelete(id, scenario.title)}
           />
-        ))}
-      </div>
+        )}
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        sentinelRef={sentinelRef}
+        emptyMessage={searchQuery ? "Ничего не найдено" : "Нет сценариев"}
+        loadingMessage="Загрузка сценариев..."
+        errorMessage="Ошибка загрузки сценариев"
+      />
 
       <ConfirmationDialog
         isOpen={deleteDialog.isOpen}

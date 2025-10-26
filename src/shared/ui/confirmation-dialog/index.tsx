@@ -111,11 +111,15 @@ export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
           >
             {showCancelButton && (
               <Button
-                variant="ghost"
+                variant="second"
                 onClick={onClose}
                 disabled={isLoading}
                 size="sm"
-                className="w-full sm:w-auto order-2 sm:order-1"
+                className={`
+                  w-full sm:w-auto order-1 sm:order-2
+                  bg-base-main hover:bg-base-main/80 focus-visible:ring-base-main
+                  text-white h-12
+                `}
               >
                 {cancelText}
               </Button>
@@ -130,7 +134,7 @@ export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
               className={`
                 w-full sm:w-auto order-1 sm:order-2
                 bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500
-                text-white
+                text-white h-12
                 ${!showCancelButton ? "sm:w-full" : ""}
               `}
             >
