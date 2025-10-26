@@ -17,13 +17,17 @@ export function ViewCaseForm({ caseId }: ViewCaseFormProps) {
   const navigate = useNavigate();
 
   // Fetch case data
-  const { data: caseData, isLoading, isError } = useQuery({
+  const {
+    data: caseData,
+    isLoading,
+    isError,
+  } = useQuery({
     ...casesQueryOptions.byId(caseId!),
     enabled: !!caseId,
   });
 
   const handleExit = () => {
-    navigate("/admin/cases");
+    navigate("/admin/content/cases");
   };
 
   // Get current admin ID from context
@@ -128,8 +132,8 @@ export function ViewCaseForm({ caseId }: ViewCaseFormProps) {
       </div>
 
       {/* Exit button */}
-      <Button 
-        onClick={handleExit} 
+      <Button
+        onClick={handleExit}
         className="w-full mt-2 h-12"
         variant="second"
       >

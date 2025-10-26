@@ -17,7 +17,7 @@ export const AdminUpdateCasePage = () => {
       if (hasUnsavedChanges) {
         setShowCloseDialog(true);
       } else {
-        navigate("/admin/cases");
+        navigate("/admin/content/cases");
       }
     };
 
@@ -37,13 +37,13 @@ export const AdminUpdateCasePage = () => {
     if (hasUnsavedChanges) {
       setShowCloseDialog(true);
     } else {
-      navigate("/admin/cases");
+      navigate("/admin/content/cases");
     }
   };
 
   const confirmClose = () => {
     setShowCloseDialog(false);
-    navigate("/admin/cases");
+    navigate("/admin/content/cases");
   };
 
   const cancelClose = () => {

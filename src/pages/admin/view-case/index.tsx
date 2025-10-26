@@ -12,7 +12,7 @@ export const AdminViewCasePage = () => {
   // Telegram back button handler
   useEffect(() => {
     const onTelegramBack = () => {
-      navigate("/admin/cases");
+      navigate("/admin/content/cases");
     };
 
     if (WebApp?.BackButton) {
@@ -28,7 +28,7 @@ export const AdminViewCasePage = () => {
   }, [navigate]);
 
   const handleClose = () => {
-    navigate("/admin/cases");
+    navigate("/admin/content/cases");
   };
 
   return (

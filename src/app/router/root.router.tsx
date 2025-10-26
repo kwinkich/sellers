@@ -137,32 +137,32 @@ export const route = createBrowserRouter([
               },
             ],
           },
-          // Cases management
-          {
-            path: "cases",
-            children: [
-              {
-                index: true,
-                element: <AdminCasesListPage />,
-              },
-              {
-                path: "create",
-                element: <AdminCreateCasePage />,
-              },
-              {
-                path: ":id/edit",
-                element: <AdminUpdateCasePage />,
-              },
-              {
-                path: ":id/view",
-                element: <AdminViewCasePage />,
-              },
-            ],
-          },
           // Content management
           {
             path: "content",
             children: [
+              // Cases management
+              {
+                path: "cases",
+                children: [
+                  {
+                    index: true,
+                    element: <AdminCasesListPage />,
+                  },
+                  {
+                    path: "create",
+                    element: <AdminCreateCasePage />,
+                  },
+                  {
+                    path: ":id/edit",
+                    element: <AdminUpdateCasePage />,
+                  },
+                  {
+                    path: ":id/view",
+                    element: <AdminViewCasePage />,
+                  },
+                ],
+              },
               // Courses management
               {
                 path: "courses",

@@ -57,10 +57,18 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
 
       {/* Skills section */}
       {data.skills && data.skills.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {data.skills.map((skill) => (
-            <Badge key={skill.id} label={skill.name} variant="gray" size="md" />
-          ))}
+        <div className="flex flex-col gap-2">
+          <p className="text-sm text-white/80 font-medium">Навыки:</p>
+          <div className="flex flex-wrap gap-2">
+            {data.skills.map((skill) => (
+              <Badge
+                key={skill.id}
+                label={skill.name}
+                variant="gray"
+                size="md"
+              />
+            ))}
+          </div>
         </div>
       )}
 

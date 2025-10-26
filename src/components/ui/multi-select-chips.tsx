@@ -139,9 +139,9 @@ export const MultiSelectChips: React.FC<MultiSelectChipsProps> = ({
               {value.map((v) => (
                 <div
                   key={String(v)}
-                  className="flex items-center gap-2 px-2 py-1 rounded-xl bg-white shadow text-xs font-medium"
+                  className="flex items-center gap-2 px-2 py-1 rounded-xl bg-white shadow text-xs font-medium text-gray-900"
                 >
-                  <span className="max-w-[160px] truncate">
+                  <span className="max-w-[160px] truncate text-gray-900">
                     {labelByValue.get(String(v)) ?? String(v)}
                   </span>
                   <button

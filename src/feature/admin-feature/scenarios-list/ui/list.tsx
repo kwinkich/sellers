@@ -11,9 +11,13 @@ import { ScenarioCard } from "./card";
 
 interface ScenariosListProps {
   searchQuery: string;
+  skillIds?: number[];
 }
 
-export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
+export const ScenariosList = ({
+  searchQuery,
+  skillIds,
+}: ScenariosListProps) => {
   const queryClient = useQueryClient();
   const [refreshToken, setRefreshToken] = useState(0);
   const [excludeIds, setExcludeIds] = useState<number[]>([]);
@@ -36,8 +40,13 @@ export const ScenariosList = ({ searchQuery }: ScenariosListProps) => {
     sentinelRef,
     isFetchingNextPage,
   } = useInfiniteScroll<ScenarioListItem>({
-    queryKey: ["scenarios", "list"],
-    queryFn: (page, limit) => ScenariosAPI.getScenarios({ page, limit }),
+    queryKey: ["scenarios", "list", { skillIds }],
+    queryFn: (page, limit) =>
+      ScenariosAPI.getScenarios({
+        page,
+        limit,
+        skillIds: skillIds?.length ? skillIds : undefined,
+      }),
     limit: 20,
     resetKey: refreshToken,
     excludeIds,
