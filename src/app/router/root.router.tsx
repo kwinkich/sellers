@@ -6,6 +6,8 @@ import {
   AdminHomePage,
   AdminLicensesListPage,
   AdminScenariosCreatePage,
+  AdminUpdateCasePage,
+  AdminViewCasePage,
   AdminsControlPage,
   AdminUpdateClientPage,
   ClientHomePage,
@@ -139,6 +141,14 @@ export const route = createBrowserRouter([
           {
             path: "cases/create",
             element: <AdminCreateCasePage />,
+          },
+          {
+            path: "cases/edit/:caseId",
+            element: <AdminUpdateCasePage />,
+          },
+          {
+            path: "cases/view/:caseId",
+            element: <AdminViewCasePage />,
           },
           {
             path: "scenarios/create",
