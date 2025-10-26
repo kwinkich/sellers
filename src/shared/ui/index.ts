@@ -3,4 +3,4 @@ export * from "./box/index";
 export * from "./donut-progress/index";
 export * from "./head-text/index";
 export * from "./nav-item/index";
-export * from "./block-confirmation-dialog/index";
+export * from "./confirmation-dialog/index";

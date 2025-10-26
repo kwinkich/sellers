@@ -4,7 +4,7 @@ import {
   clientsMutationOptions,
   type ClientMop,
 } from "@/entities";
-import { BlockConfirmationDialog } from "@/shared";
+import { ConfirmationDialog } from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,8 +29,8 @@ export const ClientMopsList = () => {
       setBlockDialog({ isOpen: false, mop: null });
     },
     onError: (error) => {
-      console.error("Ошибка при удалении МОП:", error);
-      toast.error("Ошибка при удалении МОП");
+      console.error("Ошибка при удалении МОПа:", error);
+      toast.error("Ошибка при удалении МОПа");
     },
   });
 
@@ -46,7 +46,7 @@ export const ClientMopsList = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-base-gray">Загрузка МОП...</div>
+      <div className="text-center py-8 text-base-gray">Загрузка МОПов...</div>
     );
   }
 
@@ -62,7 +62,9 @@ export const ClientMopsList = () => {
 
   if (mops.length === 0) {
     return (
-      <div className="text-center py-8 text-base-gray">Нет добавленных МОП</div>
+      <div className="text-center py-8 text-base-gray">
+        Нет добавленных МОПов
+      </div>
     );
   }
 
@@ -79,14 +81,14 @@ export const ClientMopsList = () => {
         ))}
       </div>
 
-      <BlockConfirmationDialog
+      <ConfirmationDialog
         isOpen={blockDialog.isOpen}
         onClose={() => setBlockDialog({ isOpen: false, mop: null })}
         onConfirm={handleConfirmBlock}
-        title="Удалить МОПа"
+        title="Удаление МОПа"
         description={`Вы уверены, что хотите удалить МОПа${
           blockDialog.mop?.displayName ? ` ${blockDialog.mop.displayName}` : ""
-        }? После удаления он не сможет войти в систему.`}
+        }? После удаления он не сможет использовать приложение.`}
         confirmText="Удалить"
         cancelText="Отмена"
         isLoading={isBlocking}

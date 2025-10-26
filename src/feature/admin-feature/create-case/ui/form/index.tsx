@@ -26,12 +26,10 @@ export function CreateCaseForm() {
 
   const { mutate: createCase, isPending } = useMutation({
     ...casesMutationOptions.create(),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cases"] });
 
-      toast.success("Кейс успешно создан ", {
-        description: `Кейс "${data.data.title}" добавлен в систему`,
-      });
+      toast.success("Кейс успешно создан ");
 
       form.reset();
       // Navigate to cases list or back to admin
@@ -39,10 +37,7 @@ export function CreateCaseForm() {
     },
     onError: (error) => {
       console.error("Ошибка при создании кейса:", error);
-      toast.error("Ошибка при создании кейса", {
-        description:
-          "Пожалуйста, проверьте введенные данные и попробуйте снова",
-      });
+      toast.error("Ошибка при создании кейса");
     },
   });
 
@@ -61,9 +56,7 @@ export function CreateCaseForm() {
 
   const onSubmit = (formData: CreateCaseFormData) => {
     if (!userId) {
-      toast.error("Ошибка авторизации", {
-        description: "Не удалось получить ID пользователя",
-      });
+      toast.error("Ошибка авторизации");
       return;
     }
 

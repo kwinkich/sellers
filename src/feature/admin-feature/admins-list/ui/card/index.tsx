@@ -1,5 +1,5 @@
 import { adminsMutationOptions, type Admin } from "@/entities";
-import { CreateAdminIcon, BlockConfirmationDialog } from "@/shared";
+import { CreateAdminIcon, ConfirmationDialog } from "@/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
 import type { FC } from "react";
@@ -50,7 +50,7 @@ export const AdminCard: FC<{ data: Admin }> = ({ data }) => {
         </div>
       </div>
 
-      <BlockConfirmationDialog
+      <ConfirmationDialog
         isOpen={showBlockDialog}
         onClose={() => setShowBlockDialog(false)}
         onConfirm={handleConfirmBlock}
