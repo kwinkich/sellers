@@ -7,12 +7,19 @@ export type BlockType =
   | "SCALE_SKILL_SINGLE"
   | "SCALE_SKILL_MULTI";
 
+export interface ScenarioSkill {
+  id: number;
+  name: string;
+}
+
 export interface ScenarioListItem {
   id: number;
   title: string;
   version: number;
   createdAt: string;
   updatedAt: string;
+  practiceType?: PracticeType;
+  skills: ScenarioSkill[];
 }
 
 export interface ScenarioForm {

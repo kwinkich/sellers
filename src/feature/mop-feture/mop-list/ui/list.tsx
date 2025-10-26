@@ -1,11 +1,15 @@
 import {
   ClientMopCard,
-  clientsQueryOptions,
+  ClientsAPI,
   clientsMutationOptions,
   type ClientMop,
 } from "@/entities";
-import { ConfirmationDialog } from "@/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ConfirmationDialog,
+  useInfiniteScroll,
+  InfiniteScrollList,
+} from "@/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,9 +20,19 @@ export const ClientMopsList = () => {
     mop: ClientMop | null;
   }>({ isOpen: false, mop: null });
 
-  const { data, isLoading, error } = useQuery(
-    clientsQueryOptions.mopProfiles()
-  );
+  const {
+    items: mops,
+    isLoading,
+    isError,
+    error,
+    hasNextPage,
+    sentinelRef,
+    isFetchingNextPage,
+  } = useInfiniteScroll<ClientMop>({
+    queryKey: ["clients", "mop-profiles"],
+    queryFn: (page, limit) => ClientsAPI.getClientMopProfiles({ page, limit }),
+    limit: 20,
+  });
 
   const { mutate: blockMop, isPending: isBlocking } = useMutation({
     ...clientsMutationOptions.blockMopProfile(),
@@ -44,42 +58,29 @@ export const ClientMopsList = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8 text-base-gray">Загрузка МОПов...</div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-destructive">
-        Ошибка загрузки: {error.message}
-      </div>
-    );
-  }
-
-  const mops = data?.data ?? [];
-
-  if (mops.length === 0) {
-    return (
-      <div className="text-center py-8 text-base-gray">
-        Нет добавленных МОПов
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="flex flex-col gap-2">
-        {mops.map((mop) => (
+      <InfiniteScrollList
+        items={mops}
+        renderItem={(mop) => (
           <ClientMopCard
             key={mop.id}
             data={mop}
             onDelete={handleBlockMop}
             isDeleting={isBlocking}
           />
-        ))}
-      </div>
+        )}
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        sentinelRef={sentinelRef}
+        emptyMessage="Нет добавленных МОПов"
+        loadingMessage="Загрузка МОПов..."
+        errorMessage="Ошибка загрузки МОПов"
+        className="flex flex-col gap-2"
+      />
 
       <ConfirmationDialog
         isOpen={blockDialog.isOpen}

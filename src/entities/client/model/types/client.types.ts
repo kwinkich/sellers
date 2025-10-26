@@ -112,7 +112,7 @@ export interface AddLicensesRequest {
 }
 
 export interface GetClientsParams {
-  offset?: number;
+  page?: number;
   limit?: number;
   days?: number;
 }
