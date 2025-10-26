@@ -17,7 +17,7 @@ export const CoursesAPI = {
   getCourses: (params?: GetCoursesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("courses", { searchParams }).json<
-      GApiResponse<Course[], true>
+      GApiResponse<Course, true>
     >();
   },
 

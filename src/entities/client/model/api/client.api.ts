@@ -20,21 +20,21 @@ export const ClientsAPI = {
   getActiveClients: (params?: GetClientsParams) => {
     const searchParams = createSearchParams(params);
     return API.get("clients/active", { searchParams }).json<
-      GApiResponse<ClientListItem[], true>
+      GApiResponse<ClientListItem, true>
     >();
   },
 
   getExpiredClients: (params?: GetClientsParams) => {
     const searchParams = createSearchParams(params);
     return API.get("clients/expired", { searchParams }).json<
-      GApiResponse<ClientListItem[], true>
+      GApiResponse<ClientListItem, true>
     >();
   },
 
   getExpiringClients: (params?: GetClientsParams & { days?: number }) => {
     const searchParams = createSearchParams(params);
     return API.get("clients/expiring", { searchParams }).json<
-      GApiResponse<ClientListItem[], true>
+      GApiResponse<ClientListItem, true>
     >();
   },
 
@@ -68,7 +68,7 @@ export const ClientsAPI = {
   getClientMopProfiles: (params?: GetClientsParams) => {
     const searchParams = createSearchParams(params);
     return API.get("clients/all-mops", { searchParams }).json<
-      GApiResponse<ClientMop[], true>
+      GApiResponse<ClientMop, true>
     >();
   },
 

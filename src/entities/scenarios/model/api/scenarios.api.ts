@@ -31,7 +31,7 @@ export const ScenariosAPI = {
   getScenarios: (params?: GetScenariosParams) => {
     const searchParams = createSearchParams(params);
     return API.get("scenarios", { searchParams }).json<
-      GApiResponse<ScenarioListItem[], true>
+      GApiResponse<ScenarioListItem, true>
     >();
   },
 
