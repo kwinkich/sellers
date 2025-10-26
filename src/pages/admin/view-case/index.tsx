@@ -3,60 +3,60 @@ import { HeadText } from "@/shared";
 import { useParams, useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useEffect } from "react";
-import WebApp from '@twa-dev/sdk';
+import WebApp from "@twa-dev/sdk";
 
 export const AdminViewCasePage = () => {
-	const { caseId } = useParams<{ caseId: string }>();
-	const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-	// Telegram back button handler
-	useEffect(() => {
-		const onTelegramBack = () => {
-			navigate("/admin/cases");
-		};
+  // Telegram back button handler
+  useEffect(() => {
+    const onTelegramBack = () => {
+      navigate("/admin/content/cases");
+    };
 
-		if (WebApp?.BackButton) {
-			WebApp.BackButton.onClick(onTelegramBack);
-			WebApp.BackButton.show(); // Ensure back button is visible
-			
-			return () => {
-				try {
-					WebApp.BackButton.offClick(onTelegramBack);
-				} catch {}
-			};
-		}
-	}, [navigate]);
+    if (WebApp?.BackButton) {
+      WebApp.BackButton.onClick(onTelegramBack);
+      WebApp.BackButton.show(); // Ensure back button is visible
 
-	const handleClose = () => {
-		navigate("/admin/cases");
-	};
+      return () => {
+        try {
+          WebApp.BackButton.offClick(onTelegramBack);
+        } catch {}
+      };
+    }
+  }, [navigate]);
 
-	return (
-		<div className="w-dvw h-dvh bg-white flex flex-col">
-			<div className="flex-1 overflow-y-auto">
-				<div className="flex flex-col gap-6 px-2 pt-4 pb-24 min-h-full">
-					{/* Header with close button */}
-					<div className="flex items-center justify-between">
-						<HeadText
-							head="Просмотр кейса"
-							label="Просмотрите данные кейса"
-							variant="black-gray"
-						/>
-						<button
-							onClick={handleClose}
-							className="
+  const handleClose = () => {
+    navigate("/admin/content/cases");
+  };
+
+  return (
+    <div className="w-dvw h-dvh bg-white flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-6 px-2 pt-4 pb-24 min-h-full">
+          {/* Header with close button */}
+          <div className="flex items-center justify-between">
+            <HeadText
+              head="Просмотр кейса"
+              label="Просмотрите данные кейса"
+              variant="black-gray"
+            />
+            <button
+              onClick={handleClose}
+              className="
 								p-2 rounded-full hover:bg-gray-100 transition-colors
 								flex items-center justify-center
 							"
-							title="Закрыть"
-						>
-							<X className="h-5 w-5 text-gray-600" />
-						</button>
-					</div>
+              title="Закрыть"
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
 
-					<ViewCaseForm caseId={caseId ? parseInt(caseId) : undefined} />
-				</div>
-			</div>
-		</div>
-	);
+          <ViewCaseForm caseId={id ? parseInt(id) : undefined} />
+        </div>
+      </div>
+    </div>
+  );
 };

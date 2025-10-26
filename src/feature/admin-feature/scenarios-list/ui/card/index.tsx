@@ -57,10 +57,18 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
 
       {/* Skills section */}
       {data.skills && data.skills.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {data.skills.map((skill) => (
-            <Badge key={skill.id} label={skill.name} variant="gray" size="md" />
-          ))}
+        <div className="flex flex-col gap-2">
+          <p className="text-sm text-white/80 font-medium">Навыки:</p>
+          <div className="flex flex-wrap gap-2">
+            {data.skills.map((skill) => (
+              <Badge
+                key={skill.id}
+                label={skill.name}
+                variant="gray"
+                size="md"
+              />
+            ))}
+          </div>
         </div>
       )}
 
@@ -72,7 +80,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
           text="main"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/content/scenarios/edit/${data.id}`)}
+          onClick={() => navigate(`/admin/content/scenarios/${data.id}/edit`)}
         >
           Редактировать <ArrowIcon />
         </Button>
@@ -80,7 +88,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
           variant="second"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/content/scenarios/view/${data.id}`)}
+          onClick={() => navigate(`/admin/content/scenarios/${data.id}/view`)}
         >
           Просмотр
         </Button>

@@ -9,14 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import { scenariosQueryOptions } from "@/entities";
 
 export const AdminEditScenarioPage = () => {
-  const { scenarioId } = useParams<{ scenarioId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [scenarioTitle, setScenarioTitle] = useState("");
 
   // Fetch scenario data
   const { data: scenarioData } = useQuery({
-    ...scenariosQueryOptions.byId(scenarioId ? parseInt(scenarioId) : 0, true), // includeForms = true
-    enabled: !!scenarioId,
+    ...scenariosQueryOptions.byId(id ? parseInt(id) : 0, true), // includeForms = true
+    enabled: !!id,
   });
 
   // Initialize title when data loads
@@ -80,7 +80,7 @@ export const AdminEditScenarioPage = () => {
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-2 pb-24 min-h-full">
           <EditScenarioForm
-            scenarioId={scenarioId ? parseInt(scenarioId) : undefined}
+            scenarioId={id ? parseInt(id) : undefined}
             scenarioTitle={scenarioTitle}
             onTitleChange={setScenarioTitle}
           />

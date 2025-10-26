@@ -62,7 +62,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
       toast.success("Кейс успешно обновлен");
 
       // Navigate back to cases list
-      navigate("/admin/cases");
+      navigate("/admin/content/cases");
     },
     onError: (error: any) => {
       console.error("Ошибка при обновлении кейса:", error);
@@ -178,7 +178,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
     if (hasChanges) {
       setShowCloseDialog(true);
     } else {
-      navigate("/admin/cases");
+      navigate("/admin/content/cases");
     }
   };
 

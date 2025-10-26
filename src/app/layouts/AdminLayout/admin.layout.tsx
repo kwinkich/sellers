@@ -7,7 +7,7 @@ export const AdminLayout = () => {
   // Define routes that should have dark backgrounds (list/management pages)
   const darkBackgroundRoutes = [
     "/admin/clients",
-    "/admin/cases",
+    "/admin/content/cases",
     "/admin/content/scenarios",
     "/admin/content/courses",
     "/admin/admins",

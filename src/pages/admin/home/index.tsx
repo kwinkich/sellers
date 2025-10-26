@@ -142,7 +142,7 @@ export const AdminHomePage = () => {
                   className="justify-between w-full"
                   text="main"
                   size="link"
-                  onClick={() => navigate("/admin/cases")}
+                  onClick={() => navigate("/admin/content/cases")}
                 >
                   Открыть список <LinkIcon />
                 </Button>
@@ -151,7 +151,7 @@ export const AdminHomePage = () => {
                   variant="main-opacity"
                   text="main"
                   size="2s"
-                  onClick={() => navigate("/admin/cases/create")}
+                  onClick={() => navigate("/admin/content/cases/create")}
                 >
                   Добавить кейс
                 </Button>
