@@ -30,7 +30,7 @@ const PracticeReplayPage = () => {
   const practice = data?.data;
 
   return (
-    <div className="bg-second-bg min-h-dvh">
+    <div className="bg-second-bg min-h-[calc(100vh-4rem)]">
       <div className="px-3 py-3">
         <h1 className="text-white text-xl font-semibold">Повтор практики</h1>
       </div>
@@ -39,21 +39,31 @@ const PracticeReplayPage = () => {
         {isLoading ? (
           <div className="text-sm text-base-gray">Загрузка…</div>
         ) : error || !practice ? (
-          <div className="text-sm text-destructive">Не удалось загрузить практику</div>
+          <div className="text-sm text-destructive">
+            Не удалось загрузить практику
+          </div>
         ) : (
           <div className="space-y-3">
             <div className="bg-base-bg rounded-2xl p-4">
               <div className="text-xs text-base-gray">Название</div>
               <div className="text-white font-medium">{practice.title}</div>
               <div className="mt-3 text-xs text-base-gray">Дата практики</div>
-              <div className="text-white font-medium">{formatDate(practice.startAt)}</div>
+              <div className="text-white font-medium">
+                {formatDate(practice.startAt)}
+              </div>
             </div>
 
             <div className="bg-base-bg rounded-2xl p-2">
               {practice.recordingUrl ? (
-                <video src={practice.recordingUrl} controls className="w-full rounded-xl" />
+                <video
+                  src={practice.recordingUrl}
+                  controls
+                  className="w-full rounded-xl"
+                />
               ) : (
-                <div className="p-6 text-center text-sm text-base-gray">Запись недоступна</div>
+                <div className="p-6 text-center text-sm text-base-gray">
+                  Запись недоступна
+                </div>
               )}
             </div>
           </div>
@@ -64,5 +74,3 @@ const PracticeReplayPage = () => {
 };
 
 export default PracticeReplayPage;
-
-

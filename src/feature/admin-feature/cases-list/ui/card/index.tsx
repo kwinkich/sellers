@@ -53,6 +53,10 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
           variant="gray-opacity"
           label={`Создан: ${formatDate(data.createdAt)}`}
         />
+        <Badge
+          variant="gray-opacity"
+          label={`Обновлен: ${formatDate(data.updatedAt)}`}
+        />
       </div>
 
       <Separator className="bg-[#FFFFFF1A]" />

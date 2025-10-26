@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import { HeadText } from "@/shared/ui/head-text";
 import {
   PracticeList,
+  PracticeMineList,
+  PracticePastList,
   PracticeJoinDrawer,
   ModeratorTermsDrawer,
   PracticeSuccessDrawer,
   CaseInfoDrawer,
-  PracticePastCard,
-  PracticeMineCard,
 } from "@/feature/practice-feature";
 import { useNavigate, useLocation } from "react-router-dom";
-import { practicesQueryOptions } from "@/entities/practices";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/shared";
 
@@ -21,35 +19,113 @@ export const PracticeHomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- читаем начальные параметры из URL
+  // Read initial parameters from URL
   const params = new URLSearchParams(location.search);
   const urlTab = (params.get("tab") as TabKey | null) ?? null;
   const scrollTo = params.get("scrollTo");
 
   const [tab, setTab] = useState<TabKey>(() => {
-    // если в URL явно tab=mine — приоритетно
     if (urlTab === "mine" || urlTab === "all" || urlTab === "past")
       return urlTab;
-    // иначе дефолт как раньше
     return "all";
   });
-  // Pagination state per tab
-  const [pageAll, setPageAll] = useState<number>(1);
-  const [pageMine, setPageMine] = useState<number>(1);
-  const [pagePast, setPagePast] = useState<number>(1);
-  const LIMIT = 20;
+
   const { role } = useUserRole();
   const roleReady = Boolean(role);
 
-  // Функция для синхронизации табов с URL
+  // Function to sync tabs with URL
   const setTabAndUrl = (next: TabKey) => {
     setTab(next);
     const u = new URL(window.location.href);
     u.searchParams.set("tab", next);
-    // scrollTo одноразовый — чистим если был
+    // scrollTo is one-time, so clear it when switching tabs
     u.searchParams.delete("scrollTo");
     navigate(u.pathname + u.search, { replace: true });
   };
+
+  // Helper function to find practice card element
+  const findCardEl = (practiceId: number) =>
+    document.getElementById(`practice-card-${practiceId}`);
+
+  // Handle scroll-to-practice functionality
+  useEffect(() => {
+    if (!scrollTo || !roleReady) return;
+
+    const m = scrollTo.match(/^practice_(\d+)$/);
+    if (!m) return;
+
+    const targetId = Number(m[1]);
+    if (!Number.isFinite(targetId)) return;
+
+    // Determine which tab should contain the practice
+    const targetTab = role === "CLIENT" ? "all" : "mine";
+
+    // Switch to the correct tab if needed
+    if (tab !== targetTab) {
+      setTabAndUrl(targetTab);
+      return; // Let the next effect handle the scroll after tab switch
+    }
+
+    // Attempt to scroll to the practice card
+    const attemptScroll = () => {
+      const el = findCardEl(targetId);
+      if (el) {
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Clear scrollTo from URL after successful scroll
+          const clean = new URL(window.location.href);
+          clean.searchParams.delete("scrollTo");
+          navigate(clean.pathname + clean.search, { replace: true });
+        });
+        return true;
+      }
+      return false;
+    };
+
+    // Try to scroll immediately
+    if (attemptScroll()) return;
+
+    // If not found, wait a bit for the list to load and try again
+    const timeoutId = setTimeout(() => {
+      attemptScroll();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [scrollTo, tab, role, roleReady, navigate]);
+
+  // Handle scroll after tab switch
+  useEffect(() => {
+    if (!scrollTo || !roleReady) return;
+
+    const m = scrollTo.match(/^practice_(\d+)$/);
+    if (!m) return;
+
+    const targetId = Number(m[1]);
+    if (!Number.isFinite(targetId)) return;
+
+    const targetTab = role === "CLIENT" ? "all" : "mine";
+
+    // Only attempt scroll if we're on the correct tab
+    if (tab !== targetTab) return;
+
+    const attemptScroll = () => {
+      const el = findCardEl(targetId);
+      if (el) {
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          const clean = new URL(window.location.href);
+          clean.searchParams.delete("scrollTo");
+          navigate(clean.pathname + clean.search, { replace: true });
+        });
+        return true;
+      }
+      return false;
+    };
+
+    // Try after a short delay to allow the list to render
+    const timeoutId = setTimeout(attemptScroll, 300);
+    return () => clearTimeout(timeoutId);
+  }, [tab, scrollTo, role, roleReady, navigate]);
 
   const tabs: Array<{ key: TabKey; label: string }> =
     roleReady && role === "CLIENT"
@@ -63,287 +139,16 @@ export const PracticeHomePage = () => {
           { key: "past", label: "Прошедшие" },
         ];
 
-  // Accumulated items per tab for infinite scroll
-  const [allItems, setAllItems] = useState<any[]>([]);
-  const [mineItems, setMineItems] = useState<any[]>([]);
-  const [pastItems, setPastItems] = useState<any[]>([]);
-
-  // Track last appended page to avoid duplicate merges
-  const [lastAppendedAllPage, setLastAppendedAllPage] = useState<number>(0);
-  const [lastAppendedMinePage, setLastAppendedMinePage] = useState<number>(0);
-  const [lastAppendedPastPage, setLastAppendedPastPage] = useState<number>(0);
-
-  // Sentinels to trigger loading next pages
-  const allSentinelRef = useRef<HTMLDivElement | null>(null);
-  const mineSentinelRef = useRef<HTMLDivElement | null>(null);
-  const pastSentinelRef = useRef<HTMLDivElement | null>(null);
-
-  const cardsQ = useQuery({
-    ...practicesQueryOptions.cards({ page: pageAll, limit: LIMIT }),
-  });
-  const mineQ = useQuery({
-    ...practicesQueryOptions.mine({ page: pageMine, limit: LIMIT }),
-    enabled: roleReady && role !== "CLIENT",
-  });
-  const pastQ = useQuery({
-    ...practicesQueryOptions.past({ page: pagePast, limit: LIMIT }),
-  });
-
-  const cards = cardsQ.data?.data ?? [];
-  const mine = mineQ.data?.data ?? [];
-  const past = pastQ.data?.data ?? [];
-
-  const cardsPg = (cardsQ.data as any)?.meta?.pagination;
-  const minePg = (mineQ.data as any)?.meta?.pagination;
-  const pastPg = (pastQ.data as any)?.meta?.pagination;
-
-  // Accumulate lists for infinite scroll (All)
-  useEffect(() => {
-    if (!cardsPg) return;
-    if (cardsPg.currentPage === 1) {
-      setAllItems(cards);
-      setLastAppendedAllPage(1);
-      return;
-    }
-    if (cardsPg.currentPage > lastAppendedAllPage) {
-      setAllItems((prev) => [...prev, ...cards]);
-      setLastAppendedAllPage(cardsPg.currentPage);
-    }
-  }, [cards, cardsPg?.currentPage]);
-
-  // Accumulate lists for infinite scroll (Mine)
-  useEffect(() => {
-    if (!minePg) return;
-    if (minePg.currentPage === 1) {
-      setMineItems(mine);
-      setLastAppendedMinePage(1);
-      return;
-    }
-    if (minePg.currentPage > lastAppendedMinePage) {
-      setMineItems((prev) => [...prev, ...mine]);
-      setLastAppendedMinePage(minePg.currentPage);
-    }
-  }, [mine, minePg?.currentPage]);
-
-  // Accumulate lists for infinite scroll (Past)
-  useEffect(() => {
-    if (!pastPg) return;
-    if (pastPg.currentPage === 1) {
-      setPastItems(past);
-      setLastAppendedPastPage(1);
-      return;
-    }
-    if (pastPg.currentPage > lastAppendedPastPage) {
-      setPastItems((prev) => [...prev, ...past]);
-      setLastAppendedPastPage(pastPg.currentPage);
-    }
-  }, [past, pastPg?.currentPage]);
-
-  // Observe sentinel for All tab
-  useEffect(() => {
-    if (tab !== "all") return;
-    const target = allSentinelRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry?.isIntersecting) return;
-      if (cardsQ.isLoading) return;
-      if (cardsPg && cardsPg.currentPage < cardsPg.totalPages) {
-        setPageAll((p) => p + 1);
-      }
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [tab, cardsQ.isLoading, cardsPg?.currentPage, cardsPg?.totalPages]);
-
-  // Observe sentinel for Mine tab
-  useEffect(() => {
-    if (role === "CLIENT") return;
-    if (tab !== "mine") return;
-    const target = mineSentinelRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry?.isIntersecting) return;
-      if (mineQ.isLoading) return;
-      if (minePg && minePg.currentPage < minePg.totalPages) {
-        setPageMine((p) => p + 1);
-      }
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [tab, role, mineQ.isLoading, minePg?.currentPage, minePg?.totalPages]);
-
-  // Observe sentinel for Past tab
-  useEffect(() => {
-    if (tab !== "past") return;
-    const target = pastSentinelRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry?.isIntersecting) return;
-      if (pastQ.isLoading) return;
-      if (pastPg && pastPg.currentPage < pastPg.totalPages) {
-        setPagePast((p) => p + 1);
-      }
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [tab, pastQ.isLoading, pastPg?.currentPage, pastPg?.totalPages]);
-
-  // Помощник: есть ли карточка в DOM?
-  const findCardEl = (practiceId: number) =>
-    document.getElementById(`practice-card-${practiceId}`);
-
-  // Если нужно скроллить к practice_{id}, заставим включить "mine"
-  useEffect(() => {
-    if (!scrollTo) return;
-    const m = scrollTo.match(/^practice_(\d+)$/);
-    if (!m) return;
-
-    if (role === "CLIENT") {
-      // форсим на "all", скроллим там (карточке тоже дать id в PracticeList)
-      if (tab !== "all") setTab("all");
-      return;
-    }
-
-    if (tab !== "mine") setTab("mine");
-  }, [scrollTo, tab, role]);
-
-  // Основной эффект скролла: догружаем страницы, пока не найдём карточку или страницы не закончатся
-  useEffect(() => {
-    if (!scrollTo || tab !== "mine") return;
-    const m = scrollTo.match(/^practice_(\d+)$/);
-    if (!m) return;
-    const targetId = Number(m[1]);
-    if (!Number.isFinite(targetId)) return;
-
-    let cancelled = false;
-
-    const attemptScroll = () => {
-      const el = findCardEl(targetId);
-      if (el) {
-        // небольшой rAF, чтобы список "устаканился"
-        requestAnimationFrame(() => {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-          // очищаем scrollTo из URL (одноразовый скролл)
-          const clean = new URL(window.location.href);
-          clean.searchParams.delete("scrollTo");
-          navigate(clean.pathname + clean.search, { replace: true });
-        });
-        return true;
-      }
-      return false;
-    };
-
-    // 1) Пробуем сразу
-    if (attemptScroll()) return;
-
-    // 2) Если ещё не нашли — будем подгружать страницы до тех пор, пока:
-    //    - карточка не появится
-    //    - или не закончатся страницы
-    const loadMoreIfNeeded = async () => {
-      if (cancelled) return;
-
-      // если уже идёт загрузка, подождём
-      if (mineQ.isLoading) {
-        setTimeout(loadMoreIfNeeded, 100);
-        return;
-      }
-
-      // попробуем снова (вдруг догрузилось)
-      if (attemptScroll()) return;
-
-      // если есть ещё страницы — попросим следующую
-      if (minePg && minePg.currentPage < minePg.totalPages) {
-        setPageMine((p) => p + 1);
-        // после инкремента дадим времени подзагрузиться и снова проверим
-        setTimeout(loadMoreIfNeeded, 200);
-        return;
-      }
-
-      // страницы кончились — ничего не делаем
-    };
-
-    loadMoreIfNeeded();
-
-    return () => {
-      cancelled = true;
-    };
-    // важно: следим за мин. зависимостями пагинации/загрузки
-  }, [
-    scrollTo,
-    tab,
-    mineQ.isLoading,
-    minePg?.currentPage,
-    minePg?.totalPages,
-    navigate,
-  ]);
-
-  // Аналогичная логика для вкладки "all" (для CLIENT роли)
-  useEffect(() => {
-    if (!scrollTo || tab !== "all" || role !== "CLIENT") return;
-    const m = scrollTo.match(/^practice_(\d+)$/);
-    if (!m) return;
-    const targetId = Number(m[1]);
-    if (!Number.isFinite(targetId)) return;
-
-    let cancelled = false;
-
-    const attemptScroll = () => {
-      const el = findCardEl(targetId);
-      if (el) {
-        requestAnimationFrame(() => {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-          const clean = new URL(window.location.href);
-          clean.searchParams.delete("scrollTo");
-          navigate(clean.pathname + clean.search, { replace: true });
-        });
-        return true;
-      }
-      return false;
-    };
-
-    if (attemptScroll()) return;
-
-    const loadMoreIfNeeded = async () => {
-      if (cancelled) return;
-      if (cardsQ.isLoading) {
-        setTimeout(loadMoreIfNeeded, 100);
-        return;
-      }
-      if (attemptScroll()) return;
-      if (cardsPg && cardsPg.currentPage < cardsPg.totalPages) {
-        setPageAll((p) => p + 1);
-        setTimeout(loadMoreIfNeeded, 200);
-        return;
-      }
-    };
-
-    loadMoreIfNeeded();
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    scrollTo,
-    tab,
-    role,
-    cardsQ.isLoading,
-    cardsPg?.currentPage,
-    cardsPg?.totalPages,
-    navigate,
-  ]);
-
   if (!roleReady) {
     return (
-      <div className="bg-second-bg min-h-dvh flex items-center justify-center">
+      <div className="bg-second-bg min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center text-sm text-base-gray">Загрузка...</div>
       </div>
     );
   }
 
   return (
-    <div className="bg-second-bg min-h-dvh">
+    <div className="bg-second-bg min-h-[calc(100vh-4rem)] w-full">
       <div className="flex flex-col gap-3 px-2 pb-5">
         <div className="gap-0.5 pl-2 pt-2">
           <HeadText
@@ -384,91 +189,11 @@ export const PracticeHomePage = () => {
       </div>
 
       <div className="mt-3">
-        {tab === "all" && (
-          <>
-            <PracticeList
-              items={allItems.length ? allItems : cards}
-              isLoading={cardsQ.isLoading}
-              isError={!!cardsQ.error}
-            />
-            {cardsPg?.currentPage &&
-              cardsPg?.totalPages &&
-              cardsPg.currentPage < cardsPg.totalPages && (
-                <div className="px-2 py-3">
-                  {cardsQ.isLoading ? (
-                    <div className="text-center text-xs text-base-gray">
-                      Загрузка…
-                    </div>
-                  ) : null}
-                  <div ref={allSentinelRef} className="h-1" />
-                </div>
-              )}
-          </>
+        {tab === "all" && <PracticeList />}
+        {tab === "mine" && roleReady && role !== "CLIENT" && (
+          <PracticeMineList />
         )}
-        {tab === "mine" &&
-          (mineQ.isLoading ? (
-            <div className="text-center text-sm text-base-gray">Загрузка…</div>
-          ) : mineQ.error ? (
-            <div className="text-center text-sm text-base-gray">
-              Ошибка загрузки
-            </div>
-          ) : !mine.length ? (
-            <div className="text-center text-sm text-base-gray">
-              Ничего не найдено
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col gap-3 px-2 pb-3">
-                {(mineItems.length ? mineItems : mine).map((p) => (
-                  <PracticeMineCard key={p.id} data={p} />
-                ))}
-              </div>
-              {minePg?.currentPage &&
-                minePg?.totalPages &&
-                minePg.currentPage < minePg.totalPages && (
-                  <div className="px-2 pb-5">
-                    {mineQ.isLoading ? (
-                      <div className="text-center text-xs text-base-gray">
-                        Загрузка…
-                      </div>
-                    ) : null}
-                    <div ref={mineSentinelRef} className="h-1" />
-                  </div>
-                )}
-            </>
-          ))}
-        {tab === "past" &&
-          (pastQ.isLoading ? (
-            <div className="text-center text-sm text-base-gray">Загрузка…</div>
-          ) : pastQ.error ? (
-            <div className="text-center text-sm text-base-gray">
-              Ошибка загрузки
-            </div>
-          ) : !past.length ? (
-            <div className="text-center text-sm text-base-gray">
-              Ничего не найдено
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col gap-3 px-2 pb-3">
-                {(pastItems.length ? pastItems : past).map((p) => (
-                  <PracticePastCard key={p.id} data={p} />
-                ))}
-              </div>
-              {pastPg?.currentPage &&
-                pastPg?.totalPages &&
-                pastPg.currentPage < pastPg.totalPages && (
-                  <div className="px-2 pb-5">
-                    {pastQ.isLoading ? (
-                      <div className="text-center text-xs text-base-gray">
-                        Загрузка…
-                      </div>
-                    ) : null}
-                    <div ref={pastSentinelRef} className="h-1" />
-                  </div>
-                )}
-            </>
-          ))}
+        {tab === "past" && <PracticePastList />}
       </div>
 
       <PracticeJoinDrawer />
