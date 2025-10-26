@@ -174,7 +174,7 @@ export const AdminHomePage = () => {
                   className="justify-between w-full"
                   text="main"
                   size="link"
-                  onClick={() => navigate("/admin/scenarios")}
+                  onClick={() => navigate("/admin/content/scenarios")}
                 >
                   Открыть список <LinkIcon />
                 </Button>
@@ -183,7 +183,7 @@ export const AdminHomePage = () => {
                   variant="main-opacity"
                   text="main"
                   size="2s"
-                  onClick={() => navigate("/admin/scenarios/create")}
+                  onClick={() => navigate("/admin/content/scenarios/create")}
                 >
                   Добавить сценарий
                 </Button>
@@ -192,7 +192,7 @@ export const AdminHomePage = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-2">
-            <Link to="/admin/course/create">
+            <Link to="/admin/content/courses/create">
               <Box
                 variant={"dark"}
                 rounded="3xl"
@@ -206,7 +206,7 @@ export const AdminHomePage = () => {
               </Box>
             </Link>
 
-            <Link to="/admin/list">
+            <Link to="/admin/admins">
               <Box
                 variant={"dark"}
                 rounded="3xl"

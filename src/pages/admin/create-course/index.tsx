@@ -80,7 +80,7 @@ export const CreateCoursePage = () => {
   const createCourseMutation = useMutation({
     ...coursesMutationOptions.create(),
     onSuccess: (result) => {
-      navigate(`/admin/course/${result.data.id}/edit`);
+      navigate(`/admin/content/courses/${result.data.id}/edit`);
     },
     onError: (error) => {
       console.error("Error creating course:", error);

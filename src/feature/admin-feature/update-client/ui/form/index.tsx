@@ -34,7 +34,7 @@ interface UpdateClientFormProps {
 
 export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
   const queryClient = useQueryClient();
-  const { clientId } = useParams<{ clientId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const { mutate: updateClient, isPending: isUpdating } = useMutation({
@@ -42,7 +42,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({
-        queryKey: ["clients", "detail", clientId],
+        queryKey: ["clients", "detail", id],
       });
 
       toast.success("Данные клиента обновлены");
@@ -60,10 +60,10 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({
-        queryKey: ["clients", "detail", clientId],
+        queryKey: ["clients", "detail", id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["clients", "licenses", parseInt(clientId!)],
+        queryKey: ["clients", "licenses", parseInt(id!)],
       });
 
       toast.success("Лицензии добавлены");
@@ -80,10 +80,10 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["clients"] });
         queryClient.invalidateQueries({
-          queryKey: ["clients", "detail", clientId],
+          queryKey: ["clients", "detail", id],
         });
         queryClient.invalidateQueries({
-          queryKey: ["clients", "licenses", parseInt(clientId!)],
+          queryKey: ["clients", "licenses", parseInt(id!)],
         });
 
         toast.success("Лицензии удалены");
@@ -97,7 +97,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 
   // Get licenses data for removal modal
   const { data: licensesData } = useQuery(
-    clientsQueryOptions.licenses(parseInt(clientId!))
+    clientsQueryOptions.licenses(parseInt(id!))
   );
 
   // Normalize level coming from API (could be 3/4 or "LEVEL_3"/"LEVEL_4")
@@ -124,7 +124,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
   });
 
   const onSubmit = (formData: UpdateClientFormData) => {
-    const targetId = clientId ? parseInt(clientId) : (clientData as any)?.id;
+    const targetId = id ? parseInt(id) : (clientData as any)?.id;
     if (!targetId || Number.isNaN(targetId)) return;
 
     const requestData: UpdateClientRequest = {
@@ -140,7 +140,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
   };
 
   const handleAddLicenses = (licenseCount: number, licenseExpiresAt: Date) => {
-    if (!clientId) return;
+    if (!id) return;
 
     const previousCount = form.getValues("licenseCount");
     const nextCount = previousCount + licenseCount;
@@ -150,7 +150,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 
     addLicenses(
       {
-        id: parseInt(clientId),
+        id: parseInt(id),
         data: {
           licenseCount,
           licenseExpiresAt: licenseExpiresAt.toISOString(),
@@ -170,7 +170,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
     notActive: number;
     expired: number;
   }) => {
-    if (!clientId || !licensesData?.data) return;
+    if (!id || !licensesData?.data) return;
 
     const licenses = licensesData.data;
     const licensesToRemove: number[] = [];
@@ -211,7 +211,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
 
     removeLicenses(
       {
-        id: parseInt(clientId),
+        id: parseInt(id),
         licenseIds: licensesToRemove,
       },
       {

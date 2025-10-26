@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ViewBlocksContainer } from "./ViewBlocksContainer";
 import { useState, useEffect } from "react";
-import WebApp from '@twa-dev/sdk';
+import WebApp from "@twa-dev/sdk";
 
 interface ViewScenarioFormProps {
   scenarioId?: number;
@@ -15,10 +15,16 @@ interface ViewScenarioFormProps {
 
 export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">("SELLER");
+  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">(
+    "SELLER"
+  );
 
   // Fetch scenario data
-  const { data: scenarioData, isLoading, isError } = useQuery({
+  const {
+    data: scenarioData,
+    isLoading,
+    isError,
+  } = useQuery({
     ...scenariosQueryOptions.byId(scenarioId!, true), // includeForms = true
     enabled: !!scenarioId,
   });
@@ -29,14 +35,14 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
       if (activeTab !== "SELLER") {
         handlePrevTab();
       } else {
-        navigate("/admin/scenarios");
+        navigate("/admin/content/scenarios");
       }
     };
 
     if (WebApp?.BackButton) {
       WebApp.BackButton.onClick(onTelegramBack);
       WebApp.BackButton.show();
-      
+
       return () => {
         try {
           WebApp.BackButton.offClick(onTelegramBack);
@@ -83,15 +89,18 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   }
 
   const scenario = scenarioData.data;
-  const sellerForm = scenario.forms.find(f => f.role === "SELLER");
-  const buyerForm = scenario.forms.find(f => f.role === "BUYER");
-  const moderatorForm = scenario.forms.find(f => f.role === "MODERATOR");
+  const sellerForm = scenario.forms.find((f) => f.role === "SELLER");
+  const buyerForm = scenario.forms.find((f) => f.role === "BUYER");
+  const moderatorForm = scenario.forms.find((f) => f.role === "MODERATOR");
 
   return (
     <div className="space-y-4">
       {/* Tabs for different roles */}
       <Tabs value={activeTab}>
-        <TabsList variant="second" className="grid grid-cols-3 w-full pointer-events-none">
+        <TabsList
+          variant="second"
+          className="grid grid-cols-3 w-full pointer-events-none"
+        >
           <TabsTrigger variant="second" value="SELLER">
             {getRoleLabel("SELLER")}
           </TabsTrigger>
@@ -118,10 +127,7 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <ViewBlocksContainer
-            blocks={buyerForm?.blocks || []}
-            role="BUYER"
-          />
+          <ViewBlocksContainer blocks={buyerForm?.blocks || []} role="BUYER" />
         </TabsContent>
         <TabsContent
           value="MODERATOR"
@@ -138,43 +144,37 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
       {/* Navigation buttons based on active tab */}
       <div className="flex gap-2 mt-6">
         {activeTab === "SELLER" && (
-          <Button 
-            onClick={handleNextTab} 
-            className="flex-1 h-12"
-          >
+          <Button onClick={handleNextTab} className="flex-1 h-12">
             Далее
           </Button>
         )}
-        
+
         {activeTab === "BUYER" && (
           <>
-            <Button 
-              onClick={handlePrevTab} 
+            <Button
+              onClick={handlePrevTab}
               variant="second"
               className="flex-1 h-12"
             >
               Назад
             </Button>
-            <Button 
-              onClick={handleNextTab} 
-              className="flex-1 h-12"
-            >
+            <Button onClick={handleNextTab} className="flex-1 h-12">
               Далее
             </Button>
           </>
         )}
-        
+
         {activeTab === "MODERATOR" && (
           <>
-            <Button 
-              onClick={handlePrevTab} 
+            <Button
+              onClick={handlePrevTab}
               variant="second"
               className="flex-1 h-12"
             >
               Назад
             </Button>
-            <Button 
-              onClick={handleExit} 
+            <Button
+              onClick={handleExit}
               variant="second"
               className="flex-1 h-12"
             >
@@ -183,7 +183,6 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
           </>
         )}
       </div>
-      
     </div>
   );
 }

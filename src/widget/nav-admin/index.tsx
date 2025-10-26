@@ -11,13 +11,7 @@ export const AdminNavBar = () => {
   const location = useLocation();
 
   // Define which routes should show each tab as active
-  const isContentActive = [
-    "course",
-    "cases",
-    "lessons",
-    "modules",
-    "scenarios",
-  ].some((path) => location.pathname.includes(path));
+  const isContentActive = location.pathname.includes("/admin/content");
   const isClientsActive = location.pathname.includes("clients");
   const isPracticeActive = location.pathname.includes("practice");
 
@@ -42,7 +36,7 @@ export const AdminNavBar = () => {
 
       <NavItem
         data={{
-          route: "/admin/courses/list",
+          route: "/admin/content/courses",
           icon: <ContentIcon size={18} />,
           label: "Контент",
           isActive: isContentActive,

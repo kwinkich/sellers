@@ -14,7 +14,7 @@ import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenari
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
-import WebApp from '@twa-dev/sdk';
+import WebApp from "@twa-dev/sdk";
 import { scenariosQueryOptions } from "@/entities";
 
 // Extended block item with actual data
@@ -49,13 +49,20 @@ interface EditScenarioFormProps {
   onTitleChange?: (title: string) => void;
 }
 
-export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTitleChange }: EditScenarioFormProps) {
+export function EditScenarioForm({
+  scenarioId,
+  onFormChange,
+  scenarioTitle,
+  onTitleChange,
+}: EditScenarioFormProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [sellerBlocks, setSellerBlocks] = useState<ExtendedBlockItem[]>([]);
   const [buyerBlocks, setBuyerBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [moderatorBlocks, setModeratorBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [moderatorBlocks, setModeratorBlocks] = useState<ExtendedBlockItem[]>(
+    []
+  );
 
   // Form data state
   const [formData, setFormData] = useState<{
@@ -63,7 +70,9 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
   }>({ title: "" });
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">("SELLER");
+  const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">(
+    "SELLER"
+  );
 
   // Confirmation dialog states
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
@@ -73,7 +82,11 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
   const originalDataRef = useRef<any>(null);
 
   // Fetch scenario data
-  const { data: scenarioData, isLoading, isError } = useQuery({
+  const {
+    data: scenarioData,
+    isLoading,
+    isError,
+  } = useQuery({
     ...scenariosQueryOptions.byId(scenarioId!, true), // includeForms = true
     enabled: !!scenarioId,
   });
@@ -86,16 +99,19 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
   useEffect(() => {
     if (scenarioData?.data) {
       const scenario = scenarioData.data;
-      
+
       // Set form title
       setFormData({ title: scenario.title });
       onTitleChange?.(scenario.title);
-      
+
       // Convert API blocks to ExtendedBlockItem format
-      const convertApiBlocksToExtended = (blocks: any[], role: string): ExtendedBlockItem[] => {
-      return blocks.map((block) => {
-        const baseItem: ExtendedBlockItem = {
-          id: `${role}-${block.type}-${block.position}-${Date.now()}`,
+      const convertApiBlocksToExtended = (
+        blocks: any[],
+        role: string
+      ): ExtendedBlockItem[] => {
+        return blocks.map((block) => {
+          const baseItem: ExtendedBlockItem = {
+            id: `${role}-${block.type}-${block.position}-${Date.now()}`,
             type: block.type as BlockKind,
             textContent: "",
             questionContent: "",
@@ -112,25 +128,29 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
             baseItem.questionContent = block.title || "";
           } else if (block.type === "SCALE_SKILL_SINGLE") {
             baseItem.selectedSkillId = block.items?.[0]?.skillId;
-            baseItem.questions = block.items?.map((item: any, idx: number) => ({
-              id: `${role}-q-${idx}-${Date.now()}`,
-              text: item.title,
-              skillId: item.skillId,
-            })) || [];
-            baseItem.scaleOptions = block.scale?.options?.map((opt: any, ord: number) => ({
-              label: opt.label,
-              value: opt.value,
-              countsTowardsScore: opt.countsTowardsScore,
-              ord: ord,
-            })) || [];
+            baseItem.questions =
+              block.items?.map((item: any, idx: number) => ({
+                id: `${role}-q-${idx}-${Date.now()}`,
+                text: item.title,
+                skillId: item.skillId,
+              })) || [];
+            baseItem.scaleOptions =
+              block.scale?.options?.map((opt: any, ord: number) => ({
+                label: opt.label,
+                value: opt.value,
+                countsTowardsScore: opt.countsTowardsScore,
+                ord: ord,
+              })) || [];
           } else if (block.type === "SCALE_SKILL_MULTI") {
-            baseItem.selectedSkills = block.items?.map((item: any) => item.skillId) || [];
-            baseItem.scaleOptionsMulti = block.scale?.options?.map((opt: any, ord: number) => ({
-              label: opt.label,
-              value: opt.value,
-              countsTowardsScore: opt.countsTowardsScore,
-              ord: ord,
-            })) || [];
+            baseItem.selectedSkills =
+              block.items?.map((item: any) => item.skillId) || [];
+            baseItem.scaleOptionsMulti =
+              block.scale?.options?.map((opt: any, ord: number) => ({
+                label: opt.label,
+                value: opt.value,
+                countsTowardsScore: opt.countsTowardsScore,
+                ord: ord,
+              })) || [];
           }
 
           return baseItem;
@@ -138,20 +158,35 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
       };
 
       // Set blocks for each role
-      const sellerForm = scenario.forms.find(f => f.role === "SELLER");
-      const buyerForm = scenario.forms.find(f => f.role === "BUYER");
-      const moderatorForm = scenario.forms.find(f => f.role === "MODERATOR");
+      const sellerForm = scenario.forms.find((f) => f.role === "SELLER");
+      const buyerForm = scenario.forms.find((f) => f.role === "BUYER");
+      const moderatorForm = scenario.forms.find((f) => f.role === "MODERATOR");
 
-      setSellerBlocks(convertApiBlocksToExtended(sellerForm?.blocks || [], "SELLER"));
-      setBuyerBlocks(convertApiBlocksToExtended(buyerForm?.blocks || [], "BUYER"));
-      setModeratorBlocks(convertApiBlocksToExtended(moderatorForm?.blocks || [], "MODERATOR"));
+      setSellerBlocks(
+        convertApiBlocksToExtended(sellerForm?.blocks || [], "SELLER")
+      );
+      setBuyerBlocks(
+        convertApiBlocksToExtended(buyerForm?.blocks || [], "BUYER")
+      );
+      setModeratorBlocks(
+        convertApiBlocksToExtended(moderatorForm?.blocks || [], "MODERATOR")
+      );
 
       // Store original data for change detection
       originalDataRef.current = {
         title: scenario.title,
-        sellerBlocks: convertApiBlocksToExtended(sellerForm?.blocks || [], "SELLER"),
-        buyerBlocks: convertApiBlocksToExtended(buyerForm?.blocks || [], "BUYER"),
-        moderatorBlocks: convertApiBlocksToExtended(moderatorForm?.blocks || [], "MODERATOR"),
+        sellerBlocks: convertApiBlocksToExtended(
+          sellerForm?.blocks || [],
+          "SELLER"
+        ),
+        buyerBlocks: convertApiBlocksToExtended(
+          buyerForm?.blocks || [],
+          "BUYER"
+        ),
+        moderatorBlocks: convertApiBlocksToExtended(
+          moderatorForm?.blocks || [],
+          "MODERATOR"
+        ),
       };
     }
   }, [scenarioData, onTitleChange]);
@@ -172,8 +207,9 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
         buyerBlocks,
         moderatorBlocks,
       };
-      
-      const hasChangesValue = JSON.stringify(currentData) !== JSON.stringify(originalDataRef.current);
+
+      const hasChangesValue =
+        JSON.stringify(currentData) !== JSON.stringify(originalDataRef.current);
       setHasChanges(hasChangesValue);
       onFormChange?.(hasChangesValue);
     }
@@ -185,14 +221,14 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
       if (activeTab !== "SELLER") {
         handlePrevTab();
       } else {
-        navigate("/admin/scenarios");
+        navigate("/admin/content/scenarios");
       }
     };
 
     if (WebApp?.BackButton) {
       WebApp.BackButton.onClick(onTelegramBack);
       WebApp.BackButton.show();
-      
+
       return () => {
         try {
           WebApp.BackButton.offClick(onTelegramBack);
@@ -207,7 +243,7 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scenarios"] });
       toast.success("Сценарий успешно обновлен");
-      navigate("/admin/scenarios");
+      navigate("/admin/content/scenarios");
     },
     onError: (error) => {
       console.error("Ошибка при обновлении сценария:", error);
@@ -305,7 +341,6 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
     }
     return false;
   };
-
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
@@ -426,10 +461,12 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
 
   return (
     <div className="space-y-4">
-
       {/* Tabs for different roles */}
       <Tabs value={activeTab}>
-        <TabsList variant="second" className="grid grid-cols-3 w-full pointer-events-none">
+        <TabsList
+          variant="second"
+          className="grid grid-cols-3 w-full pointer-events-none"
+        >
           <TabsTrigger variant="second" value="SELLER">
             {getRoleLabel("SELLER")}
           </TabsTrigger>
@@ -495,7 +532,7 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
           <div className="flex gap-2">
             <Button
               onClick={handlePrevTab}
-              variant="second" 
+              variant="second"
               className="flex-1 h-12"
             >
               Назад
@@ -514,7 +551,7 @@ export function EditScenarioForm({ scenarioId, onFormChange, scenarioTitle, onTi
           <div className="flex gap-2">
             <Button
               onClick={handlePrevTab}
-              variant="second" 
+              variant="second"
               className="flex-1 h-12"
             >
               Назад

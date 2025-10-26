@@ -84,7 +84,7 @@ export const CourseEditPage = () => {
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
           <h2 className="text-lg font-semibold mb-2">Курс не найден</h2>
-          <Button onClick={() => navigate("/admin/courses")}>
+          <Button onClick={() => navigate("/admin/content/courses")}>
             Вернуться к списку курсов
           </Button>
         </div>
@@ -105,13 +105,17 @@ export const CourseEditPage = () => {
           <Button
             size="xs"
             className="text-base-main bg-transparent text-md"
-            onClick={() => navigate(`/admin/course/${courseId}/detail-edit`)}
+            onClick={() =>
+              navigate(`/admin/content/courses/${courseId}/detail-edit`)
+            }
           >
             изменить
           </Button>
         </div>
         <Button
-          onClick={() => navigate(`/admin/course/${courseId}/module/create`)}
+          onClick={() =>
+            navigate(`/admin/content/courses/${courseId}/modules/create`)
+          }
           className="w-full"
           size="xs"
           text="dark"
@@ -188,7 +192,11 @@ export const CourseEditPage = () => {
                   size="2s"
                   variant="second"
                   className="w-full"
-                  onClick={() => navigate(`/admin/module/${module.id}/edit`)}
+                  onClick={() =>
+                    navigate(
+                      `/admin/content/courses/${courseId}/modules/${module.id}/edit`
+                    )
+                  }
                 >
                   Редактировать
                 </Button>

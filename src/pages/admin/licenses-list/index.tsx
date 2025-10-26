@@ -6,10 +6,10 @@ import { Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export const AdminLicensesListPage = () => {
-  const { clientId } = useParams<{ clientId: string }>();
+  const { id } = useParams<{ id: string }>();
 
   const { data, isLoading, error } = useQuery(
-    clientsQueryOptions.byId(parseInt(clientId!))
+    clientsQueryOptions.byId(parseInt(id!))
   );
 
   if (isLoading) {
@@ -45,15 +45,13 @@ export const AdminLicensesListPage = () => {
   }
 
   const clientName =
-    data.data.displayName ||
-    data.data.telegramUsername ||
-    `Клиент #${clientId}`;
+    data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
   return (
     <div className="flex flex-col bg-second-bg min-h-full pb-24 gap-6 px-2 pt-4">
       <HeadText
         head="Лицензии клиента"
-        label={`Список всех лицензий клиента <strong>${clientName} (#${clientId})</strong>`}
+        label={`Список всех лицензий клиента <strong>${clientName} (#${id})</strong>`}
         labelSize="sm"
         className="px-2"
       />

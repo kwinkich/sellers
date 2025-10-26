@@ -39,7 +39,7 @@ export const ClientCard: FC<{ data: ClientListItem }> = ({ data }) => {
         <Badge
           variant="gray-opacity"
           label={`${data.licensesTotal} лицензий`}
-          onClick={() => navigate(`/admin/clients/licenses/${data.id}`)}
+          onClick={() => navigate(`/admin/clients/${data.id}/licenses`)}
         />
         <Badge
           label={formatDaysLeft(data.daysLeftNearest)}
@@ -63,7 +63,7 @@ export const ClientCard: FC<{ data: ClientListItem }> = ({ data }) => {
           variant="second"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/clients/update/${data.id}`)}
+          onClick={() => navigate(`/admin/clients/${data.id}/edit`)}
         >
           Редактировать
         </Button>

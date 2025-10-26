@@ -103,7 +103,7 @@ export const CourseDetailEditPage = () => {
   const updateCourseMutation = useMutation({
     ...coursesMutationOptions.update(),
     onSuccess: () => {
-      navigate(`/admin/course/${courseId}/edit`);
+      navigate(`/admin/content/courses/${courseId}/edit`);
     },
   });
 

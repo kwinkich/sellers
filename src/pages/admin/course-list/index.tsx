@@ -21,7 +21,7 @@ export const AdminCourseListPage = () => {
         rounded="full"
         size="xs"
         className="fixed bottom-[100px] text-sm right-2"
-        onClick={() => navigate("/admin/course/create")}
+        onClick={() => navigate("/admin/content/courses/create")}
       >
         <PlusIcon />
         Создать курс

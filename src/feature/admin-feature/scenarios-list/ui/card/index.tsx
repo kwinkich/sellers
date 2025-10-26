@@ -72,7 +72,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
           text="main"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/scenarios/edit/${data.id}`)}
+          onClick={() => navigate(`/admin/content/scenarios/edit/${data.id}`)}
         >
           Редактировать <ArrowIcon />
         </Button>
@@ -80,7 +80,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
           variant="second"
           className="flex-1 cursor-pointer"
           size="2s"
-          onClick={() => navigate(`/admin/scenarios/view/${data.id}`)}
+          onClick={() => navigate(`/admin/content/scenarios/view/${data.id}`)}
         >
           Просмотр
         </Button>
