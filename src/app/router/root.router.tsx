@@ -1,5 +1,6 @@
 import {
   AdminAddClientPage,
+  AdminCasesListPage,
   AdminClientsListPage,
   AdminCreateCasePage,
   AdminHomePage,
@@ -110,6 +111,10 @@ export const route = createBrowserRouter([
           {
             path: "clients",
             element: <AdminClientsListPage />,
+          },
+          {
+            path: "cases",
+            element: <AdminCasesListPage />,
           },
           {
             path: "courses/list",

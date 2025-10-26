@@ -1,5 +1,6 @@
 export * from "./add-client/index";
 export * from "./admins-control/index";
+export * from "./cases-list/index";
 export * from "./clients-list/index";
 export * from "./create-case/index";
 export * from "./create-course/index";

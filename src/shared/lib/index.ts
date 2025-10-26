@@ -5,6 +5,7 @@ export * from "./getPracticeTypeLabel";
 export * from "./jwt";
 export * from "./pTimeout";
 export * from "./roleTranslations";
+export * from "./sellerLevelTranslations";
 export * from "./startParam";
 export * from "./telegram";
 export * from "./telegramContact";
