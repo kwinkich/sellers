@@ -1,7 +1,11 @@
 import type { CaseListItem } from "@/entities";
-import { casesQueryOptions, CasesAPI } from "@/entities";
-import { ConfirmationDialog } from "@/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CasesAPI } from "@/entities";
+import {
+  ConfirmationDialog,
+  useInfiniteScroll,
+  InfiniteScrollList,
+} from "@/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CaseCard } from "./card";
 
@@ -21,7 +25,19 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
     caseTitle: "",
   });
 
-  const { data, isLoading, error } = useQuery(casesQueryOptions.list());
+  const {
+    items: cases,
+    isLoading,
+    isError,
+    error,
+    hasNextPage,
+    sentinelRef,
+    isFetchingNextPage,
+  } = useInfiniteScroll<CaseListItem>({
+    queryKey: ["cases", "list"],
+    queryFn: (page, limit) => CasesAPI.getCases({ page, limit }),
+    limit: 20,
+  });
 
   const deleteCaseMutation = useMutation({
     mutationFn: (id: number) => CasesAPI.deleteCase(id),
@@ -49,45 +65,33 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
     setDeleteDialog({ isOpen: false, caseId: null, caseTitle: "" });
   };
 
-  if (isLoading) {
-    return <div className="text-center py-8">Загрузка кейсов...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-destructive">
-        Ошибка: {error.message}
-      </div>
-    );
-  }
-
-  const cases: CaseListItem[] = data?.data ?? [];
-
   const filteredCases = cases.filter(
     (caseItem) =>
       caseItem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       caseItem.id.toString().includes(searchQuery)
   );
 
-  if (filteredCases.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        {searchQuery ? "Ничего не найдено" : "Нет кейсов"}
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="flex flex-col gap-2 p-2">
-        {filteredCases.map((caseItem) => (
+      <InfiniteScrollList
+        items={filteredCases}
+        renderItem={(caseItem) => (
           <CaseCard
             key={caseItem.id}
             data={caseItem}
             onDelete={(id) => handleDelete(id, caseItem.title)}
           />
-        ))}
-      </div>
+        )}
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        sentinelRef={sentinelRef}
+        emptyMessage={searchQuery ? "Ничего не найдено" : "Нет кейсов"}
+        loadingMessage="Загрузка кейсов..."
+        errorMessage="Ошибка загрузки кейсов"
+      />
 
       <ConfirmationDialog
         isOpen={deleteDialog.isOpen}

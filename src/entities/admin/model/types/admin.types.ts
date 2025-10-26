@@ -22,10 +22,8 @@ export interface CreateAdminRequest {
 }
 
 export interface GetAdminsParams {
+  page?: number;
   limit?: number;
-  cursor?: string;
-  dir?: "next" | "prev";
-  withCount?: boolean;
   by?: "telegramUsername" | "createdAt";
   order?: "asc" | "desc";
   telegramUsername?: string | string[];
