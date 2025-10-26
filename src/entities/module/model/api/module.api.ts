@@ -17,14 +17,14 @@ export const ModulesAPI = {
   getModules: (params?: GetModulesParams) => {
     const searchParams = createSearchParams(params);
     return API.get("modules", { searchParams }).json<
-      GApiResponse<Module[], true>
+      GApiResponse<Module, true>
     >();
   },
 
   getModulesByCourse: (courseId: number, params?: GetModulesParams) => {
     const searchParams = createSearchParams(params);
     return API.get(`modules/by-course/${courseId}`, { searchParams }).json<
-      GApiResponse<Module[], true>
+      GApiResponse<Module, true>
     >();
   },
 
@@ -54,6 +54,7 @@ export const modulesQueryOptions = {
     queryOptions({
       queryKey: ["modules", "by-course", courseId, params],
       queryFn: () => ModulesAPI.getModulesByCourse(courseId, params),
+      enabled: !!courseId,
     }),
 
   byId: (id: number) =>

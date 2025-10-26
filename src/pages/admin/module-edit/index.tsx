@@ -1,9 +1,9 @@
-// pages/module/ModuleEditPage.tsx
 import { Button } from "@/components/ui/button";
 import {
   lessonsQueryOptions,
   modulesQueryOptions,
   lessonsMutationOptions,
+  type Lesson,
 } from "@/entities";
 import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
 import { X } from "lucide-react";
@@ -51,7 +51,7 @@ export const ModuleEditPage = () => {
   } = useQuery(lessonsQueryOptions.byModule(moduleId));
 
   const module = moduleData?.data;
-  const lessons = lessonsData?.data || [];
+  const lessons: Lesson[] = lessonsData?.data || [];
 
   if (moduleLoading) {
     return (

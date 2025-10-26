@@ -14,14 +14,15 @@ export const AdminLayout = () => {
   ];
 
   // Check if current route should have dark background
-  // Exclude create routes and edit routes from dark background
+  // Exclude create routes, edit routes, and detail-edit routes from dark background
   // But include licenses routes (they are list/management pages)
   const shouldHaveDarkBackground =
     darkBackgroundRoutes.some(
       (route) =>
         location.pathname.startsWith(route) &&
         !location.pathname.includes("/create") &&
-        !location.pathname.includes("/edit")
+        !location.pathname.includes("/edit") &&
+        !location.pathname.includes("/detail-edit")
     ) || location.pathname.includes("/licenses");
 
   const backgroundClass = shouldHaveDarkBackground

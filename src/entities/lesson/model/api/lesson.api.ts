@@ -17,14 +17,14 @@ export const LessonsAPI = {
   getLessons: (params?: GetLessonsParams) => {
     const searchParams = createSearchParams(params);
     return API.get("lessons", { searchParams }).json<
-      GApiResponse<Lesson[], true>
+      GApiResponse<Lesson, true>
     >();
   },
 
   getLessonsByModule: (moduleId: number, params?: GetLessonsParams) => {
     const searchParams = createSearchParams(params);
     return API.get(`lessons/by-module/${moduleId}`, { searchParams }).json<
-      GApiResponse<Lesson[], true>
+      GApiResponse<Lesson, true>
     >();
   },
 
@@ -54,6 +54,7 @@ export const lessonsQueryOptions = {
     queryOptions({
       queryKey: ["lessons", "by-module", moduleId, params],
       queryFn: () => LessonsAPI.getLessonsByModule(moduleId, params),
+      enabled: !!moduleId,
     }),
 
   byId: (id: number) =>

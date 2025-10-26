@@ -18,6 +18,8 @@ export const ModuleDetailEditPage = () => {
     modulesQueryOptions.byId(moduleId)
   );
 
+  const module = moduleData?.data;
+
   const [formData, setFormData] = useState({
     title: "",
     shortDesc: "",
@@ -39,9 +41,11 @@ export const ModuleDetailEditPage = () => {
   const updateModuleMutation = useMutation({
     ...modulesMutationOptions.update(),
     onSuccess: () => {
-      navigate(
-        `/admin/content/courses/${module.courseId}/modules/${moduleId}/edit`
-      );
+      if (module) {
+        navigate(
+          `/admin/content/courses/${module.courseId}/modules/${moduleId}/edit`
+        );
+      }
     },
   });
 

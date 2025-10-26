@@ -1,4 +1,3 @@
-// pages/lesson/LessonEditPage.tsx
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -29,7 +28,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react"; // ИМПОРТИРУЕМ useEffect
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const LessonEditPage = () => {
@@ -47,6 +46,8 @@ export const LessonEditPage = () => {
   const { data: moduleData } = useQuery(
     modulesQueryOptions.byId(lessonData?.data?.moduleId || 0)
   );
+
+  const module = moduleData?.data;
 
   const updateLessonMutation = useMutation({
     ...lessonsMutationOptions.update(),
@@ -72,7 +73,6 @@ export const LessonEditPage = () => {
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // ИСПРАВЛЕНИЕ: Используем useEffect для инициализации данных при загрузке урока
   useEffect(() => {
     if (lessonData?.data) {
       const lesson = lessonData.data;
@@ -481,7 +481,7 @@ export const LessonEditPage = () => {
             </div>
           )}
 
-          {lesson.quizId === 0 && (
+          {lesson.quizId === 0 && module && (
             <Button
               onClick={() =>
                 navigate(
@@ -495,7 +495,7 @@ export const LessonEditPage = () => {
             </Button>
           )}
 
-          {lesson.quizId > 0 && (
+          {lesson.quizId > 0 && module && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex flex-col w-full gap-3 justify-between">
                 <div>
