@@ -1,4 +1,3 @@
-import type { PracticeType } from "@/entities/practices";
 
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
 export type BlockType =
@@ -18,7 +17,6 @@ export interface ScenarioListItem {
   version: number;
   createdAt: string;
   updatedAt: string;
-  practiceType?: PracticeType;
   skills: ScenarioSkill[];
 }
 
