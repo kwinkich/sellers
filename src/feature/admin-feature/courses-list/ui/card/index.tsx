@@ -1,20 +1,48 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Course } from "@/entities";
-import { Badge, Box } from "@/shared";
-import type { FC } from "react";
+import { Badge, Box, BlockConfirmationDialog } from "@/shared";
+import { useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
+import { TrashBinIcon } from "@/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { coursesMutationOptions } from "@/entities";
+import { toast } from "sonner";
 
 export const CourseCard: FC<{ data: Course }> = ({ data }) => {
-	const navigate = useNavigate();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
+        ...coursesMutationOptions.delete(),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["courses", "list"] });
+            toast.success("Курс удалён");
+            setIsConfirmOpen(false);
+        },
+        onError: () => {
+            toast.error("Не удалось удалить курс");
+        },
+    });
 
 	const getAccessScopeLabel = (scope: "ALL" | "SELECTED") => {
 		return scope === "ALL" ? "Доступ всем" : "Выборочный доступ";
 	};
 
-	return (
-		<Box variant="dark" className="gap-3 p-4" justify="start" align="start">
-			<Badge variant="gray-opacity" label={`${data.id} курс`} />
+    return (
+        <Box variant="dark" className="gap-3 p-4" justify="start" align="start">
+            <div className="w-full flex items-center justify-between">
+                <Badge variant="gray-opacity" label={`${data.id} курс`} />
+                <button
+                    onClick={() => setIsConfirmOpen(true)}
+                    disabled={isDeleting}
+                    className="disabled:opacity-50 w-8 h-8 rounded-full bg-red-200 items-center flex justify-center"
+                    aria-label="Удалить курс"
+                >
+                    <TrashBinIcon fill="#ef4444" />
+                </button>
+            </div>
 			<p className="text-lg font-medium leading-[100%] text-white">
 				{data.title}
 			</p>
@@ -35,6 +63,19 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
 			>
 				Редактировать
 			</Button>
+
+            <BlockConfirmationDialog
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={() => deleteCourse(data.id)}
+                title="Удалить курс"
+                description={`Вы уверены, что хотите удалить курс ${data.title}? Это действие необратимо.`}
+                confirmText="Удалить"
+                cancelText="Отмена"
+                isLoading={isDeleting}
+                userName={data.title}
+                showCancelButton={false}
+            />
 		</Box>
 	);
 };
