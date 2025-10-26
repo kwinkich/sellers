@@ -3,12 +3,14 @@ import {
   AdminCasesListPage,
   AdminClientsListPage,
   AdminCreateCasePage,
+  AdminEditScenarioPage,
   AdminHomePage,
   AdminLicensesListPage,
   AdminScenariosCreatePage,
   AdminScenariosListPage,
   AdminUpdateCasePage,
   AdminViewCasePage,
+  AdminViewScenarioPage,
   AdminsControlPage,
   AdminUpdateClientPage,
   ClientHomePage,
@@ -23,6 +25,7 @@ import {
   LessonDetailsPage,
   LessonEditPage,
   CourseDetailEditPage,
+  ModuleDetailEditPage,
   MopCoursesPage,
   MopDetailsPage,
   MopLessonsPage,
@@ -161,6 +164,14 @@ export const route = createBrowserRouter([
             element: <AdminScenariosCreatePage />,
           },
           {
+            path: "scenarios/edit/:scenarioId",
+            element: <AdminEditScenarioPage />,
+          },
+          {
+            path: "scenarios/view/:scenarioId",
+            element: <AdminViewScenarioPage />,
+          },
+          {
             path: "course/create",
             element: <CreateCoursePage />,
           },
@@ -179,6 +190,10 @@ export const route = createBrowserRouter([
           {
             path: "module/:id/edit",
             element: <ModuleEditPage />,
+          },
+          {
+            path: "module/:id/detail-edit",
+            element: <ModuleDetailEditPage />,
           },
           {
             path: "module/:id/lesson/create",

@@ -13,12 +13,12 @@ import { useNavigate } from "react-router-dom";
 export const CreateCoursePage = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    title: "",
-    shortDesc: "",
-    accessScope: "ALL" as "ALL" | "SELECTED",
-    clientIds: [] as number[],
-  });
+	const [formData, setFormData] = useState({
+		title: "",
+		shortDesc: "",
+		accessScope: "ALL" as "ALL" | "CLIENTS_LIST",
+		clientIds: [] as number[],
+	});
 
   // Запросы для получения всех типов клиентов
   const { data: activeClientsData, isLoading: isLoadingActive } = useQuery({
@@ -83,16 +83,16 @@ export const CreateCoursePage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Создаем объект для отправки
-    const submitData: any = {
-      title: formData.title,
-      shortDesc: formData.shortDesc,
-      accessScope: formData.accessScope === "SELECTED" ? "CLIENTS_LIST" : "ALL",
-    };
+		// Создаем объект для отправки
+		const submitData: any = {
+			title: formData.title,
+			shortDesc: formData.shortDesc,
+			accessScope: formData.accessScope,
+		};
 
-    if (formData.accessScope === "SELECTED") {
-      submitData.clientIds = formData.clientIds;
-    }
+		if (formData.accessScope === "CLIENTS_LIST") {
+			submitData.clientIds = formData.clientIds;
+		}
 
     createCourseMutation.mutate(submitData);
   };
@@ -113,21 +113,21 @@ export const CreateCoursePage = () => {
     }));
   };
 
-  const accessScopeOptions = [
-    { value: "ALL", label: "Доступно всем клиентам" },
-    { value: "SELECTED", label: "Только выбранным клиентам" },
-  ];
+	const accessScopeOptions = [
+		{ value: "ALL", label: "Доступно всем клиентам" },
+		{ value: "CLIENTS_LIST", label: "Только выбранным клиентам" },
+	];
 
-  const isFormValid =
-    formData.title.trim() &&
-    formData.shortDesc.trim() &&
-    formData.shortDesc.length <= 120 &&
-    (formData.accessScope === "ALL" ||
-      (formData.accessScope === "SELECTED" && formData.clientIds.length > 0));
+	const isFormValid =
+		formData.title.trim() &&
+		formData.shortDesc.trim() &&
+		formData.shortDesc.length <= 1000 &&
+		(formData.accessScope === "ALL" ||
+			(formData.accessScope === "CLIENTS_LIST" && formData.clientIds.length > 0));
 
-  const remainingChars = 120 - formData.shortDesc.length;
-  const isNearLimit = remainingChars <= 20;
-  const isOverLimit = remainingChars < 0;
+	const remainingChars = 1000 - formData.shortDesc.length;
+	const isNearLimit = remainingChars <= 20;
+	const isOverLimit = remainingChars < 0;
 
   return (
     <div className="px-2 min-h-full flex flex-col pb-24 pt-6 gap-6">
@@ -152,35 +152,35 @@ export const CreateCoursePage = () => {
             required
           />
 
-          <div className="relative">
-            <Textarea
-              value={formData.shortDesc}
-              onChange={(e) => handleChange("shortDesc", e.target.value)}
-              placeholder="Введите описание курса"
-              className={`w-full resize-none pr-16 ${
-                isOverLimit ? "border-red-300 focus:border-red-500" : ""
-              }`}
-              rows={4}
-              maxLength={120}
-              required
-            />
-            <div
-              className={`absolute bottom-2 right-2 text-xs ${
-                isOverLimit
-                  ? "text-red-500 font-semibold"
-                  : isNearLimit
-                  ? "text-amber-500"
-                  : "text-gray-400"
-              }`}
-            >
-              {remainingChars}
-            </div>
-          </div>
-          {isOverLimit && (
-            <p className="text-xs text-red-500 mt-1">
-              Превышено максимальное количество символов
-            </p>
-          )}
+					<div className="relative">
+						<Textarea
+							value={formData.shortDesc}
+							onChange={(e) => handleChange("shortDesc", e.target.value)}
+							placeholder="Введите описание курса"
+							className={`w-full resize-none pr-16 ${
+								isOverLimit ? "border-red-300 focus:border-red-500" : ""
+							}`}
+							rows={4}
+							maxLength={1000}
+							required
+						/>
+						<div
+							className={`absolute bottom-2 right-2 text-xs ${
+								isOverLimit
+									? "text-red-500 font-semibold"
+									: isNearLimit
+									? "text-amber-500"
+									: "text-gray-400"
+							}`}
+						>
+							{remainingChars}
+						</div>
+					</div>
+					{isOverLimit && (
+						<p className="text-xs text-red-500 mt-1">
+							Превышено максимальное количество символов
+						</p>
+					)}
 
           <SelectFloatingLabel
             placeholder="Выберите уровень доступа"
@@ -191,47 +191,47 @@ export const CreateCoursePage = () => {
             className="w-full"
           />
 
-          {/* MultiSelect для выбора клиентов */}
-          {formData.accessScope === "SELECTED" && (
-            <div>
-              {isLoadingClients ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Загрузка клиентов...
-                </div>
-              ) : (
-                <MultiSelect
-                  label="Выберите клиентов"
-                  values={formData.clientIds.map((id) => id.toString())}
-                  onValuesChange={handleClientSelection}
-                  options={clientOptions}
-                  variant="default"
-                  className="w-full"
-                />
-              )}
-            </div>
-          )}
-        </div>
+					{/* MultiSelect для выбора клиентов */}
+					{formData.accessScope === "CLIENTS_LIST" && (
+						<div>
+							{isLoadingClients ? (
+								<div className="flex items-center justify-center py-4">
+									<Loader2 className="h-4 w-4 animate-spin mr-2" />
+									Загрузка клиентов...
+								</div>
+							) : (
+								<MultiSelect
+									label="Выберите клиентов"
+									values={formData.clientIds.map((id) => id.toString())}
+									onValuesChange={handleClientSelection}
+									options={clientOptions}
+									variant="default"
+									className="w-full"
+								/>
+							)}
+						</div>
+					)}
+				</div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={
-            !isFormValid ||
-            createCourseMutation.isPending ||
-            (formData.accessScope === "SELECTED" && isLoadingClients)
-          }
-        >
-          {createCourseMutation.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Создание...
-            </>
-          ) : (
-            "Создать курс"
-          )}
-        </Button>
-      </form>
-    </div>
-  );
+				<Button
+					type="submit"
+					className="w-full"
+					disabled={
+						!isFormValid ||
+						createCourseMutation.isPending ||
+						(formData.accessScope === "CLIENTS_LIST" && isLoadingClients)
+					}
+				>
+					{createCourseMutation.isPending ? (
+						<>
+							<Loader2 className="h-4 w-4 animate-spin mr-2" />
+							Создание...
+						</>
+					) : (
+						"Создать курс"
+					)}
+				</Button>
+			</form>
+		</div>
+	);
 };

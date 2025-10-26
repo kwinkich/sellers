@@ -3,13 +3,13 @@ export interface Module {
 	courseId: number;
 	title: string;
 	shortDesc: string;
-	testVariant: "NONE" | "QUIZ" | "PRACTICE";
+	testVariant: "NONE" | "QUIZ";
 	lessonsCount: number;
 	quizId: number;
 	completedLessons: number;
 	progressPercent: number;
 	quizQuestionsCount: number;
-	unlockRule: "ALL" | "PREVIOUS" | "TEST";
+	unlockRule: "ALL" | "LEVEL_3" | "LEVEL_4" | "AFTER_PREV_MODULE";
 	orderIndex: number;
 	createdAt: string;
 	updatedAt: string;
@@ -19,9 +19,9 @@ export interface CreateModuleRequest {
 	title: string;
 	courseId: number;
 	shortDesc: string;
-	testVariant: "NONE" | "QUIZ" | "PRACTICE";
+	testVariant: "NONE" | "QUIZ";
 	quizId: number;
-	unlockRule: "ALL" | "PREVIOUS" | "TEST";
+	unlockRule: "ALL" | "LEVEL_3" | "LEVEL_4" | "AFTER_PREV_MODULE";
 	orderIndex: number;
 }
 
@@ -29,9 +29,9 @@ export interface UpdateModuleRequest {
 	courseId?: number;
 	title?: string;
 	shortDesc?: string;
-	testVariant?: "NONE" | "QUIZ" | "PRACTICE";
+	testVariant?: "NONE" | "QUIZ";
 	quizId?: number;
-	unlockRule?: "ALL" | "PREVIOUS" | "TEST";
+	unlockRule: "ALL" | "LEVEL_3" | "LEVEL_4" | "AFTER_PREV_MODULE";
 	orderIndex?: number;
 }
 

@@ -86,11 +86,12 @@ export const ModuleEditPage = () => {
 		<div className="min-h-full pb-24">
 			{/* Шапка с названием модуля */}
 			<div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
-				<HeadText
-					head={module.title}
-					label="Редактирование модуля"
-					className="px-2 mb-6"
-				/>
+				<div className="flex items-center justify-between px-2 mb-6">
+					<HeadText head={module.title} label="Редактирование модуля" className="px-0 mb-0" />
+					<Button size="xs" className="text-base-main bg-transparent text-md" onClick={() => navigate(`/admin/module/${moduleId}/detail-edit`)}>
+						изменить
+					</Button>
+				</div>
 				<Button
 					onClick={() => navigate(`/admin/module/${moduleId}/lesson/create`)}
 					className="w-full"

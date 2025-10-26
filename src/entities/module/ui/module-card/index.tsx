@@ -17,8 +17,6 @@ export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
 		switch (variant) {
 			case "QUIZ":
 				return "Тест";
-			case "PRACTICE":
-				return "Практика";
 			case "NONE":
 				return "Без теста";
 			default:

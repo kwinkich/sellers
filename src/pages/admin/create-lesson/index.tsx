@@ -1,5 +1,6 @@
 // pages/lesson/CreateLessonPage.tsx
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Drawer,
 	DrawerClose,
@@ -16,9 +17,10 @@ import {
 	lessonsQueryOptions,
 	modulesQueryOptions,
 } from "@/entities";
+import { quizzesMutationOptions, type QuizQuestion } from "@/entities";
 import { Box, HeadText } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { File, FileText, Image, Loader2, Plus, Video, X } from "lucide-react";
+import { File, FileText, Image, Loader2, Plus, Trash2, Video, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -45,13 +47,19 @@ export const CreateLessonPage = () => {
 
 	const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-	const [createdLessonId, setCreatedLessonId] = useState<number | null>(null);
+
+	// Quiz builder state
+	const [showQuizBlock, setShowQuizBlock] = useState(false);
+	const [quizFormData, setQuizFormData] = useState({
+		passThresholdPercent: 70,
+		questions: [] as QuizQuestion[],
+	});
 
 	const createLessonMutation = useMutation({
 		...lessonsMutationOptions.create(),
 		onSuccess: (result) => {
 			if (result.success && result.data) {
-				setCreatedLessonId(result.data.id);
+				navigate(`/admin/module/${moduleId}/edit`);
 			} else {
 				alert("Не удалось создать урок. Попробуйте еще раз.");
 			}
@@ -62,13 +70,47 @@ export const CreateLessonPage = () => {
 		},
 	});
 
+	const createQuizMutation = useMutation({
+		...quizzesMutationOptions.create(),
+		onError: (error) => {
+			console.error("Error creating quiz:", error);
+			alert("Произошла ошибка при создании теста. Попробуйте еще раз.");
+		},
+	});
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+
+		let quizIdToAttach = 0;
+
+		if (showQuizBlock) {
+			const quizSubmitData = {
+				passThresholdPercent: quizFormData.passThresholdPercent,
+				questions: quizFormData.questions.map((q, qIndex) => ({
+					...q,
+					order: qIndex + 1,
+					options: q.options.map((opt, optIndex) => ({
+						...opt,
+						id: opt.id || optIndex + 1,
+					})),
+				})),
+			};
+
+			const quizResult = await createQuizMutation.mutateAsync(quizSubmitData);
+			if (!quizResult?.success || !quizResult.data) {
+				alert("Не удалось создать тест. Попробуйте еще раз.");
+				return;
+			}
+			quizIdToAttach = quizResult.data.id;
+		} else {
+			alert("Добавьте тест для урока");
+			return;
+		}
 
 		const submitData = {
 			...formData,
 			moduleId,
-			quizId: 0,
+			quizId: quizIdToAttach,
 			contentBlocks,
 			orderIndex: nextOrderIndex,
 		};
@@ -76,11 +118,7 @@ export const CreateLessonPage = () => {
 		createLessonMutation.mutate(submitData);
 	};
 
-	const handleCreateTest = (): void => {
-		if (createdLessonId) {
-			navigate(`/admin/lesson/${createdLessonId}/quiz/create`);
-		}
-	};
+	// Removed handleCreateTest — no longer used after automatic redirect
 
 	const handleChange = (field: string, value: unknown) => {
 		setFormData((prev) => ({
@@ -123,7 +161,116 @@ export const CreateLessonPage = () => {
 		closeDrawer();
 	};
 
-	const isFormValid = formData.title.trim() && formData.shortDesc.trim();
+	// Quiz builder helpers
+	const addQuizQuestion = (): void => {
+		const newQuestion: QuizQuestion = {
+			text: "",
+			order: quizFormData.questions.length + 1,
+			options: [
+				{ text: "", isCorrect: false },
+				{ text: "", isCorrect: false },
+			],
+		};
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: [...prev.questions, newQuestion],
+		}));
+	};
+
+	const updateQuizQuestion = (
+		index: number,
+		field: string,
+		value: unknown
+	): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.map((q, i) => (i === index ? { ...q, [field]: value } : q)),
+		}));
+	};
+
+	const updateQuizOption = (
+		questionIndex: number,
+		optionIndex: number,
+		field: string,
+		value: unknown
+	): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.map((q, i) =>
+				i === questionIndex
+					? {
+						...q,
+						options: q.options.map((opt, j) => (j === optionIndex ? { ...opt, [field]: value } : opt)),
+					}
+					: q
+			),
+		}));
+	};
+
+	const addQuizOption = (questionIndex: number): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.map((q, i) =>
+				i === questionIndex
+					? {
+						...q,
+						options: [...q.options, { text: "", isCorrect: false }],
+					}
+					: q
+			),
+		}));
+	};
+
+	const removeQuizQuestion = (index: number): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.filter((_, i) => i !== index),
+		}));
+	};
+
+	const removeQuizOption = (questionIndex: number, optionIndex: number): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.map((q, i) =>
+				i === questionIndex
+					? {
+						...q,
+						options: q.options.filter((_, j) => j !== optionIndex),
+					}
+					: q
+			),
+		}));
+	};
+
+	const setQuizCorrectAnswer = (questionIndex: number, optionIndex: number): void => {
+		setQuizFormData((prev) => ({
+			...prev,
+			questions: prev.questions.map((q, i) =>
+				i === questionIndex
+					? {
+						...q,
+						options: q.options.map((opt, j) => ({ ...opt, isCorrect: j === optionIndex })),
+					}
+					: q
+			),
+		}));
+	};
+
+	const isQuizValid =
+		quizFormData.questions.length > 0 &&
+		quizFormData.questions.every(
+			(q) =>
+				q.text.trim() &&
+				q.options.length >= 2 &&
+				q.options.every((opt) => opt.text.trim()) &&
+				q.options.some((opt) => opt.isCorrect)
+		);
+
+	const isFormValid =
+		formData.title.trim() &&
+		formData.shortDesc.trim() &&
+		showQuizBlock &&
+		isQuizValid;
 
 	const contentTypes = [
 		{
@@ -152,37 +299,7 @@ export const CreateLessonPage = () => {
 		},
 	];
 
-	// Если урок создан, показываем кнопку для создания теста
-	if (createdLessonId) {
-		return (
-			<div className="min-h-full flex flex-col pb-24 gap-6 px-2">
-				<div className="w-full bg-base-bg rounded-2xl px-3 py-6 mt-6">
-					<HeadText
-						head="Урок создан!"
-						label="Что вы хотите сделать дальше?"
-						className="px-2 mb-6 text-center"
-					/>
-				</div>
-
-				<div className="flex flex-col gap-4 flex-1 justify-end">
-					{/* Кнопка создания теста */}
-					{module?.testVariant !== "NONE" && (
-						<Button className="w-full" onClick={handleCreateTest}>
-							Создать тест для урока
-						</Button>
-					)}
-
-					{/* Кнопка возврата к модулю */}
-					<Button
-						className="w-full"
-						onClick={() => navigate(`/admin/module/${moduleId}/edit`)}
-					>
-						Вернуться к модулю
-					</Button>
-				</div>
-			</div>
-		);
-	}
+	// Removed success screen — automatic redirect happens on successful creation
 
 	return (
 		<div className="min-h-full flex flex-col pb-24 gap-6">
@@ -217,94 +334,242 @@ export const CreateLessonPage = () => {
 				</div>
 			</div>
 
-			<form
-				onSubmit={handleSubmit}
-				className="flex flex-col flex-1 gap-6 h-full px-2"
-			>
-				{contentBlocks.length > 0 && (
-					<div className="flex flex-col flex-1">
-						{/* Блоки контента */}
-						<div className="space-y-4 mb-4">
-							{contentBlocks.map((block, index) => (
-								<Box
-									key={index}
-									variant="white"
-									align="start"
-									className="p-4 border-2"
-								>
-									<div className="flex items-center w-full justify-between mb-4">
-										<span className="text-sm font-medium text-gray-700 capitalize">
-											{block.type === "TEXT" && "Текстовый блок"}
-											{block.type === "AUDIO" && "Аудио блок"}
-											{block.type === "IMAGE" && "Блок изображения"}
-											{block.type === "VIDEO" && "Видео блок"}
-											{block.type === "FILE" && "Блок файла"}
-										</span>
-										<Button
-											type="button"
-											variant="link"
-											size="link"
-											className="text-base-red"
-											onClick={() => removeContentBlock(index)}
-										>
-											Удалить
-										</Button>
-									</div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col flex-1 gap-6 h-full px-2"
+      >
+        {/* Content Blocks Section - NOW FIRST */}
+        {contentBlocks.length > 0 && (
+          <div className="flex flex-col flex-1">
+            <div className="space-y-4 mb-4">
+              {contentBlocks.map((block, index) => (
+                <Box
+                  key={index}
+                  variant="white"
+                  align="start"
+                  className="p-4 border-2"
+                >
+                  <div className="flex items-center w-full justify-between mb-4">
+                    <span className="text-sm font-medium text-gray-700 capitalize">
+                      {block.type === "TEXT" && "Текстовый блок"}
+                      {block.type === "AUDIO" && "Аудио блок"}
+                      {block.type === "IMAGE" && "Блок изображения"}
+                      {block.type === "VIDEO" && "Видео блок"}
+                      {block.type === "FILE" && "Блок файла"}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="link"
+                      className="text-base-red"
+                      onClick={() => removeContentBlock(index)}
+                    >
+                      Удалить
+                    </Button>
+                  </div>
 
-									{block.type === "TEXT" && (
-										<Textarea
-											value={block.textContent || ""}
-											onChange={(e) =>
-												updateContentBlock(index, "textContent", e.target.value)
-											}
-											placeholder="Введите текст контента..."
-											rows={6}
-											className="w-full bg-white rounded-2xl"
-										/>
-									)}
+                  {block.type === "TEXT" && (
+                    <Textarea
+                      value={block.textContent || ""}
+                      onChange={(e) =>
+                        updateContentBlock(index, "textContent", e.target.value)
+                      }
+                      placeholder="Введите текст контента..."
+                      rows={6}
+                      className="w-full bg-white rounded-2xl"
+                    />
+                  )}
 
-									{(block.type === "IMAGE" ||
-										block.type === "VIDEO" ||
-										block.type === "FILE") && (
-										<FileUploadBlock
-											block={block}
-											index={index}
-											onUpdate={updateContentBlock}
-											onRemove={removeContentBlock}
-										/>
-									)}
-								</Box>
-							))}
-						</div>
-					</div>
-				)}
+                  {(block.type === "IMAGE" ||
+                    block.type === "VIDEO" ||
+                    block.type === "FILE") && (
+                    <FileUploadBlock
+                      block={block}
+                      index={index}
+                      onUpdate={updateContentBlock}
+                      onRemove={removeContentBlock}
+                    />
+                  )}
+                </Box>
+              ))}
+            </div>
+          </div>
+        )}
 
-				<Button
-					variant="bordered"
-					type="button"
-					text="main"
-					className="w-full"
-					onClick={openDrawer}
-				>
-					<Plus className="h-4 w-4 mr-2" />
-					Добавить раздел
-				</Button>
+        {/* Add Section Button */}
+        <Button
+          variant="bordered"
+          type="button"
+          text="main"
+          className="w-full"
+          onClick={openDrawer}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Добавить раздел
+        </Button>
 
-				<Button
-					type="submit"
-					className="w-full"
-					disabled={!isFormValid || createLessonMutation.isPending}
-				>
-					{createLessonMutation.isPending ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin mr-2" />
-							Создание...
-						</>
-					) : (
-						"Создать урок"
-					)}
-				</Button>
-			</form>
+        {/* Quiz Block Section - NOW SECOND */}
+        {showQuizBlock ? (
+          <div className="space-y-4">
+            <div className="w-full rounded-2xl px-1">
+              <HeadText head="Тест" label="Настройте тест для урока" className="px-2 mb-4" variant="black-black"/>
+              <Button
+                type="button"
+                className="w-full"
+                size="xs"
+                variant="default"
+                onClick={addQuizQuestion}
+                disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+              >
+                Добавить вопрос
+              </Button>
+            </div>
+
+            <div>
+              <InputFloatingLabel
+                type="number"
+                value={quizFormData.passThresholdPercent.toString()}
+                onChange={(e) =>
+                  setQuizFormData((prev) => ({
+                    ...prev,
+                    passThresholdPercent: parseInt(e.target.value) || 70,
+                  }))
+                }
+                min="1"
+                max="100"
+                placeholder="Порог прохождения (%)"
+                className="w-full"
+                disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Минимальный процент правильных ответов для успешного прохождения
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Вопросы теста ({quizFormData.questions.length})
+                </label>
+              </div>
+
+              {quizFormData.questions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
+                  <p className="mb-2">Нет добавленных вопросов</p>
+                  <p className="text-sm">Нажмите «Добавить вопрос» чтобы начать</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {quizFormData.questions.map((question, qIndex) => (
+                    <div key={qIndex} className="border rounded-lg p-4 bg-white shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-gray-700">Вопрос {qIndex + 1}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeQuizQuestion(qIndex)}
+                          disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+
+                      <InputFloatingLabel
+                        value={question.text}
+                        onChange={(e) => updateQuizQuestion(qIndex, "text", e.target.value)}
+                        placeholder="Введите текст вопроса..."
+                        className="w-full mb-4"
+                        disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                      />
+
+                      <div className="space-y-3 w-full">
+                        {question.options.map((option, oIndex) => (
+                          <div key={oIndex} className="flex items-center gap-2">
+                            <Input
+                              type="radio"
+                              name={`question-${qIndex}`}
+                              checked={option.isCorrect}
+                              onChange={() => setQuizCorrectAnswer(qIndex, oIndex)}
+                              className="w-3 h-3"
+                              disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                            />
+                            <Input
+                              value={option.text}
+                              onChange={(e) => updateQuizOption(qIndex, oIndex, "text", e.target.value)}
+                              placeholder="Текст варианта ответа..."
+                              className="flex-1 border-0 focus:ring-0"
+                              disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                            />
+                            {question.options.length > 2 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeQuizOption(qIndex, oIndex)}
+                                disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <div className="flex flex-col-reverse w-full items-start gap-2">
+                          <label className="text-xs text-gray-500">Варианты ответов * (минимум 2)</label>
+                          <Button
+                            type="button"
+                            className="w-full"
+                            size="xs"
+                            onClick={() => addQuizOption(qIndex)}
+                            disabled={createLessonMutation.isPending || createQuizMutation.isPending}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Добавить вариант
+                          </Button>
+                        </div>
+                        {!question.text.trim() && <p className="text-xs text-red-500">Введите текст вопроса</p>}
+                        {question.options.some((opt) => !opt.text.trim()) && (
+                          <p className="text-xs text-red-500">Все варианты ответов должны быть заполнены</p>
+                        )}
+                        {!question.options.some((opt) => opt.isCorrect) && (
+                          <p className="text-xs text-red-500">Укажите правильный вариант ответа</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="bordered"
+            type="button"
+            text="main"
+            className="w-full"
+            onClick={() => setShowQuizBlock(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить тест
+          </Button>
+        )}
+
+        {/* Submit Button - Stays at the end */}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={!isFormValid || createLessonMutation.isPending || createQuizMutation.isPending}
+        >
+          {createLessonMutation.isPending || createQuizMutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Создание...
+            </>
+          ) : (
+            "Создать урок"
+          )}
+        </Button>
+      </form>
 
 			{/* Drawer для выбора типа контента */}
 			<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>

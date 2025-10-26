@@ -2,7 +2,8 @@ export interface Course {
 	id: number;
 	title: string;
 	shortDesc: string;
-	accessScope: "ALL" | "SELECTED";
+	accessScope: "ALL" | "CLIENTS_LIST";
+	clientIds?: number[];
 	isIntro: boolean;
 	createdAt: string;
 	updatedAt: string;
@@ -11,14 +12,14 @@ export interface Course {
 export interface CreateCourseRequest {
 	title: string;
 	shortDesc: string;
-	accessScope: "ALL" | "SELECTED";
+	accessScope: "ALL" | "CLIENTS_LIST";
 	clientIds: number[];
 }
 
 export interface UpdateCourseRequest {
 	title?: string;
 	shortDesc?: string;
-	accessScope?: "ALL" | "SELECTED";
+	accessScope?: "ALL" | "CLIENTS_LIST";
 	clientIds?: number[];
 }
 
