@@ -27,7 +27,7 @@ export const CreateModulePage = () => {
 		title: "",
 		shortDesc: "",
 		testVariant: "NONE" as "NONE" | "QUIZ",
-		unlockRule: "ALL" as "ALL" | "PREVIOUS" | "TEST",
+		unlockRule: "ALL" as "ALL" | "LEVEL_3" | "LEVEL_4",
 	});
 
 	const createModuleMutation = useMutation({
@@ -74,8 +74,9 @@ export const CreateModulePage = () => {
 
 	const unlockRuleOptions = [
 		{ value: "ALL", label: "Всем" },
-		{ value: "PREVIOUS", label: "После прохождения предыдущего модуля" },
-		{ value: "TEST", label: "После прохождения теста" },
+		{ value: "LEVEL_3", label: "От уровня 3 и выше" },
+		{ value: "LEVEL_4", label: "От уровня 4 и выше" },
+    { value: "AFTER_PREV_MODULE", label: "После прохождения предыдущего модуля"}
 	];
 
 	const isFormValid =

@@ -26,7 +26,7 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
         },
     });
 
-	const getAccessScopeLabel = (scope: "ALL" | "SELECTED") => {
+	const getAccessScopeLabel = (scope: "ALL" | "CLIENTS_LIST") => {
 		return scope === "ALL" ? "Доступ всем" : "Выборочный доступ";
 	};
 

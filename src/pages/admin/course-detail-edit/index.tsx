@@ -22,18 +22,20 @@ export const CourseDetailEditPage = () => {
 	const [formData, setFormData] = useState({
 		title: "",
 		shortDesc: "",
-		accessScope: "ALL" as "ALL" | "SELECTED",
+		accessScope: "ALL" as "ALL" | "CLIENTS_LIST",
 		clientIds: [] as number[],
 	});
 
 	useEffect(() => {
 		if (courseData?.data) {
-			const backendScope = (courseData.data.accessScope as unknown) as string;
+			const incomingScope = courseData.data.accessScope;
+			const normalizedScope = incomingScope === "CLIENTS_LIST" ? "CLIENTS_LIST" : "ALL";
 			setFormData((prev) => ({
 				...prev,
 				title: courseData.data.title,
 				shortDesc: courseData.data.shortDesc,
-				accessScope: backendScope === "CLIENTS_LIST" ? "SELECTED" : (courseData.data.accessScope as any),
+				accessScope: normalizedScope,
+				clientIds: Array.isArray(courseData.data.clientIds) ? courseData.data.clientIds : [],
 			}));
 		}
 	}, [courseData?.data]);
@@ -107,7 +109,7 @@ export const CourseDetailEditPage = () => {
 
 	const accessScopeOptions = [
 		{ value: "ALL", label: "Доступно всем клиентам" },
-		{ value: "SELECTED", label: "Только выбранным клиентам" },
+		{ value: "CLIENTS_LIST", label: "Только выбранным клиентам" },
 	];
 
 	const isFormValid =
@@ -115,7 +117,7 @@ export const CourseDetailEditPage = () => {
 		formData.shortDesc.trim() &&
 		formData.shortDesc.length <= 120 &&
 		(formData.accessScope === "ALL" ||
-			(formData.accessScope === "SELECTED" && formData.clientIds.length > 0));
+			(formData.accessScope === "CLIENTS_LIST" && formData.clientIds.length > 0));
 
 	const remainingChars = 120 - formData.shortDesc.length;
 	const isNearLimit = remainingChars <= 20;
@@ -144,9 +146,9 @@ export const CourseDetailEditPage = () => {
 					const submitData: any = {
 						title: formData.title,
 						shortDesc: formData.shortDesc,
-						accessScope: formData.accessScope === "SELECTED" ? "CLIENTS_LIST" : "ALL",
+						accessScope: formData.accessScope,
 					};
-					if (formData.accessScope === "SELECTED") {
+					if (formData.accessScope === "CLIENTS_LIST") {
 						submitData.clientIds = formData.clientIds;
 					}
 					updateCourseMutation.mutate({ id: courseId, data: submitData });
@@ -195,14 +197,18 @@ export const CourseDetailEditPage = () => {
 
 					<SelectFloatingLabel
 						placeholder="Выберите уровень доступа"
-						value={formData.accessScope}
-						onValueChange={(value) => handleChange("accessScope", value)}
+						value={String(formData.accessScope)}
+						onValueChange={(value) => {
+							if (value === "ALL" || value === "CLIENTS_LIST") {
+								handleChange("accessScope", value);
+							}
+						}}
 						options={accessScopeOptions}
 						variant="default"
 						className="w-full"
 					/>
 
-					{formData.accessScope === "SELECTED" && (
+					{formData.accessScope === "CLIENTS_LIST" && (
 						<div>
 							{isLoadingClients ? (
 								<div className="flex items-center justify-center py-4">
@@ -226,7 +232,7 @@ export const CourseDetailEditPage = () => {
 				<Button
 					type="submit"
 					className="w-full"
-					disabled={!isFormValid || updateCourseMutation.isPending || (formData.accessScope === "SELECTED" && isLoadingClients)}
+					disabled={!isFormValid || updateCourseMutation.isPending || (formData.accessScope === "CLIENTS_LIST" && isLoadingClients)}
 				>
 					{updateCourseMutation.isPending ? (
 						<>
