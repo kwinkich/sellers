@@ -52,17 +52,25 @@ export const useAppInit = (): UseAppInitReturn => {
   }, [setPending]);
 
   const redirectByRole = (role: UserAppRole) => {
-    // Only redirect if on root path
-    if (window.location.pathname === "/") {
-      const routes = {
-        CLIENT: "/client/home",
-        ADMIN: "/admin/home",
-        MOP: "/mop/home",
-      } as const;
-      const route = routes[role];
-      if (route) {
-        navigate(route, { replace: true });
-      }
+    const currentPath = window.location.pathname;
+    const routes = {
+      CLIENT: "/client/home",
+      ADMIN: "/admin/home",
+      MOP: "/mop/home",
+    } as const;
+    const targetRoute = routes[role];
+
+    // Check if user is already on a valid route for their role
+    const isOnValidRoute =
+      currentPath.startsWith(`/${role.toLowerCase()}`) ||
+      currentPath.startsWith("/practice") ||
+      currentPath.startsWith("/evaluation");
+
+    // Only redirect if not on root path and not on a valid route for their role
+    if (currentPath !== "/" && !isOnValidRoute && targetRoute) {
+      navigate(targetRoute, { replace: true });
+    } else if (currentPath === "/" && targetRoute) {
+      navigate(targetRoute, { replace: true });
     }
   };
 

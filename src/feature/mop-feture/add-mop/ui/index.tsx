@@ -4,6 +4,7 @@ import {
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,7 +40,7 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
       onOpenChange(false);
     },
     onError: (error) => {
-      console.error("Ошибка при добавлении МОП:", error);
+      console.error("Ошибка при добавлении МОПа:", error);
     },
   });
 
@@ -88,20 +89,21 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="bg-second-bg">
         <DrawerHeader className="items-center">
+          <DrawerTitle className="sr-only">Добавление МОПа</DrawerTitle>
           <AddPeopleIcon size={70} fill="#06935F" />
-          <p className="text-2xl font-medium text-white">Добавление МОП</p>
+          <p className="text-2xl font-medium text-white">Добавление МОПа</p>
         </DrawerHeader>
 
         <div className="flex flex-col gap-3 p-4">
           <Input
-            placeholder="Введите имя МОП"
+            placeholder="Введите имя МОПа"
             variant="dark"
             value={mopName}
             onChange={(e) => setMopName(e.target.value)}
             disabled={isPending}
           />
           <Input
-            placeholder="Введите @username для МОП"
+            placeholder="Введите @username для МОПа"
             variant="dark"
             value={mopUsername}
             onChange={(e) => setMopUsername(e.target.value)}
@@ -123,7 +125,7 @@ export const AddMopDrawer = ({ open, onOpenChange }: AddMopDrawerProps) => {
             ) : availableLicenses <= 0 ? (
               "Нет доступных лицензий"
             ) : (
-              "Добавить МОП"
+              "Добавить МОПа"
             )}
           </Button>
           <Button

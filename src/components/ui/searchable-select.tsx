@@ -206,7 +206,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           disabled={disabled}
           onKeyDown={handleKeyDown}
         >
-          <span className="text-second-gray text-sm font-medium truncate flex-1">
+          <span className="text-black text-sm font-medium truncate flex-1">
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <div className="flex items-center gap-1 flex-shrink-0">

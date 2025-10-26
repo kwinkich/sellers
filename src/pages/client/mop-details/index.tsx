@@ -33,7 +33,7 @@ export const MopDetailsPage = () => {
 			<div className="bg-second-bg min-h-screen pb-28">
 				<div className="flex flex-col gap-6 px-2 pt-4">
 					<HeadText
-						head="Профиль МОП"
+						head="Профиль МОПа"
 						label="Загрузка данных..."
 						variant="black-gray"
 					/>
@@ -50,7 +50,7 @@ export const MopDetailsPage = () => {
 			<div className="bg-second-bg min-h-screen pb-28">
 				<div className="flex flex-col gap-6 px-2 pt-4">
 					<HeadText
-						head="Профиль МОП"
+						head="Профиль МОПа"
 						label="Ошибка загрузки профиля"
 						variant="black-gray"
 					/>
@@ -208,7 +208,7 @@ export const MopDetailsPage = () => {
 						</div>
 
 						<p className="flex-1 text-xs text-base-gray">
-							Прогресс обучения МОП
+							Прогресс обучения МОПа
 						</p>
 
 						<ArrowIcon size={24} fill="#06935F" />
@@ -245,9 +245,9 @@ export const MopDetailsPage = () => {
 				<HeadText
 					className="mb-4 px-2"
 					head="Навыки и компетенции"
-					label="Навыки и компетенции МОП"
+					label="Навыки и компетенции МОПа"
 					headSize="lg"
-					labelSize="xs"
+					labelSize="sm"
 				/>
 				<UniversalAccordion
 					items={skillsAccordionItems}
