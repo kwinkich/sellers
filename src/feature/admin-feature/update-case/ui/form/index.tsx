@@ -344,7 +344,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
             variant="second"
             className="flex-1 h-12"
           >
-            Закрыть
+            Назад к списку кейсов
           </Button>
           <Button 
             type="submit" 
