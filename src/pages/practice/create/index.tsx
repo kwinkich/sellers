@@ -298,7 +298,7 @@ const PracticeCreatePage = () => {
   }, [canProceed, dateLocal, timeLocal, store, navigate, role, scenarioTitle]);
 
   return (
-    <div className="bg-white text-black min-h-[100dvh] flex flex-col mobile-keyboard-padding">
+    <div className="bg-white text-black min-h-[100dvh] flex flex-col pb-3">
       <div className="px-4 py-4 flex-1">
         <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 

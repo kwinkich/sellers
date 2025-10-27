@@ -24,7 +24,7 @@ export const AdminsControlPage = () => {
   });
 
   return (
-    <div className="min-h-full mobile-keyboard-padding">
+    <div className="min-h-full pb-3">
       <div className="bg-base-bg flex text-white flex-col  w-full rounded-b-3xl p-2 mb-6">
         <HeadText
           className="gap-0.5 mb-8 pl-2 pt-2"

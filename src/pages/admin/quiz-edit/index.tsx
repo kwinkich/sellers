@@ -229,7 +229,7 @@ export const EditQuizPage = () => {
   }
 
   return (
-    <div className="min-h-full mobile-keyboard-padding">
+    <div className="min-h-full pb-3">
       {/* Шапка в стиле CreateQuizPage */}
       <div className="w-full bg-base-bg rounded-b-3xl px-2 py-4 mb-6">
         <HeadText

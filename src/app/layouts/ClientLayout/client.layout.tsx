@@ -14,9 +14,13 @@ export const ClientLayout = () => {
   return (
     <div className="w-dvw h-dvh bg-white relative">
       <div
-        className={`w-full h-full overflow-auto pb-16 ${
+        className={`w-full h-full overflow-auto ${
           shouldApplySecondBg ? "bg-second-bg" : ""
         }`}
+        style={{
+          paddingBottom:
+            "calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         <Outlet />
       </div>

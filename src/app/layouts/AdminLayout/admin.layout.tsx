@@ -31,7 +31,13 @@ export const AdminLayout = () => {
 
   return (
     <div className="w-dvw h-dvh bg-white relative">
-      <div className={`w-full h-full overflow-auto pb-16 ${backgroundClass}`}>
+      <div
+        className={`w-full h-full overflow-auto ${backgroundClass}`}
+        style={{
+          paddingBottom:
+            "calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         <Outlet />
       </div>
       <AdminNavBar />

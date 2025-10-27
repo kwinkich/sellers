@@ -47,7 +47,7 @@ export const MopLessonsPage = () => {
   }
 
   return (
-    <div className="bg-second-bg px-2 min-h-full mobile-keyboard-padding pt-4">
+    <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
       <HeadText
         head={moduleResponse?.data.title || ""}
         label={moduleResponse?.data.shortDesc || ""}

@@ -16,7 +16,7 @@ export const MopCourseDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-second-bg px-2 min-h-full mobile-keyboard-padding pt-4">
+      <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
         <div className="px-2 mb-6">
           <Skeleton className="h-8 w-64 bg-gray-700 rounded mb-2" />
           <Skeleton className="h-4 w-48 bg-gray-600 rounded" />
@@ -37,7 +37,7 @@ export const MopCourseDetailPage = () => {
 
   if (error) {
     return (
-      <div className="bg-second-bg px-2 min-h-full mobile-keyboard-padding pt-4">
+      <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
         <div className="text-center text-red-500 py-8">
           Ошибка загрузки курса: {error.message}
         </div>
@@ -47,7 +47,7 @@ export const MopCourseDetailPage = () => {
 
   if (!courseData?.data) {
     return (
-      <div className="bg-second-bg px-2 min-h-full mobile-keyboard-padding pt-4">
+      <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
         <div className="text-center text-gray-500 py-8">Курс не найден</div>
       </div>
     );
@@ -56,7 +56,7 @@ export const MopCourseDetailPage = () => {
   const course = courseData.data;
 
   return (
-    <div className="bg-second-bg px-2 min-h-full mobile-keyboard-padding pt-4">
+    <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
       <HeadText
         head={course.title}
         label={course.shortDesc}

@@ -93,7 +93,7 @@ export const ModuleEditPage = () => {
   }
 
   return (
-    <div className="min-h-full mobile-keyboard-padding">
+    <div className="min-h-full pb-3">
       {/* Шапка с названием модуля */}
       <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-4">
         <div className="flex items-center justify-between px-2 mb-6">
@@ -194,29 +194,38 @@ export const ModuleEditPage = () => {
                   </p>
                 </div>
 
-								<div className="flex gap-2 w-full">
-									<Button
-										size="2s"
-										variant="second"
-										className="flex-1"
-										onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/${lesson.id}/edit`)}
-									>
-										<Edit className="h-4 w-4 mr-2" />
-										Редактировать
-									</Button>
-								</div>
-							</Box>
-						))}
-					</div>
-				)}
-			</div>
+                <div className="flex gap-2 w-full">
+                  <Button
+                    size="2s"
+                    variant="second"
+                    className="flex-1"
+                    onClick={() =>
+                      navigate(
+                        `/admin/content/courses/${module.courseId}/modules/${moduleId}/lessons/${lesson.id}/edit`
+                      )
+                    }
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Редактировать
+                  </Button>
+                </div>
+              </Box>
+            ))}
+          </div>
+        )}
+      </div>
 
       {module.testVariant !== "NONE" && module.quizId > 0 && (
         <div className="px-4 my-2">
           <Button
             className="w-full"
             size="sm"
-            onClick={() => navigate(`/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/${module.quizId}/edit`)}>
+            onClick={() =>
+              navigate(
+                `/admin/content/courses/${module.courseId}/modules/${moduleId}/quizzes/${module.quizId}/edit`
+              )
+            }
+          >
             <Edit className="h-5 w-5 mr-2" />
             Редактировать тест модуля
           </Button>

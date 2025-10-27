@@ -100,7 +100,7 @@ const PracticePreviewPage = () => {
   });
 
   return (
-    <div className="bg-white text-black min-h-full mobile-keyboard-padding">
+    <div className="bg-white text-black min-h-full pb-3">
       <div className="flex flex-col bg-base-bg p-3 text-sm rounded-b-2xl text-white gap-2 mb-3">
         <div className="flex flex-row justify-between items-center">
           <h1 className="text-xl font-semibold">Предпросмотр практики</h1>

@@ -125,7 +125,7 @@ export const QuizPage = () => {
   const isOptionSelected = selectedOptions[currentQuestion.id!] !== undefined;
 
   return (
-    <div className="min-h-full mobile-keyboard-padding">
+    <div className="min-h-full pb-3">
       {/* Шапка */}
       <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
         <HeadText

@@ -14,7 +14,7 @@ export const EvaluationPage = () => {
   );
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center mobile-keyboard-padding">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center pb-3">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
       </div>
     );

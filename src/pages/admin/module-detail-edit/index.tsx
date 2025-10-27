@@ -91,7 +91,7 @@ export const ModuleDetailEditPage = () => {
   }
 
   return (
-    <div className="px-2 min-h-full flex flex-col mobile-keyboard-padding pt-6 gap-6">
+    <div className="px-2 min-h-full flex flex-col pb-3 pt-6 gap-6">
       <HeadText
         head="Редактирование деталей модуля"
         label="Обновите данные модуля"

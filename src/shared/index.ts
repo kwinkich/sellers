@@ -2,6 +2,8 @@ export * from "./api/index";
 export * from "./hooks/useInit";
 export * from "./hooks/useCopyToClipboard";
 export * from "./hooks/useInfiniteScroll";
+export * from "./hooks/useKeyboardVisibility";
+export * from "./hooks/useIsCoarsePointer";
 export * from "./icons/index";
 export * from "./lib/index";
 export * from "./stores/index";

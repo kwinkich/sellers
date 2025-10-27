@@ -48,7 +48,7 @@ export const AdminUpdateClientPage = () => {
     data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
   return (
-    <div className="flex flex-col gap-6 px-2 pt-4 h-full mobile-keyboard-padding">
+    <div className="flex flex-col gap-6 px-2 pt-4 h-full pb-3">
       <HeadText
         head="Редактирование клиента"
         label={`Обновите данные компании <strong>${clientName} (#${id})</strong>`}

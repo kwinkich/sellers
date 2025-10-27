@@ -5,16 +5,21 @@ export const PracticeLayout = () => {
   const location = useLocation();
 
   const shouldApplySecondBg =
-		location.pathname.includes("/practice/create") ||
-		location.pathname.includes("/practice/preview");
+    location.pathname.includes("/practice/create") ||
+    location.pathname.includes("/practice/preview");
   return (
-		<div className="bg-white">
-			<div className={`w-full h-full ${shouldApplySecondBg ? "pb-0" : "pb-16"} bg-second-bg`}>
-				<Outlet />
-			</div>
-			{<RoleNavBar />}
-		</div>
+    <div className="bg-white">
+      <div
+        className={`w-full h-full bg-second-bg`}
+        style={{
+          paddingBottom: shouldApplySecondBg
+            ? "0px"
+            : "calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
+        <Outlet />
+      </div>
+      {<RoleNavBar />}
+    </div>
   );
 };
-
-

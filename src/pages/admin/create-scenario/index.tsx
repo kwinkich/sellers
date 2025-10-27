@@ -392,7 +392,7 @@ export const AdminScenariosCreatePage = () => {
         />
       </div>
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col mobile-keyboard-padding gap-6 px-2 min-h-full">
+        <div className="flex flex-col pb-3 gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
             <TabsList
               variant="second"

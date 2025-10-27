@@ -326,7 +326,7 @@ export const CreateLessonPage = () => {
   // Removed success screen — automatic redirect happens on successful creation
 
   return (
-    <div className="min-h-full flex flex-col mobile-keyboard-padding gap-6">
+    <div className="min-h-full flex flex-col pb-3 gap-6">
       {/* Шапка с полями названия и описания */}
       <div className="w-full bg-base-bg rounded-b-2xl px-3 py-4">
         <HeadText
