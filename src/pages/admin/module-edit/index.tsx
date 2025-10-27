@@ -217,7 +217,7 @@ export const ModuleEditPage = () => {
         )}
       </div>
 
-      {module.testVariant !== "NONE" && module.quizId > 0 && (
+      {module.testVariant !== "NONE" && (
         <div className="px-4 my-2">
           <Button
             className="w-full"
