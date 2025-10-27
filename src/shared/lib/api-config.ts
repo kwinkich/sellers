@@ -7,6 +7,13 @@ interface ApiConfig {
   baseUrl: string;
   apiPrefix: string;
   fullApiUrl: string;
+  timeout: number;
+  retry: {
+    limit: number;
+    methods: string[];
+    statusCodes: number[];
+    backoffLimit: number;
+  };
 }
 
 /**
@@ -61,6 +68,29 @@ function getApiPrefixForPath(): string {
 }
 
 /**
+ * Get timeout from environment variables with fallback
+ */
+function getTimeout(): number {
+  const timeout = import.meta.env.VITE_API_TIMEOUT;
+  return timeout ? parseInt(timeout, 10) : 30000; // 30 seconds default
+}
+
+/**
+ * Get retry configuration from environment variables with fallback
+ */
+function getRetryConfig() {
+  const retryLimit = import.meta.env.VITE_API_RETRY_LIMIT;
+  const retryBackoffLimit = import.meta.env.VITE_API_RETRY_BACKOFF_LIMIT;
+
+  return {
+    limit: retryLimit ? parseInt(retryLimit, 10) : 3,
+    methods: ["get", "put", "head", "delete", "options", "trace"],
+    statusCodes: [408, 413, 429, 500, 502, 503, 504, 521, 522, 524],
+    backoffLimit: retryBackoffLimit ? parseInt(retryBackoffLimit, 10) : 10000, // 10 seconds max
+  };
+}
+
+/**
  * Get complete API configuration
  */
 function getApiConfig(): ApiConfig {
@@ -68,6 +98,8 @@ function getApiConfig(): ApiConfig {
     baseUrl: getBaseUrl(),
     apiPrefix: getApiPrefix(),
     fullApiUrl: getFullApiUrl(),
+    timeout: getTimeout(),
+    retry: getRetryConfig(),
   };
 }
 
@@ -78,5 +110,7 @@ export {
   getApiOrigin,
   getApiPrefixForPath,
   getApiConfig,
+  getTimeout,
+  getRetryConfig,
   type ApiConfig,
 };

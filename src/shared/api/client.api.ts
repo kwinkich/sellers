@@ -6,7 +6,12 @@ import {
 } from "../lib/getAuthToken";
 import { getTelegramInitData } from "../lib/telegram";
 import { handleUnauthorized } from "../lib/unauthorizedInterceptor";
-import { getFullApiUrl, getApiPrefixForPath } from "../lib/api-config";
+import {
+  getFullApiUrl,
+  getApiPrefixForPath,
+  getTimeout,
+  getRetryConfig,
+} from "../lib/api-config";
 import type { GResponse } from "@/shared";
 import type { AuthResponse } from "@/entities";
 
@@ -89,8 +94,8 @@ async function handle401(request: Request, options: any, response: Response) {
 const base = ky.create({
   prefixUrl: getFullApiUrl(),
   credentials: "include",
-  retry: 0,
-  timeout: 10000, // <<— таймаут на любой запрос, чтобы не висло вечно
+  retry: getRetryConfig(),
+  timeout: getTimeout(),
 });
 
 async function doRefresh(): Promise<GResponse<AuthResponse>> {
@@ -150,8 +155,8 @@ function createAPI() {
   return ky.create({
     prefixUrl: getFullApiUrl(),
     credentials: "include",
-    retry: 0,
-    timeout: 10000,
+    retry: getRetryConfig(),
+    timeout: getTimeout(),
     hooks: {
       beforeRequest: [attachToken],
       afterResponse: [handle401],
@@ -162,6 +167,22 @@ function createAPI() {
 export const API = createAPI();
 
 export const SILENT_API = createAPI();
-export const FILE_API = createAPI();
+
+// Specialized API client for file uploads with longer timeout
+export const FILE_API = ky.create({
+  prefixUrl: getFullApiUrl(),
+  credentials: "include",
+  retry: {
+    limit: 2, // Fewer retries for file uploads
+    methods: ["post", "put"],
+    statusCodes: [408, 413, 429, 500, 502, 503, 504, 521, 522, 524],
+    backoffLimit: 15000, // Longer backoff for file uploads
+  },
+  timeout: 120000, // 2 minutes timeout for file uploads
+  hooks: {
+    beforeRequest: [attachToken],
+    afterResponse: [handle401],
+  },
+});
 
 export { doRefresh };

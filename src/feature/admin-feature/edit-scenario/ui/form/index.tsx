@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenarios.api";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
 import WebApp from "@twa-dev/sdk";
@@ -249,12 +249,12 @@ export function EditScenarioForm({
       queryClient.invalidateQueries({
         queryKey: ["scenarios", "detail", scenarioId],
       });
-      toast.success("Сценарий успешно обновлен");
+      handleFormSuccess("Сценарий успешно обновлен");
       navigate("/admin/content/scenarios");
     },
     onError: (error) => {
       console.error("Ошибка при обновлении сценария:", error);
-      toast.error("Ошибка при обновлении сценария");
+      handleFormError(error, ERROR_MESSAGES.UPDATE);
     },
   });
 
@@ -351,7 +351,7 @@ export function EditScenarioForm({
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      toast.error("Ошибка валидации");
+      handleFormError("Ошибка валидации", "Заполните название сценария");
       return;
     }
     setShowSubmitDialog(true);
@@ -531,8 +531,8 @@ export function EditScenarioForm({
         </TabsContent>
       </Tabs>
 
-      {/* Navigation buttons - sticky within the page scroller */}
-      <div className="sticky bottom-0 bg-white pt-4 pb-4">
+      {/* Navigation buttons */}
+      <div className="pt-4 pb-4">
         {activeTab === "SELLER" && (
           <Button
             onClick={handleNextTab}
@@ -588,7 +588,8 @@ export function EditScenarioForm({
         onClose={cancelSubmit}
         onConfirm={confirmSubmit}
         title="Подтверждение обновления"
-        description="Вы уверены, что хотите обновить сценарий? Все изменения будут сохранены."
+        description={`Вы уверены, что хотите обновить сценарий ${formData.title}? Все изменения будут сохранены.`}
+        userName={formData.title}
         confirmText="Обновить"
         isLoading={isPending}
         showCancelButton={false}

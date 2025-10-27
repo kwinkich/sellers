@@ -15,8 +15,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { createClientSchema, type CreateClientFormData } from "../../model";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export function CreateClientForm() {
   const queryClient = useQueryClient();
@@ -27,13 +27,13 @@ export function CreateClientForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
 
-      toast.success("Клиент успешно создан");
+      handleFormSuccess("Клиент успешно создан");
 
       navigate("/admin/clients", { replace: true });
     },
     onError: (error) => {
       console.error("Ошибка при создании клиента:", error);
-      toast.error("Ошибка при создании клиента");
+      handleFormError(error, ERROR_MESSAGES.CREATE);
     },
   });
 

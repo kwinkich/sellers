@@ -5,7 +5,7 @@ import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
 import { clientsQueryOptions, coursesMutationOptions } from "@/entities";
 import type { ClientListItem } from "@/entities/client/model/types/client.types";
-import { HeadText } from "@/shared";
+import { HeadText, handleFormSuccess, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -80,11 +80,12 @@ export const CreateCoursePage = () => {
   const createCourseMutation = useMutation({
     ...coursesMutationOptions.create(),
     onSuccess: (result) => {
+      handleFormSuccess("Курс успешно создан");
       navigate(`/admin/content/courses/${result.data.id}/edit`);
     },
     onError: (error) => {
       console.error("Error creating course:", error);
-      alert("Произошла ошибка при создании курса. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании курса");
     },
   });
 

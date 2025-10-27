@@ -7,7 +7,7 @@ import {
   quizzesQueryOptions,
   type QuizQuestion,
 } from "@/entities";
-import { HeadText } from "@/shared";
+import { HeadText, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,12 +30,12 @@ export const EditQuizPage = () => {
       if (result.success && result.data) {
         navigate(-1); // Возврат назад после сохранения
       } else {
-        alert("Не удалось обновить тест. Попробуйте еще раз.");
+        handleFormError("Не удалось обновить тест", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error updating quiz:", error);
-      alert("Произошла ошибка при обновлении теста. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при обновлении теста");
     },
   });
 

@@ -3,7 +3,7 @@ import { ConfirmationDialog } from "@/shared/ui/confirmation-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { LicenseCard } from "./ui";
 
 export const AdminLicencesList = () => {
@@ -34,7 +34,7 @@ export const AdminLicencesList = () => {
           queryKey: ["clients", "licenses", parseInt(id!)],
         });
 
-        toast.success("Лицензия удалена");
+        handleFormSuccess("Лицензия удалена");
         setConfirmationDialog({
           isOpen: false,
           licenseId: null,
@@ -44,7 +44,7 @@ export const AdminLicencesList = () => {
       },
       onError: (error) => {
         console.error("Ошибка при удалении лицензии:", error);
-        toast.error("Ошибка при удалении лицензии");
+        handleFormError(error, ERROR_MESSAGES.DELETE);
       },
     });
 
@@ -147,6 +147,7 @@ export const AdminLicencesList = () => {
             ? `Удаление активной лицензии приведет к потере доступа МОПа ${confirmationDialog.mopName} к приложению. Вы уверены, что хотите продолжить?`
             : "Удаление активной лицензии приведет к потере доступа назначенного МОПа к приложению. Вы уверены, что хотите продолжить?"
         }
+        userName={confirmationDialog.mopName ?? undefined}
         confirmText="Удалить"
         isLoading={isRemovingSingle}
         showCancelButton={false}

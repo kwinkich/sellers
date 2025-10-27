@@ -21,7 +21,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import {
   updateClientSchema,
   type UpdateClientFormData,
@@ -45,13 +45,13 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
         queryKey: ["clients", "detail", id],
       });
 
-      toast.success("Данные клиента обновлены");
+      handleFormSuccess("Данные клиента обновлены");
 
       navigate("/admin/clients", { replace: true });
     },
     onError: (error) => {
       console.error("Ошибка при обновлении клиента:", error);
-      toast.error("Ошибка при обновлении клиента");
+      handleFormError(error, ERROR_MESSAGES.UPDATE);
     },
   });
 
@@ -66,11 +66,11 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
         queryKey: ["clients", "licenses", parseInt(id!)],
       });
 
-      toast.success("Лицензии добавлены");
+      handleFormSuccess("Лицензии добавлены");
     },
     onError: (error) => {
       console.error("Ошибка при добавлении лицензий:", error);
-      toast.error("Ошибка при добавлении лицензий");
+      handleFormError(error, "Ошибка при добавлении лицензий");
     },
   });
 
@@ -86,11 +86,11 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
           queryKey: ["clients", "licenses", parseInt(id!)],
         });
 
-        toast.success("Лицензии удалены");
+        handleFormSuccess("Лицензии удалены");
       },
       onError: (error) => {
         console.error("Ошибка при удалении лицензий:", error);
-        toast.error("Ошибка при удалении лицензий");
+        handleFormError(error, "Ошибка при удалении лицензий");
       },
     }
   );

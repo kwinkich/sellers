@@ -5,12 +5,12 @@ import {
   modulesMutationOptions,
   type Module,
 } from "@/entities";
-import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
+import { Badge, Box, HeadText, ConfirmationDialog, EditButton } from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { X } from "lucide-react";
 
 export const CourseEditPage = () => {
@@ -30,11 +30,11 @@ export const CourseEditPage = () => {
       queryClient.invalidateQueries({
         queryKey: ["modules", "by-course", courseId],
       });
-      toast.success("Модуль удалён");
+      handleFormSuccess("Модуль удалён");
       setConfirmState({ isOpen: false, moduleId: null, moduleTitle: null });
     },
-    onError: () => {
-      toast.error("Не удалось удалить модуль");
+    onError: (error) => {
+      handleFormError(error, ERROR_MESSAGES.DELETE);
     },
   });
 
@@ -102,15 +102,13 @@ export const CourseEditPage = () => {
             label="Редактирование курса"
             className="px-0 mb-0"
           />
-          <Button
-            size="xs"
-            className="text-base-main bg-transparent text-md"
+          <EditButton
+            children="Редактировать"
+            size="2s"
             onClick={() =>
               navigate(`/admin/content/courses/${courseId}/detail-edit`)
             }
-          >
-            изменить
-          </Button>
+          />
         </div>
         <Button
           onClick={() =>

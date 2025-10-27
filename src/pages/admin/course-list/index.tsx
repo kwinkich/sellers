@@ -21,7 +21,7 @@ export const AdminCourseListPage = () => {
       <Button
         rounded="full"
         size="xs"
-        className="fixed text-sm right-2"
+        className="fixed text-sm right-2 border border-black"
         style={buttonPosition}
         onClick={() => navigate("/admin/content/courses/create")}
       >

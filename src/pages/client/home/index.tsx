@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { clientsQueryOptions } from "@/entities";
-import { AddMopDrawer } from "@/feature";
+import { AddMopDialog } from "@/feature";
 import {
   BadgeIcon,
   Box,
@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 export const ClientHomePage = () => {
   const navigate = useNavigate();
-  const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   const { data, isLoading } = useQuery({
     ...clientsQueryOptions.profile(),
@@ -104,7 +104,7 @@ export const ClientHomePage = () => {
           variant="main-opacity"
           text="main"
           size="2s"
-          onClick={() => setOpenDrawer(true)}
+          onClick={() => setOpenDialog(true)}
           disabled={profileData.isLoading || availableLicenses <= 0}
         >
           {profileData.isLoading
@@ -144,7 +144,9 @@ export const ClientHomePage = () => {
             className="cursor-pointer hover:opacity-80 transition-opacity"
           >
             <ListIcon size={36} fill="#06935F" />
-            <p className="font-medium text-white leading-[100%]">Список МОПов</p>
+            <p className="font-medium text-white leading-[100%]">
+              Список МОПов
+            </p>
           </Box>
 
           <Box
@@ -162,7 +164,7 @@ export const ClientHomePage = () => {
         </div>
       </div>
 
-      <AddMopDrawer open={openDrawer} onOpenChange={setOpenDrawer} />
+      <AddMopDialog open={openDialog} onOpenChange={setOpenDialog} />
     </>
   );
 };

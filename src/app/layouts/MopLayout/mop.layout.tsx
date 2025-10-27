@@ -6,6 +6,7 @@ export const MopLayout = () => {
     <div className="w-dvw h-dvh bg-white relative">
       <div
         className="w-full h-full overflow-auto bg-second-bg"
+        data-scroll-container
         style={{
           paddingBottom:
             "calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px))",

@@ -9,7 +9,7 @@ import {
   quizzesMutationOptions,
   type QuizQuestion,
 } from "@/entities";
-import { HeadText } from "@/shared";
+import { HeadText, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -45,12 +45,12 @@ export const CreateQuizPage = () => {
           },
         });
       } else {
-        alert("Не удалось создать тест. Попробуйте еще раз.");
+        handleFormError("Не удалось создать тест", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error creating quiz:", error);
-      alert("Произошла ошибка при создании теста. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании теста");
     },
   });
 
@@ -62,12 +62,15 @@ export const CreateQuizPage = () => {
           `/admin/content/courses/${module.courseId}/modules/${lesson.moduleId}/lessons/${lessonId}/edit`
         );
       } else {
-        alert("Не удалось привязать тест к уроку. Попробуйте еще раз.");
+        handleFormError(
+          "Не удалось привязать тест к уроку",
+          "Попробуйте еще раз"
+        );
       }
     },
     onError: (error) => {
       console.error("Error updating lesson:", error);
-      alert("Произошла ошибка при привязке теста к уроку. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при привязке теста к уроку");
     },
   });
 

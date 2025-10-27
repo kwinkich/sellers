@@ -18,7 +18,7 @@ import {
   modulesQueryOptions,
 } from "@/entities";
 import { quizzesMutationOptions, type QuizQuestion } from "@/entities";
-import { Box, HeadText } from "@/shared";
+import { Box, HeadText, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   File,
@@ -72,12 +72,12 @@ export const CreateLessonPage = () => {
           `/admin/content/courses/${module?.courseId}/modules/${moduleId}/edit`
         );
       } else {
-        alert("Не удалось создать урок. Попробуйте еще раз.");
+        handleFormError("Не удалось создать урок", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error creating lesson:", error);
-      alert("Произошла ошибка при создании урока. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании урока");
     },
   });
 
@@ -85,7 +85,7 @@ export const CreateLessonPage = () => {
     ...quizzesMutationOptions.create(),
     onError: (error) => {
       console.error("Error creating quiz:", error);
-      alert("Произошла ошибка при создании теста. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании теста");
     },
   });
 
@@ -109,12 +109,15 @@ export const CreateLessonPage = () => {
 
       const quizResult = await createQuizMutation.mutateAsync(quizSubmitData);
       if (!quizResult?.success || !quizResult.data) {
-        alert("Не удалось создать тест. Попробуйте еще раз.");
+        handleFormError("Не удалось создать тест", "Попробуйте еще раз");
         return;
       }
       quizIdToAttach = quizResult.data.id;
     } else {
-      alert("Добавьте тест для урока");
+      handleFormError(
+        "Добавьте тест для урока",
+        "Тест обязателен для создания урока"
+      );
       return;
     }
 

@@ -23,7 +23,7 @@ import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError } from "@/shared";
 import { useInfiniteList } from "@/shared";
 
 /** Convert local date + "HH:MM" to UTC ISO string */
@@ -250,13 +250,16 @@ const PracticeCreatePage = () => {
 
         if (response.data?.meeting?.join_url) {
           store.setZoom(response.data.meeting.join_url);
-          toast.success("Встреча Zoom создана");
+          handleFormSuccess("Встреча Zoom создана");
         } else {
-          toast.error("Не удалось создать встречу Zoom");
+          handleFormError(
+            "Не удалось создать встречу Zoom",
+            "Попробуйте еще раз"
+          );
         }
       } catch (error) {
         console.error("Error creating Zoom meeting:", error);
-        toast.error("Ошибка при создании встречи Zoom");
+        handleFormError(error, "Ошибка при создании встречи Zoom");
       } finally {
         setIsCreatingMeeting(false);
       }

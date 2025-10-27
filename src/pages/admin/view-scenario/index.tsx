@@ -80,8 +80,9 @@ export const AdminViewScenarioPage = () => {
       <div
         ref={guardRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+        data-scroll-container
       >
-        <div className="flex flex-col gap-6 px-2 pb-[96px] min-h-full">
+        <div className="flex flex-col gap-6 px-2 pb-[calc(96px+env(safe-area-inset-bottom))] min-h-full">
           <ViewScenarioForm scenarioId={id ? parseInt(id) : undefined} />
         </div>
       </div>

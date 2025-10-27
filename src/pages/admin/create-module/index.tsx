@@ -6,7 +6,7 @@ import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
 import { modulesMutationOptions, modulesQueryOptions } from "@/entities";
 import { quizzesMutationOptions, type QuizQuestion } from "@/entities";
-import { HeadText } from "@/shared";
+import { HeadText, handleFormSuccess, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -41,14 +41,15 @@ export const CreateModulePage = () => {
     ...modulesMutationOptions.create(),
     onSuccess: (result) => {
       if (result.success && result.data) {
+        handleFormSuccess("Модуль успешно создан");
         navigate(`/admin/content/courses/${courseId}/edit`);
       } else {
-        alert("Не удалось создать модуль. Попробуйте еще раз.");
+        handleFormError("Не удалось создать модуль", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error creating module:", error);
-      alert("Произошла ошибка при создании модуля. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании модуля");
     },
   });
 
@@ -56,7 +57,7 @@ export const CreateModulePage = () => {
     ...quizzesMutationOptions.create(),
     onError: (error) => {
       console.error("Error creating quiz:", error);
-      alert("Произошла ошибка при создании теста. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при создании теста");
     },
   });
 
@@ -80,7 +81,7 @@ export const CreateModulePage = () => {
 
       const quizResult = await createQuizMutation.mutateAsync(quizSubmitData);
       if (!quizResult?.success || !quizResult.data) {
-        alert("Не удалось создать тест. Попробуйте еще раз.");
+        handleFormError("Не удалось создать тест", "Попробуйте еще раз");
         return;
       }
       quizIdToAttach = quizResult.data.id;

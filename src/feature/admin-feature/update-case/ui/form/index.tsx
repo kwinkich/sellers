@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { ConfirmationDialog } from "@/shared";
 import {
   createCaseSchema,
@@ -59,7 +59,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cases"] });
 
-      toast.success("Кейс успешно обновлен");
+      handleFormSuccess("Кейс успешно обновлен");
 
       // Navigate back to cases list
       navigate("/admin/content/cases");
@@ -67,20 +67,14 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
     onError: (error: any) => {
       console.error("Ошибка при обновлении кейса:", error);
 
-      // Handle unique constraint violation (409 Conflict)
+      const errorMessage = handleFormError(error, ERROR_MESSAGES.UPDATE);
+
+      // Handle unique constraint violation (409 Conflict) - set form field error
       if (error?.status === 409 || error?.error?.code === "CONFLICT") {
-        const errorMessage =
-          error?.error?.message || "Кейс с таким названием уже существует";
         form.setError("title", {
           type: "manual",
           message: errorMessage,
         });
-        toast.error(errorMessage);
-      } else {
-        // Handle other errors
-        const errorMessage =
-          error?.error?.message || "Ошибка при обновлении кейса";
-        toast.error(errorMessage);
       }
     },
   });
@@ -143,7 +137,7 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
 
   const onSubmit = (formData: CreateCaseFormData) => {
     if (!userId || !caseId) {
-      toast.error("Ошибка авторизации");
+      handleFormError("Ошибка авторизации", "Необходимо войти в систему");
       return;
     }
 

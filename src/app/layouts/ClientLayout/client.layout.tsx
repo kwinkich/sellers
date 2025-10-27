@@ -17,6 +17,7 @@ export const ClientLayout = () => {
         className={`w-full h-full overflow-auto ${
           shouldApplySecondBg ? "bg-second-bg" : ""
         }`}
+        data-scroll-container
         style={{
           paddingBottom:
             "calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px))",

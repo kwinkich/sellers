@@ -17,7 +17,7 @@ import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenarios.api";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
 import WebApp from "@twa-dev/sdk";
@@ -139,25 +139,20 @@ export const AdminScenariosCreatePage = () => {
         exact: false,
       });
 
-      toast.success("Сценарий успешно создан");
+      handleFormSuccess("Сценарий успешно создан");
 
       navigate("/admin/home");
     },
     onError: (error: any) => {
       console.error("Ошибка при создании сценария:", error);
 
-      // Handle unique constraint violation (409 Conflict)
+      const errorMessage = handleFormError(error, ERROR_MESSAGES.CREATE);
+
+      // Handle unique constraint violation (409 Conflict) - set title error
       if (error?.status === 409 || error?.error?.code === "CONFLICT") {
-        const errorMessage =
-          error?.error?.message || "Сценарий с таким названием уже существует";
         setTitleError(errorMessage);
-        toast.error(errorMessage);
       } else {
-        // Handle other errors
-        const errorMessage =
-          error?.error?.message || "Ошибка при создании сценария";
         setTitleError(""); // Clear title error for other types of errors
-        toast.error(errorMessage);
       }
     },
   });
@@ -303,7 +298,7 @@ export const AdminScenariosCreatePage = () => {
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      toast.error("Ошибка валидации");
+      handleFormError("Ошибка валидации", "Заполните название сценария");
       return;
     }
 
@@ -407,8 +402,9 @@ export const AdminScenariosCreatePage = () => {
       <div
         ref={guardRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+        data-scroll-container
       >
-        <div className="flex flex-col pb-[96px] gap-6 px-2 min-h-full">
+        <div className="flex flex-col pb-[calc(96px+env(safe-area-inset-bottom))] gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
             <div className="sticky top-0 bg-white z-10 pb-2">
               <TabsList
@@ -472,7 +468,7 @@ export const AdminScenariosCreatePage = () => {
           </Tabs>
 
           {/* Navigation buttons */}
-          <div className="sticky bottom-0 bg-white pt-4 pb-4">
+          <div className="relative pt-4 pb-4">
             {activeTab === "SELLER" && (
               <Button
                 onClick={handleNextTab}

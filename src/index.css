@@ -26,6 +26,7 @@
 
 :root {
   --nav-h: 80px; /* h-20 - navigation bar height for better mobile usability */
+  --kb: 0px; /* iOS keyboard height - set by useIosKeyboardInsetVar hook */
 }
 
 @theme inline {
