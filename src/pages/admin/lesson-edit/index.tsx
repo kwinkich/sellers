@@ -243,7 +243,7 @@ export const LessonEditPage = () => {
   console.log("Lesson contentBlocks from API:", lesson.contentBlocks);
 
   return (
-    <div className="min-h-full flex flex-col pb-3 gap-6">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 gap-6">
       {/* Шапка с полями названия и описания */}
       <div className="w-full bg-base-bg rounded-b-2xl px-3 py-4">
         <HeadText
@@ -319,7 +319,7 @@ export const LessonEditPage = () => {
       {isEditing ? (
         <form
           onSubmit={handleSave}
-          className="flex flex-col flex-1 gap-6 h-full px-2"
+          className="flex flex-col flex-1 gap-6 h-full px-2 overflow-auto"
         >
           {contentBlocks.length > 0 ? (
             <div className="flex flex-col flex-1">

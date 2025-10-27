@@ -1,5 +1,6 @@
 import {
   Drawer,
+  DrawerBody,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
@@ -166,7 +167,7 @@ export const PracticeSuccessDrawer = () => {
   if (!practice) return null;
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
-      <DrawerContent className="bg-white text-black rounded-t-[48px] flex flex-col max-h-[90dvh] overflow-y-auto">
+      <DrawerContent className="bg-white text-black rounded-t-[48px] flex flex-col max-h-[92svh] overflow-hidden">
         <DrawerHeader className="items-center text-center shrink-0">
           <DrawerTitle className="sr-only">Успешно</DrawerTitle>
           <div className="w-14 h-14 rounded-full bg-base-opacity10-main flex items-center justify-center">
@@ -176,9 +177,11 @@ export const PracticeSuccessDrawer = () => {
           <p className="text-base-gray text-sm">Вы участвуете в сражении</p>
         </DrawerHeader>
 
-        <div className="px-4 pb-2">
-          <PracticeInfoCard data={practice} />
-        </div>
+        <DrawerBody>
+          <div className="px-4 pb-2">
+            <PracticeInfoCard data={practice} />
+          </div>
+        </DrawerBody>
 
         <DrawerFooter className="shrink-0 px-4 pb-16">
           <Button onClick={close}>Закрыть</Button>

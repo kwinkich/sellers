@@ -93,7 +93,7 @@ export const ModuleEditPage = () => {
   }
 
   return (
-    <div className="min-h-full pb-3">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
       {/* Шапка с названием модуля */}
       <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-4">
         <div className="flex items-center justify-between px-2 mb-6">
@@ -122,7 +122,7 @@ export const ModuleEditPage = () => {
           }
           className="w-full"
           size="xs"
-          text="dark"
+          text="white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Добавить урок
@@ -130,22 +130,24 @@ export const ModuleEditPage = () => {
       </div>
 
       {/* Список уроков */}
-      <div className="px-4">
+      <div className="flex-1 overflow-auto px-4">
         <h3 className="text-lg font-semibold mb-4">Уроки модуля</h3>
 
         {lessonsLoading ? (
-          <div className="flex justify-center py-8">
+          <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : lessonsError ? (
-          <div className="text-center py-8">
-            <p className="text-red-500 mb-2">Ошибка загрузки уроков</p>
-            <Button size="sm" onClick={() => window.location.reload()}>
-              Обновить
-            </Button>
+          <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center text-center">
+            <div>
+              <p className="text-red-500 mb-2">Ошибка загрузки уроков</p>
+              <Button size="sm" onClick={() => window.location.reload()}>
+                Обновить
+              </Button>
+            </div>
           </div>
         ) : lessons.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center text-gray-500">
             Уроков пока нет. Добавьте первый урок.
           </div>
         ) : (
@@ -245,10 +247,10 @@ export const ModuleEditPage = () => {
           confirmState.lessonTitle ?? ""
         }? Это действие необратимо.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={isDeleting}
         userName={confirmState.lessonTitle ?? undefined}
         showCancelButton={false}
+        severity="destructive"
       />
     </div>
   );

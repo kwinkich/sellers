@@ -21,6 +21,7 @@ interface ConfirmationDialogProps {
   isLoading?: boolean;
   userName?: string;
   showCancelButton?: boolean;
+  severity?: "destructive" | "constructive";
 }
 
 export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
@@ -34,6 +35,7 @@ export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
   isLoading = false,
   userName,
   showCancelButton = true,
+  severity = "destructive",
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -125,7 +127,7 @@ export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
               </Button>
             )}
 
-            {/* менее яркая кнопка подтверждения */}
+            {/* кнопка подтверждения */}
             <Button
               variant="second"
               onClick={onConfirm}
@@ -133,7 +135,11 @@ export const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
               size="sm"
               className={`
                 w-full sm:w-auto order-1 sm:order-2
-                bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500
+                ${
+                  severity === "constructive"
+                    ? "bg-green-600 hover:bg-green-700 focus-visible:ring-green-500"
+                    : "bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500"
+                }
                 text-white h-12
                 ${!showCancelButton ? "sm:w-full" : ""}
               `}

@@ -17,12 +17,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import WebApp from "@twa-dev/sdk";
 import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
+import { useKeyboardChrome, RouteChromeResetter } from "@/shared";
 
 export const AppInitLayout = () => {
   const { isLoading, isError, userData } = useAppInit();
 
-  WebApp.setHeaderColor("#1C1F23");
-  WebApp.setBottomBarColor("#000000");
+  useKeyboardChrome();
+
+  WebApp?.setHeaderColor("#1C1F23");
+  WebApp?.setBottomBarColor("#000000");
+  WebApp?.expand();
 
   const qc = useQueryClient();
   const showActive = useActivePracticeStore((s) => s.show);
@@ -166,6 +170,7 @@ export const AppInitLayout = () => {
   return (
     <>
       <TelegramBackSync closeOnRootBack={false} />
+      <RouteChromeResetter />
       <UserRoleProvider
         role={currentRole as "CLIENT" | "ADMIN" | "MOP" | null}
         userId={userData?.sub || null}

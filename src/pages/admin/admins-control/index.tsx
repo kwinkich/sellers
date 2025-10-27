@@ -24,8 +24,8 @@ export const AdminsControlPage = () => {
   });
 
   return (
-    <div className="min-h-full pb-3">
-      <div className="bg-base-bg flex text-white flex-col  w-full rounded-b-3xl p-2 mb-6">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
+      <div className="bg-base-bg flex text-white flex-col w-full rounded-b-3xl p-2 mb-6">
         <HeadText
           className="gap-0.5 mb-8 pl-2 pt-2"
           head="Добавление администратора"
@@ -44,7 +44,7 @@ export const AdminsControlPage = () => {
           <Button
             type="submit"
             className="w-full"
-            text="dark"
+            text="white"
             disabled={isPending}
             onClick={() =>
               createAdmin({
@@ -65,7 +65,9 @@ export const AdminsControlPage = () => {
         </div>
       </div>
 
-      <AdminsList />
+      <div className="flex-1 overflow-auto">
+        <AdminsList />
+      </div>
     </div>
   );
 };

@@ -6,7 +6,12 @@ import {
   type ScenarioBlockItem,
 } from "@/feature/admin-feature/create-scenario/ui/blocks/parts/BlocksContainer";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { HeadText, getRoleLabel } from "@/shared";
+import {
+  HeadText,
+  getRoleLabel,
+  useEdgeSwipeGuard,
+  useTelegramVerticalSwipes,
+} from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { Button } from "@/components/ui/button";
@@ -61,6 +66,10 @@ interface ExtendedBlockItem extends ScenarioBlockItem {
 export const AdminScenariosCreatePage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const guardRef = useEdgeSwipeGuard();
+
+  // Disable Telegram vertical swipes to prevent accidental app close during creation
+  useTelegramVerticalSwipes(true);
 
   const [sellerBlocks, setSellerBlocks] = useState<ExtendedBlockItem[]>([]);
   const [buyerBlocks, setBuyerBlocks] = useState<ExtendedBlockItem[]>([]);
@@ -124,7 +133,11 @@ export const AdminScenariosCreatePage = () => {
   const { mutate: createScenario, isPending } = useMutation({
     ...scenariosMutationOptions.create(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+      // Invalidate specific queries with more targeted approach
+      queryClient.invalidateQueries({
+        queryKey: ["scenarios", "list"],
+        exact: false,
+      });
 
       toast.success("Сценарий успешно создан");
 
@@ -382,8 +395,8 @@ export const AdminScenariosCreatePage = () => {
   };
 
   return (
-    <div className="w-dvw h-dvh bg-white flex flex-col">
-      <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4">
+    <div className="w-dvw h-svh bg-white flex flex-col overflow-hidden">
+      <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4 shrink-0">
         <HeadText head="Создание сценария" label="Добавьте новый сценарий" />
         <CreateScenarioForm
           onFormDataChange={setFormData}
@@ -391,59 +404,70 @@ export const AdminScenariosCreatePage = () => {
           onTitleErrorClear={clearTitleError}
         />
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col pb-3 gap-6 px-2 min-h-full">
+      <div
+        ref={guardRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+      >
+        <div className="flex flex-col pb-[96px] gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
-            <TabsList
-              variant="second"
-              className="grid grid-cols-3 w-full pointer-events-none"
-            >
-              <TabsTrigger variant="second" value="SELLER">
-                {getRoleLabel("SELLER")}
-              </TabsTrigger>
-              <TabsTrigger variant="second" value="BUYER">
-                {getRoleLabel("BUYER")}
-              </TabsTrigger>
-              <TabsTrigger variant="second" value="MODERATOR">
-                {getRoleLabel("MODERATOR")}
-              </TabsTrigger>
-            </TabsList>
+            <div className="sticky top-0 bg-white z-10 pb-2">
+              <TabsList
+                variant="second"
+                className="grid grid-cols-3 w-full pointer-events-none"
+              >
+                <TabsTrigger variant="second" value="SELLER">
+                  {getRoleLabel("SELLER")}
+                </TabsTrigger>
+                <TabsTrigger variant="second" value="BUYER">
+                  {getRoleLabel("BUYER")}
+                </TabsTrigger>
+                <TabsTrigger variant="second" value="MODERATOR">
+                  {getRoleLabel("MODERATOR")}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent
               value="SELLER"
               className="pt-3 data-[state=inactive]:hidden"
               forceMount
             >
-              <BlocksContainer
-                blocks={sellerBlocks}
-                onAdd={handleAdd("SELLER")}
-                onRemove={handleRemove("SELLER")}
-                onDataChange={handleDataChange("SELLER")}
-              />
+              <div className="overflow-visible min-h-0">
+                <BlocksContainer
+                  blocks={sellerBlocks}
+                  onAdd={handleAdd("SELLER")}
+                  onRemove={handleRemove("SELLER")}
+                  onDataChange={handleDataChange("SELLER")}
+                />
+              </div>
             </TabsContent>
             <TabsContent
               value="BUYER"
               className="pt-3 data-[state=inactive]:hidden"
               forceMount
             >
-              <BlocksContainer
-                blocks={buyerBlocks}
-                onAdd={handleAdd("BUYER")}
-                onRemove={handleRemove("BUYER")}
-                onDataChange={handleDataChange("BUYER")}
-              />
+              <div className="overflow-visible min-h-0">
+                <BlocksContainer
+                  blocks={buyerBlocks}
+                  onAdd={handleAdd("BUYER")}
+                  onRemove={handleRemove("BUYER")}
+                  onDataChange={handleDataChange("BUYER")}
+                />
+              </div>
             </TabsContent>
             <TabsContent
               value="MODERATOR"
               className="pt-3 data-[state=inactive]:hidden"
               forceMount
             >
-              <BlocksContainer
-                blocks={moderatorBlocks}
-                onAdd={handleAdd("MODERATOR")}
-                onRemove={handleRemove("MODERATOR")}
-                onDataChange={handleDataChange("MODERATOR")}
-              />
+              <div className="overflow-visible min-h-0">
+                <BlocksContainer
+                  blocks={moderatorBlocks}
+                  onAdd={handleAdd("MODERATOR")}
+                  onRemove={handleRemove("MODERATOR")}
+                  onDataChange={handleDataChange("MODERATOR")}
+                />
+              </div>
             </TabsContent>
           </Tabs>
 

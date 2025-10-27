@@ -59,10 +59,10 @@ export const AdminCard: FC<{ data: Admin }> = ({ data }) => {
           data.displayName ? ` ${data.displayName}` : ""
         }? После удаления он не сможет войти в систему.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={isBlocking}
         userName={data.displayName}
         showCancelButton={false}
+        severity="destructive"
       />
     </>
   );

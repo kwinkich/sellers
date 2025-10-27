@@ -326,7 +326,7 @@ export const CreateLessonPage = () => {
   // Removed success screen — automatic redirect happens on successful creation
 
   return (
-    <div className="min-h-full flex flex-col pb-3 gap-6">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 gap-6">
       {/* Шапка с полями названия и описания */}
       <div className="w-full bg-base-bg rounded-b-2xl px-3 py-4">
         <HeadText
@@ -360,7 +360,7 @@ export const CreateLessonPage = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col flex-1 gap-6 h-full px-2"
+        className="flex flex-col flex-1 gap-6 h-full px-2 overflow-auto"
       >
         {/* Content Blocks Section - NOW FIRST */}
         {contentBlocks.length > 0 && (

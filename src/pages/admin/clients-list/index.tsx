@@ -12,8 +12,8 @@ export const AdminClientsListPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="min-h-full pb-3">
-      <div className="bg-base-bg flex gap-5 text-white flex-col  w-full rounded-b-3xl px-2 pb-4 pt-4 mb-2">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
+      <div className="bg-base-bg flex gap-5 text-white flex-col w-full rounded-b-3xl px-2 pb-4 pt-4 mb-2">
         <HeadText
           head="Список клиентов"
           label="Список всех клиентов, подключенных к платформе"
@@ -48,7 +48,9 @@ export const AdminClientsListPage = () => {
         </Tabs>
       </div>
 
-      <ClientsList type={clientType} searchQuery={searchQuery} />
+      <div className="flex-1 overflow-auto">
+        <ClientsList type={clientType} searchQuery={searchQuery} />
+      </div>
     </div>
   );
 };

@@ -148,7 +148,7 @@ export const PracticeHomePage = () => {
   }
 
   return (
-    <div className="bg-second-bg min-h-[calc(100vh-4rem)] w-full">
+    <div className="min-h-full pb-3">
       <div className="flex flex-col gap-3 px-2 pb-5 pt-4">
         <div className="gap-0.5 pl-2">
           <HeadText
@@ -188,7 +188,7 @@ export const PracticeHomePage = () => {
         )}
       </div>
 
-      <div className="mt-3">
+      <div className="px-2">
         {tab === "all" && <PracticeList />}
         {tab === "mine" && roleReady && role !== "CLIENT" && (
           <PracticeMineList />

@@ -21,33 +21,10 @@ import { useCreatePracticeStore } from "@/feature/practice-feature";
 import { useUserRole } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-/** Pagination helper */
-function getNextPageParamFromMeta(lastPage: any) {
-  if (!lastPage) return undefined;
-
-  // Check if lastPage has data array
-  const data = lastPage?.data;
-  if (!data || !Array.isArray(data)) {
-    return undefined;
-  }
-
-  // Get pagination info from meta (required by backend schema)
-  const pagination = lastPage?.meta?.pagination;
-  if (!pagination) {
-    return undefined;
-  }
-
-  // Backend schema guarantees these fields exist
-  const { currentPage, totalPages } = pagination;
-
-  // Return next page number if there are more pages
-  return currentPage < totalPages ? currentPage + 1 : undefined;
-}
+import { useInfiniteList } from "@/shared";
 
 /** Convert local date + "HH:MM" to UTC ISO string */
 function toUtcIso(dateLocal: Date, hhmm: string): string {
@@ -84,31 +61,30 @@ const PracticeCreatePage = () => {
 
   // ---- Queries ----
 
+  // Stable keys for better performance
+  const SKILLS_KEY = ["skills", "list"] as const;
+  const CASES_KEY = ["cases", "list"] as const;
+
   // Skills list (always available)
-  const skills = useInfiniteQuery({
-    queryKey: ["skills", "list"],
-    queryFn: ({ pageParam = 1 }) =>
-      SkillsAPI.getSkillsPaged({ page: pageParam as number, limit: 50 }),
-    getNextPageParam: getNextPageParamFromMeta,
-    initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
-  });
+  const skills = useInfiniteList<any>(
+    SKILLS_KEY,
+    (page, limit) => SkillsAPI.getSkillsPaged({ page, limit }),
+    50
+  );
 
   // MultiSelect options (string IDs)
   const skillOptions = React.useMemo(
     () =>
-      (skills.data?.pages ?? [])
-        .flatMap((pg: any) => pg?.data ?? [])
-        .map((s: any) => ({
-          value: String(s.id),
-          label: s.name,
-        })),
-    [skills.data]
+      (skills.allItems ?? []).map((s: any) => ({
+        value: String(s.id),
+        label: s.name,
+      })),
+    [skills.allItems]
   );
 
   // Scenarios: NOW enabled even without skills (skills are only filters)
-  const scenarios = useInfiniteQuery({
-    queryKey: [
+  const scenariosKey = React.useMemo(
+    () => [
       "scenarios",
       "list",
       {
@@ -116,25 +92,23 @@ const PracticeCreatePage = () => {
         skillIds: skillIds?.length ? skillIds : undefined,
       },
     ],
-    queryFn: ({ pageParam = 1 }) =>
+    [skillIds]
+  );
+
+  const scenarios = useInfiniteList<any>(
+    scenariosKey,
+    (page, limit) =>
       ScenariosAPI.getScenarios({
         skillIds: (skillIds?.length ? (skillIds as any) : undefined) as any,
-        page: pageParam as number,
-        limit: 50,
+        page,
+        limit,
       }),
-    getNextPageParam: getNextPageParamFromMeta,
-    initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
-    // enabled: ALWAYS true → scenarios selectable without skills
-    enabled: true,
-  });
+    50
+  );
 
   const scenarioOptions = React.useMemo(
-    () =>
-      scenarios.data?.pages
-        ? scenarios.data.pages.flatMap((p: any) => p?.data ?? [])
-        : [],
-    [scenarios.data]
+    () => scenarios.allItems ?? [],
+    [scenarios.allItems]
   );
 
   // Convert scenario options to SearchableSelect format
@@ -148,25 +122,19 @@ const PracticeCreatePage = () => {
   );
 
   // Cases: independent of scenario; disabled for WITHOUT_CASE
-  const cases = useInfiniteQuery({
-    queryKey: ["cases", "list"],
-    queryFn: ({ pageParam = 1 }) =>
+  const cases = useInfiniteList<any>(
+    CASES_KEY,
+    (page, limit) =>
       CasesAPI.getCases({
-        page: pageParam as number,
-        limit: 50,
+        page,
+        limit,
       }),
-    getNextPageParam: getNextPageParamFromMeta,
-    initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
-    enabled: practiceType !== "WITHOUT_CASE",
-  });
+    50
+  );
 
   const caseOptions = React.useMemo(
-    () =>
-      cases.data?.pages
-        ? cases.data.pages.flatMap((p: any) => p?.data ?? [])
-        : [],
-    [cases.data]
+    () => cases.allItems ?? [],
+    [cases.allItems]
   );
 
   // Convert case options to SearchableSelect format
@@ -298,8 +266,8 @@ const PracticeCreatePage = () => {
   }, [canProceed, dateLocal, timeLocal, store, navigate, role, scenarioTitle]);
 
   return (
-    <div className="bg-white text-black min-h-[100dvh] flex flex-col pb-3">
-      <div className="px-4 py-4 flex-1">
+    <div className="bg-white text-black min-h-[calc(100vh-var(--nav-h,80px))] flex flex-col pb-3">
+      <div className="px-4 py-4 flex-1 overflow-auto">
         <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
 
         <div className="space-y-3">
@@ -453,7 +421,10 @@ const PracticeCreatePage = () => {
       </div>
 
       {/* Footer / Next */}
-      <div className="px-4">
+      <div
+        className="px-4 pb-4"
+        style={{ paddingBottom: "calc(1rem + var(--nav-h, 80px))" }}
+      >
         <Button
           className="w-full"
           disabled={!canProceed || isCreatingMeeting}

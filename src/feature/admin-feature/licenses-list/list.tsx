@@ -50,7 +50,7 @@ export const AdminLicencesList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
           <p className="text-base-gray">Загрузка лицензий...</p>
@@ -61,7 +61,7 @@ export const AdminLicencesList = () => {
 
   if (error || !data) {
     return (
-      <div className="text-center py-8 text-destructive">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center text-destructive">
         {error?.message || "Ошибка загрузки лицензий"}
       </div>
     );
@@ -118,7 +118,7 @@ export const AdminLicencesList = () => {
 
   if (licenses.length === 0) {
     return (
-      <div className="text-center py-8 text-base-gray">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center text-base-gray">
         Нет лицензий для этого клиента
       </div>
     );
@@ -148,8 +148,9 @@ export const AdminLicencesList = () => {
             : "Удаление активной лицензии приведет к потере доступа назначенного МОПа к приложению. Вы уверены, что хотите продолжить?"
         }
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={isRemovingSingle}
+        showCancelButton={false}
+        severity="destructive"
       />
     </>
   );

@@ -94,94 +94,107 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   const moderatorForm = scenario.forms.find((f) => f.role === "MODERATOR");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-h-0">
       {/* Tabs for different roles */}
       <Tabs value={activeTab}>
-        <TabsList
-          variant="second"
-          className="grid grid-cols-3 w-full pointer-events-none"
-        >
-          <TabsTrigger variant="second" value="SELLER">
-            {getRoleLabel("SELLER")}
-          </TabsTrigger>
-          <TabsTrigger variant="second" value="BUYER">
-            {getRoleLabel("BUYER")}
-          </TabsTrigger>
-          <TabsTrigger variant="second" value="MODERATOR">
-            {getRoleLabel("MODERATOR")}
-          </TabsTrigger>
-        </TabsList>
+        <div className="sticky top-0 bg-white z-10 pb-2">
+          <TabsList
+            variant="second"
+            className="grid grid-cols-3 w-full pointer-events-none"
+          >
+            <TabsTrigger variant="second" value="SELLER">
+              {getRoleLabel("SELLER")}
+            </TabsTrigger>
+            <TabsTrigger variant="second" value="BUYER">
+              {getRoleLabel("BUYER")}
+            </TabsTrigger>
+            <TabsTrigger variant="second" value="MODERATOR">
+              {getRoleLabel("MODERATOR")}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent
           value="SELLER"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <ViewBlocksContainer
-            blocks={sellerForm?.blocks || []}
-            role="SELLER"
-          />
+          <div className="overflow-visible min-h-0">
+            <ViewBlocksContainer
+              blocks={sellerForm?.blocks || []}
+              role="SELLER"
+            />
+          </div>
         </TabsContent>
         <TabsContent
           value="BUYER"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <ViewBlocksContainer blocks={buyerForm?.blocks || []} role="BUYER" />
+          <div className="overflow-visible min-h-0">
+            <ViewBlocksContainer
+              blocks={buyerForm?.blocks || []}
+              role="BUYER"
+            />
+          </div>
         </TabsContent>
         <TabsContent
           value="MODERATOR"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <ViewBlocksContainer
-            blocks={moderatorForm?.blocks || []}
-            role="MODERATOR"
-          />
+          <div className="overflow-visible min-h-0">
+            <ViewBlocksContainer
+              blocks={moderatorForm?.blocks || []}
+              role="MODERATOR"
+            />
+          </div>
         </TabsContent>
       </Tabs>
 
-      {/* Navigation buttons based on active tab */}
-      <div className="flex gap-2 mt-6">
-        {activeTab === "SELLER" && (
-          <Button onClick={handleNextTab} className="flex-1 h-12">
-            Далее
-          </Button>
-        )}
-
-        {activeTab === "BUYER" && (
-          <>
-            <Button
-              onClick={handlePrevTab}
-              variant="second"
-              className="flex-1 h-12"
-            >
-              Назад
-            </Button>
+      {/* Navigation buttons based on active tab - sticky within the page scroller */}
+      <div className="sticky bottom-0 bg-white pt-4 pb-4">
+        <div className="flex gap-2">
+          {activeTab === "SELLER" && (
             <Button onClick={handleNextTab} className="flex-1 h-12">
               Далее
             </Button>
-          </>
-        )}
+          )}
 
-        {activeTab === "MODERATOR" && (
-          <>
-            <Button
-              onClick={handlePrevTab}
-              variant="second"
-              className="flex-1 h-12"
-            >
-              Назад
-            </Button>
-            <Button
-              onClick={handleExit}
-              variant="second"
-              className="flex-1 h-12"
-            >
-              Выйти
-            </Button>
-          </>
-        )}
+          {activeTab === "BUYER" && (
+            <>
+              <Button
+                onClick={handlePrevTab}
+                variant="second"
+                className="flex-1 h-12"
+              >
+                Назад
+              </Button>
+              <Button onClick={handleNextTab} className="flex-1 h-12">
+                Далее
+              </Button>
+            </>
+          )}
+
+          {activeTab === "MODERATOR" && (
+            <>
+              <Button
+                onClick={handlePrevTab}
+                variant="second"
+                className="flex-1 h-12"
+              >
+                Назад
+              </Button>
+              <Button
+                onClick={handleExit}
+                variant="second"
+                className="flex-1 h-12"
+              >
+                Выйти
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

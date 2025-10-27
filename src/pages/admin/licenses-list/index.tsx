@@ -48,7 +48,7 @@ export const AdminLicensesListPage = () => {
     data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
   return (
-    <div className="flex flex-col bg-second-bg min-h-full pb-3 gap-6 px-2 pt-4">
+    <div className="flex flex-col bg-second-bg min-h-[calc(100vh-4rem)] pb-3 gap-6 px-2 pt-4">
       <HeadText
         head="Лицензии клиента"
         label={`Список всех лицензий клиента <strong>${clientName} (#${id})</strong>`}
@@ -56,7 +56,9 @@ export const AdminLicensesListPage = () => {
         className="px-2"
       />
 
-      <AdminLicencesList />
+      <div className="flex-1 overflow-auto">
+        <AdminLicencesList />
+      </div>
     </div>
   );
 };

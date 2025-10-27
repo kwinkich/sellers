@@ -35,7 +35,7 @@ export function InfiniteScrollList<T>({
 }: InfiniteScrollListProps<T>) {
   if (isLoading && items.length === 0) {
     return (
-      <div className="text-center py-4">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
         <div className="text-base-gray">{loadingMessage}</div>
       </div>
     );
@@ -43,7 +43,7 @@ export function InfiniteScrollList<T>({
 
   if (isError && items.length === 0) {
     return (
-      <div className="text-center py-4 text-destructive">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center text-destructive">
         {errorMessage}: {error?.message || "Неизвестная ошибка"}
       </div>
     );
@@ -51,7 +51,7 @@ export function InfiniteScrollList<T>({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-4 text-muted-foreground px-2">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground px-2">
         {emptyMessage}
       </div>
     );

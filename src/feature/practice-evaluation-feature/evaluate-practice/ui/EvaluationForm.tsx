@@ -5,13 +5,17 @@ import { EvaluationHeader } from "./index";
 import { EvaluationTabs } from "./index";
 import { EvaluationBlocks } from "./index";
 import { EvaluationFooter } from "./index";
-import type { EvaluationSubmission, EvaluationBatchSubmission } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
+import type {
+  EvaluationSubmission,
+  EvaluationBatchSubmission,
+} from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { practiceEvaluationMutationOptions } from "@/entities/practice-evaluation/model/api/practice-evaluation.api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
+import { useEdgeSwipeGuard, useTelegramVerticalSwipes } from "@/shared";
 
 // Types for the evaluation page
 export interface EvaluationFormData {
@@ -22,7 +26,6 @@ export interface EvaluationFormData {
   descr?: string;
   blocks: EvaluationBlock[];
 }
-
 
 export interface EvaluationBlock {
   id?: number;
@@ -52,15 +55,27 @@ export interface EvaluationResponse {
   forms: EvaluationFormData[];
 }
 
-export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: ApiEvaluationForm[]; practiceId: number }) => {
+export const EvaluationForm = ({
+  formsData = [],
+  practiceId,
+}: {
+  formsData?: ApiEvaluationForm[];
+  practiceId: number;
+}) => {
   const [activeTab, setActiveTab] = useState<string>("");
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<Record<string, Record<number, any>>>({});
+  const [answers, setAnswers] = useState<Record<string, Record<number, any>>>(
+    {}
+  );
   const [roleFilled, setRoleFilled] = useState<Record<string, boolean>>({});
 
   const navigate = useNavigate();
   const showUploadModal = useUploadRecordingStore((s) => s.show);
+  const guardRef = useEdgeSwipeGuard();
+
+  // Disable Telegram vertical swipes to prevent accidental app close during evaluation
+  useTelegramVerticalSwipes(true);
 
   const { data: practiceData } = useQuery({
     queryKey: ["practices", "detail", practiceId],
@@ -106,7 +121,11 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
 
   // Set initial active tab when data loads
   useEffect(() => {
-    if (evaluationData?.forms && evaluationData.forms.length > 0 && !activeTab) {
+    if (
+      evaluationData?.forms &&
+      evaluationData.forms.length > 0 &&
+      !activeTab
+    ) {
       setActiveTab(evaluationData.forms[0].role);
     }
   }, [evaluationData, activeTab]);
@@ -129,7 +148,8 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
     const isRightSwipe = distance < -50;
 
     if (isLeftSwipe || isRightSwipe) {
-      const currentIndex = evaluationData?.forms.findIndex(form => form.role === activeTab) ?? 0;
+      const currentIndex =
+        evaluationData?.forms.findIndex((form) => form.role === activeTab) ?? 0;
       const totalForms = evaluationData?.forms.length ?? 0;
 
       if (isLeftSwipe && currentIndex < totalForms - 1) {
@@ -166,12 +186,15 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
   }
 
   // Build single-form submission from collected answers
-  const buildSubmissionForForm = (form: EvaluationFormData): EvaluationSubmission => {
+  const buildSubmissionForForm = (
+    form: EvaluationFormData
+  ): EvaluationSubmission => {
     const roleAns = answers[form.role] || {};
     const answersArr: any[] = [];
     for (const block of form.blocks) {
       if (block.type === "SCALE_SKILL_SINGLE") {
-        const vals = (roleAns[block.position]?.values as Record<number, number>) || {};
+        const vals =
+          (roleAns[block.position]?.values as Record<number, number>) || {};
         const optByValue: Record<number, number | undefined> = {};
         (block.scale?.options || []).forEach((opt) => {
           if (opt?.id != null) optByValue[opt.value] = opt.id;
@@ -187,7 +210,8 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
           });
         });
       } else if (block.type === "SCALE_SKILL_MULTI") {
-        const vals = (roleAns[block.position]?.values as Record<number, number>) || {};
+        const vals =
+          (roleAns[block.position]?.values as Record<number, number>) || {};
         const optByValue: Record<number, number | undefined> = {};
         (block.scale?.options || []).forEach((opt) => {
           if (opt?.id != null) optByValue[opt.value] = opt.id;
@@ -215,96 +239,130 @@ export const EvaluationForm = ({ formsData = [], practiceId }: { formsData?: Api
     return { evaluatedUserId: form.evaluatedUserId, answers: answersArr };
   };
 
-  const { mutateAsync: submitEvaluation, isPending: isSubmitting } = useMutation(
-    practiceEvaluationMutationOptions.submit()
-  );
+  const { mutateAsync: submitEvaluation, isPending: isSubmitting } =
+    useMutation(practiceEvaluationMutationOptions.submit());
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-svh overflow-hidden grid grid-rows-[auto,1fr,auto] bg-white">
       {/* Header */}
       <EvaluationHeader />
 
-      {/* Dynamic Tabs */}
-      <div className="bg-white px-4 py-2">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="bg-gray-100 rounded-xl gap-0">
-          <EvaluationTabs forms={evaluationData.forms} activeTab={activeTab} />
+      {/* Dynamic Tabs - Single scroller */}
+      <div
+        ref={guardRef}
+        className="min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="bg-white px-4 py-2">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="bg-gray-100 rounded-xl gap-0"
+          >
+            <EvaluationTabs
+              forms={evaluationData.forms}
+              activeTab={activeTab}
+            />
 
-          {/* Tab Contents */}
-          {evaluationData.forms.map((form) => {
-            const handleAnswersChange = useCallback((payload: any) => {
-              setAnswers((prev) => {
-                const byRole = prev[form.role] ? { ...prev[form.role] } : {};
-                byRole[payload.position] = payload;
-                const next = { ...prev, [form.role]: byRole };
+            {/* Tab Contents */}
+            {evaluationData.forms.map((form) => {
+              const handleAnswersChange = useCallback(
+                (payload: any) => {
+                  setAnswers((prev) => {
+                    const byRole = prev[form.role]
+                      ? { ...prev[form.role] }
+                      : {};
+                    byRole[payload.position] = payload;
+                    const next = { ...prev, [form.role]: byRole };
 
-                // Recompute filled flag for this role immediately
-                const currentForm = evaluationData.forms.find((f) => f.role === form.role);
-                const computeFilled = () => {
-                  if (!currentForm) return false;
-                  const roleAns = next[form.role] || {};
-                  for (const block of currentForm.blocks) {
-                    if (block.type === "QA") {
-                      const a = roleAns[block.position]?.value ?? "";
-                      if (!a || !String(a).trim()) return false;
-                    } else if (block.type === "SCALE_SKILL_SINGLE") {
-                      const vals = (roleAns[block.position]?.values as Record<number, number>) || {};
-                      const itemsCount = block.items?.length ?? 0;
-                      if (Object.keys(vals).length !== itemsCount) return false;
-                    } else if (block.type === "SCALE_SKILL_MULTI") {
-                      const vals = (roleAns[block.position]?.values as Record<number, number>) || {};
-                      const itemsCount = block.items?.length ?? 0;
-                      if (Object.keys(vals).length !== itemsCount) return false;
-                    }
-                  }
-                  return true;
-                };
-                setRoleFilled((prevFlags) => ({ ...prevFlags, [form.role]: computeFilled() }));
+                    // Recompute filled flag for this role immediately
+                    const currentForm = evaluationData.forms.find(
+                      (f) => f.role === form.role
+                    );
+                    const computeFilled = () => {
+                      if (!currentForm) return false;
+                      const roleAns = next[form.role] || {};
+                      for (const block of currentForm.blocks) {
+                        if (block.type === "QA") {
+                          const a = roleAns[block.position]?.value ?? "";
+                          if (!a || !String(a).trim()) return false;
+                        } else if (block.type === "SCALE_SKILL_SINGLE") {
+                          const vals =
+                            (roleAns[block.position]?.values as Record<
+                              number,
+                              number
+                            >) || {};
+                          const itemsCount = block.items?.length ?? 0;
+                          if (Object.keys(vals).length !== itemsCount)
+                            return false;
+                        } else if (block.type === "SCALE_SKILL_MULTI") {
+                          const vals =
+                            (roleAns[block.position]?.values as Record<
+                              number,
+                              number
+                            >) || {};
+                          const itemsCount = block.items?.length ?? 0;
+                          if (Object.keys(vals).length !== itemsCount)
+                            return false;
+                        }
+                      }
+                      return true;
+                    };
+                    setRoleFilled((prevFlags) => ({
+                      ...prevFlags,
+                      [form.role]: computeFilled(),
+                    }));
 
-                return next;
-              });
-            }, [evaluationData.forms, form.role]);
+                    return next;
+                  });
+                },
+                [evaluationData.forms, form.role]
+              );
 
-            return (
-            <TabsContent
-              key={form.role}
-              value={form.role}
-              className="mt-0 data-[state=inactive]:hidden"
-              forceMount
-            >
-              <div
-                className="h-full max-h-[calc(100vh-330px)] overflow-y-auto"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <div className="p-2 space-y-4">
-                  <EvaluationBlocks
-                    blocks={form.blocks}
-                    formRole={form.role}
-                    onAnswersChange={handleAnswersChange}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-            );
-          })}
-        </Tabs>
+              return (
+                <TabsContent
+                  key={form.role}
+                  value={form.role}
+                  className="mt-0 data-[state=inactive]:hidden"
+                  forceMount
+                >
+                  <div className="p-2 space-y-4">
+                    <EvaluationBlocks
+                      blocks={form.blocks}
+                      formRole={form.role}
+                      onAnswersChange={handleAnswersChange}
+                    />
+                  </div>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        </div>
       </div>
 
       {/* Footer CTA */}
       <EvaluationFooter
-        isLastTab={activeTab === evaluationData.forms[evaluationData.forms.length - 1].role}
-        canFinish={evaluationData.forms.every(f => roleFilled[f.role])}
+        isLastTab={
+          activeTab ===
+          evaluationData.forms[evaluationData.forms.length - 1].role
+        }
+        canFinish={evaluationData.forms.every((f) => roleFilled[f.role])}
         loading={isSubmitting}
         onNext={() => {
-          const currentIndex = evaluationData.forms.findIndex(f => f.role === activeTab);
+          const currentIndex = evaluationData.forms.findIndex(
+            (f) => f.role === activeTab
+          );
           const next = evaluationData.forms[currentIndex + 1];
           if (next) setActiveTab(next.role);
         }}
         onFinish={() => {
           (async () => {
             try {
-              const submissions = evaluationData.forms.map((form) => buildSubmissionForForm(form));
+              const submissions = evaluationData.forms.map((form) =>
+                buildSubmissionForForm(form)
+              );
               console.log(submissions);
               const payload: EvaluationBatchSubmission = { submissions };
               console.log(payload);

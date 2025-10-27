@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { AdminCourseList } from "@/feature/admin-feature/courses-list";
-import { HeadText } from "@/shared";
+import { HeadText, useFloatingButtonPosition } from "@/shared";
 import { PlusIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const AdminCourseListPage = () => {
   const navigate = useNavigate();
+  const buttonPosition = useFloatingButtonPosition();
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 gap-6 px-2 pt-4">
@@ -20,7 +21,8 @@ export const AdminCourseListPage = () => {
       <Button
         rounded="full"
         size="xs"
-        className="fixed bottom-[100px] text-sm right-2"
+        className="fixed text-sm right-2"
+        style={buttonPosition}
         onClick={() => navigate("/admin/content/courses/create")}
       >
         <PlusIcon />

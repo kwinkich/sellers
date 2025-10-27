@@ -248,7 +248,7 @@ export const CreateModulePage = () => {
   const isOverLimit = remainingChars < 0;
 
   return (
-    <div className="px-2 min-h-full flex flex-col pb-3 pt-6 gap-6">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 pt-6 gap-6 px-2">
       <HeadText
         head={`Создание модуля`}
         label="Заполните данные модуля"
@@ -260,7 +260,7 @@ export const CreateModulePage = () => {
         onSubmit={handleSubmit}
         className="flex flex-col flex-1 gap-6 h-full"
       >
-        <div className="flex flex-col gap-6 flex-1">
+        <div className="flex flex-col gap-6 flex-1 overflow-auto">
           {/* Название модуля */}
           <InputFloatingLabel
             type="text"

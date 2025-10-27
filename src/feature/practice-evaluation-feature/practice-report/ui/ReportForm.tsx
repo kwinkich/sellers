@@ -8,12 +8,21 @@ import { ReportFooter } from "./ReportFooter";
 import { QAReportBlock } from "./blocks";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEdgeSwipeGuard, useTelegramVerticalSwipes } from "@/shared";
 
-export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm[] }) => {
+export const ReportForm = ({
+  formsData = [],
+}: {
+  formsData?: FinalEvaluationForm[];
+}) => {
   const [activeTab, setActiveTab] = useState<string>("");
   const navigate = useNavigate();
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const guardRef = useEdgeSwipeGuard();
+
+  // Disable Telegram vertical swipes to prevent accidental app close during report viewing
+  useTelegramVerticalSwipes(true);
 
   // Process final evaluation forms with embedded results
   const evaluationData = {
@@ -42,16 +51,18 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
         if (b.type === "SCALE_SKILL_SINGLE" || b.type === "SCALE_SKILL_MULTI") {
           return {
             ...baseBlock,
-            scale: b.scale ? {
-              id: b.scale.id,
-              options: b.scale.options.map((opt: any) => ({
-                id: opt.id,
-                ord: opt.ord,
-                label: opt.label,
-                value: opt.value,
-                countsTowardsScore: opt.countsTowardsScore,
-              })),
-            } : undefined,
+            scale: b.scale
+              ? {
+                  id: b.scale.id,
+                  options: b.scale.options.map((opt: any) => ({
+                    id: opt.id,
+                    ord: opt.ord,
+                    label: opt.label,
+                    value: opt.value,
+                    countsTowardsScore: opt.countsTowardsScore,
+                  })),
+                }
+              : undefined,
             items: b.items.map((it: any) => ({
               id: it.id,
               title: it.title,
@@ -68,7 +79,8 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
   };
 
   useEffect(() => {
-    if (evaluationData.forms.length > 0 && !activeTab) setActiveTab(evaluationData.forms[0].role);
+    if (evaluationData.forms.length > 0 && !activeTab)
+      setActiveTab(evaluationData.forms[0].role);
   }, [evaluationData, activeTab]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -88,7 +100,8 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
     const isRightSwipe = distance < -50;
 
     if (isLeftSwipe || isRightSwipe) {
-      const currentIndex = evaluationData?.forms.findIndex(form => form.role === activeTab) ?? 0;
+      const currentIndex =
+        evaluationData?.forms.findIndex((form) => form.role === activeTab) ?? 0;
       const totalForms = evaluationData?.forms.length ?? 0;
 
       if (isLeftSwipe && currentIndex < totalForms - 1) {
@@ -103,27 +116,45 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
     }
   };
 
-  const isLast = activeTab === (evaluationData.forms[evaluationData.forms.length - 1]?.role || "");
+  const isLast =
+    activeTab ===
+    (evaluationData.forms[evaluationData.forms.length - 1]?.role || "");
 
   return (
-    <div
-      className="min-h-screen bg-white flex flex-col"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="h-svh overflow-hidden grid grid-rows-[auto,1fr,auto] bg-white">
       <ReportHeader />
-      <div className="bg-white px-4 py-2 pb-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="bg-gray-100 rounded-xl gap-0">
-          <ReportTabs forms={evaluationData.forms} activeTab={activeTab} />
+      <div
+        ref={guardRef}
+        className="min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="bg-white px-4 py-2 pb-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="bg-gray-100 rounded-xl gap-0"
+          >
+            <ReportTabs forms={evaluationData.forms} activeTab={activeTab} />
 
-          {evaluationData.forms.map((form) => (
-            <TabsContent key={form.role} value={form.role} className="mt-0 data-[state=inactive]:hidden" forceMount>
-              <div className="h-full max-h-[calc(100vh-330px)] overflow-y-auto">
+            {evaluationData.forms.map((form) => (
+              <TabsContent
+                key={form.role}
+                value={form.role}
+                className="mt-0 data-[state=inactive]:hidden"
+                forceMount
+              >
                 <div className="p-2 space-y-4">
                   {form.blocks.map((b: any) => {
                     if (b.type === "QA") {
-                      return <QAReportBlock key={b.id} title={b.title || "Вопрос"} answer={b.qaAnswer || ""} />;
+                      return (
+                        <QAReportBlock
+                          key={b.id}
+                          title={b.title || "Вопрос"}
+                          answer={b.qaAnswer || ""}
+                        />
+                      );
                     }
                     if (b.type === "SCALE_SKILL_SINGLE") {
                       return (
@@ -148,22 +179,24 @@ export const ReportForm = ({ formsData = [] }: { formsData?: FinalEvaluationForm
                     return null;
                   })}
                 </div>
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
       </div>
       <ReportFooter
         isLastTab={isLast}
         onNext={() => {
-          const idx = evaluationData.forms.findIndex(f => f.role === activeTab);
+          const idx = evaluationData.forms.findIndex(
+            (f) => f.role === activeTab
+          );
           const next = evaluationData.forms[idx + 1];
           if (next) setActiveTab(next.role);
         }}
-        onFinish={() => { navigate("/practice"); }}
+        onFinish={() => {
+          navigate("/practice");
+        }}
       />
     </div>
   );
 };
-
-

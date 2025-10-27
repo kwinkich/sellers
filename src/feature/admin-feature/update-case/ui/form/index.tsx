@@ -398,22 +398,22 @@ export function UpdateCaseForm({ caseId, onFormChange }: UpdateCaseFormProps) {
         title="Несохраненные изменения"
         description="У вас есть несохраненные изменения. Если вы закроете страницу, все изменения будут потеряны."
         confirmText="Закрыть"
-        cancelText="Отмена"
         isLoading={false}
         showCancelButton={false}
+        severity="destructive"
       />
 
       {/* Submit Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={showSubmitDialog}
-        onClose={confirmSubmit}
-        onConfirm={cancelSubmit}
+        onClose={cancelSubmit}
+        onConfirm={confirmSubmit}
         title="Подтверждение обновления"
         description="Вы уверены, что хотите обновить кейс? Все изменения будут сохранены."
-        confirmText="Отмена"
-        cancelText="Обновить"
+        confirmText="Обновить"
         isLoading={isPending}
-        showCancelButton={true}
+        showCancelButton={false}
+        severity="constructive"
       />
     </Form>
   );

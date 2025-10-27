@@ -241,7 +241,14 @@ export function EditScenarioForm({
   const { mutate: updateScenario, isPending } = useMutation({
     ...scenariosMutationOptions.update(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+      // Invalidate specific queries with more targeted approach
+      queryClient.invalidateQueries({
+        queryKey: ["scenarios", "list"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["scenarios", "detail", scenarioId],
+      });
       toast.success("Сценарий успешно обновлен");
       navigate("/admin/content/scenarios");
     },
@@ -460,63 +467,71 @@ export function EditScenarioForm({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-h-0">
       {/* Tabs for different roles */}
       <Tabs value={activeTab}>
-        <TabsList
-          variant="second"
-          className="grid grid-cols-3 w-full pointer-events-none"
-        >
-          <TabsTrigger variant="second" value="SELLER">
-            {getRoleLabel("SELLER")}
-          </TabsTrigger>
-          <TabsTrigger variant="second" value="BUYER">
-            {getRoleLabel("BUYER")}
-          </TabsTrigger>
-          <TabsTrigger variant="second" value="MODERATOR">
-            {getRoleLabel("MODERATOR")}
-          </TabsTrigger>
-        </TabsList>
+        <div className="sticky top-0 bg-white z-10 pb-2">
+          <TabsList
+            variant="second"
+            className="grid grid-cols-3 w-full pointer-events-none"
+          >
+            <TabsTrigger variant="second" value="SELLER">
+              {getRoleLabel("SELLER")}
+            </TabsTrigger>
+            <TabsTrigger variant="second" value="BUYER">
+              {getRoleLabel("BUYER")}
+            </TabsTrigger>
+            <TabsTrigger variant="second" value="MODERATOR">
+              {getRoleLabel("MODERATOR")}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent
           value="SELLER"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <BlocksContainer
-            blocks={sellerBlocks}
-            onAdd={handleAdd("SELLER")}
-            onRemove={handleRemove("SELLER")}
-            onDataChange={handleDataChange("SELLER")}
-          />
+          <div className="overflow-visible min-h-0">
+            <BlocksContainer
+              blocks={sellerBlocks}
+              onAdd={handleAdd("SELLER")}
+              onRemove={handleRemove("SELLER")}
+              onDataChange={handleDataChange("SELLER")}
+            />
+          </div>
         </TabsContent>
         <TabsContent
           value="BUYER"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <BlocksContainer
-            blocks={buyerBlocks}
-            onAdd={handleAdd("BUYER")}
-            onRemove={handleRemove("BUYER")}
-            onDataChange={handleDataChange("BUYER")}
-          />
+          <div className="overflow-visible min-h-0">
+            <BlocksContainer
+              blocks={buyerBlocks}
+              onAdd={handleAdd("BUYER")}
+              onRemove={handleRemove("BUYER")}
+              onDataChange={handleDataChange("BUYER")}
+            />
+          </div>
         </TabsContent>
         <TabsContent
           value="MODERATOR"
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <BlocksContainer
-            blocks={moderatorBlocks}
-            onAdd={handleAdd("MODERATOR")}
-            onRemove={handleRemove("MODERATOR")}
-            onDataChange={handleDataChange("MODERATOR")}
-          />
+          <div className="overflow-visible min-h-0">
+            <BlocksContainer
+              blocks={moderatorBlocks}
+              onAdd={handleAdd("MODERATOR")}
+              onRemove={handleRemove("MODERATOR")}
+              onDataChange={handleDataChange("MODERATOR")}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 
-      {/* Navigation buttons */}
+      {/* Navigation buttons - sticky within the page scroller */}
       <div className="sticky bottom-0 bg-white pt-4 pb-4">
         {activeTab === "SELLER" && (
           <Button
@@ -570,14 +585,14 @@ export function EditScenarioForm({
       {/* Submit Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={showSubmitDialog}
-        onClose={confirmSubmit}
-        onConfirm={cancelSubmit}
+        onClose={cancelSubmit}
+        onConfirm={confirmSubmit}
         title="Подтверждение обновления"
         description="Вы уверены, что хотите обновить сценарий? Все изменения будут сохранены."
-        confirmText="Отмена"
-        cancelText="Обновить"
+        confirmText="Обновить"
         isLoading={isPending}
-        showCancelButton={true}
+        showCancelButton={false}
+        severity="constructive"
       />
     </div>
   );

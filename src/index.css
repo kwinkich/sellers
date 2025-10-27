@@ -140,6 +140,10 @@
     @apply border-border outline-ring/50;
   }
 
+  html, body {
+    overscroll-behavior-y: none; /* stop chaining to the host */
+  }
+
   body {
     @apply bg-background text-foreground;
   }

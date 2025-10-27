@@ -8,9 +8,9 @@ export const PracticeLayout = () => {
     location.pathname.includes("/practice/create") ||
     location.pathname.includes("/practice/preview");
   return (
-    <div className="bg-white">
+    <div className="w-dvw h-dvh bg-white relative">
       <div
-        className={`w-full h-full bg-second-bg`}
+        className={`w-full h-full overflow-auto bg-second-bg`}
         style={{
           paddingBottom: shouldApplySecondBg
             ? "0px"

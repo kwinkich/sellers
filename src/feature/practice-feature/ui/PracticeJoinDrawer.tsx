@@ -1,5 +1,6 @@
 import {
   Drawer,
+  DrawerBody,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
@@ -187,8 +188,8 @@ export const PracticeJoinDrawer = () => {
 
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
-      <DrawerContent className="bg-base-bg text-white data-[vaul-drawer-direction=bottom]:max-h-[100dvh] data-[vaul-drawer-direction=top]:max-h-[100dvh]">
-        <DrawerHeader className="items-start text-left flex-1 overflow-y-auto">
+      <DrawerContent className="bg-base-bg text-white data-[vaul-drawer-direction=bottom]:max-h-[100svh] data-[vaul-drawer-direction=top]:max-h-[100svh] overflow-hidden">
+        <DrawerHeader className="items-start text-left shrink-0">
           <DrawerTitle className="sr-only">Выбор роли для практики</DrawerTitle>
           <div className="flex items-center gap-2 mb-2">
             <Badge
@@ -226,7 +227,9 @@ export const PracticeJoinDrawer = () => {
               <span className="text-white font-medium">{time}</span>
             </div>
           </div>
+        </DrawerHeader>
 
+        <DrawerBody>
           <div className="w-full mt-4 bg-second-bg p-3 rounded-2xl">
             <p className="text-base-gray mb-2">Выберите стартовую роль</p>
             <div className="divide-y divide-second-bg">
@@ -303,9 +306,9 @@ export const PracticeJoinDrawer = () => {
               )}
             </div>
           </div>
-        </DrawerHeader>
+        </DrawerBody>
 
-        <DrawerFooter>
+        <DrawerFooter className="shrink-0">
           <Button
             disabled={
               !selectedRole ||

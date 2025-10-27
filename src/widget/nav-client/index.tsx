@@ -4,13 +4,13 @@ import {
   MainIcon,
   NavItem,
   PracticeIcon,
-  useKeyboardVisibility,
 } from "@/shared";
 import { useLocation } from "react-router-dom";
+import { useUiChrome } from "@/shared";
 
 export const ClientNavBar = () => {
   const location = useLocation();
-  const { isKeyboardVisible } = useKeyboardVisibility();
+  const isHidden = useUiChrome((s) => s.isNavHidden);
 
   return (
     <div
@@ -21,15 +21,15 @@ export const ClientNavBar = () => {
         bottom: 0,
         // bar height includes the safe area (no padding here)
         height: "calc(var(--nav-h, 80px) + env(safe-area-inset-bottom, 0px))",
-        opacity: isKeyboardVisible ? 0 : 1,
-        pointerEvents: isKeyboardVisible ? "none" : "auto",
+        opacity: isHidden ? 0 : 1,
+        pointerEvents: isHidden ? "none" : "auto",
         // big translate moves it fully off-screen when iOS tries to hoist fixed elements
-        transform: isKeyboardVisible ? "translateY(120%)" : "translateY(0)",
+        transform: isHidden ? "translateY(120%)" : "translateY(0)",
         // perf niceties
         backfaceVisibility: "hidden",
         contain: "layout paint",
       }}
-      aria-hidden={isKeyboardVisible}
+      aria-hidden={isHidden}
     >
       <div
         className="flex items-center justify-around px-4"

@@ -2,11 +2,12 @@ import { clientsQueryOptions } from "@/entities";
 import { UpdateClientForm } from "@/feature";
 import { HeadText } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Loader2, X } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 
 export const AdminUpdateClientPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useQuery(
     clientsQueryOptions.byId(parseInt(id!))
@@ -47,16 +48,35 @@ export const AdminUpdateClientPage = () => {
   const clientName =
     data.data.displayName || data.data.telegramUsername || `Клиент #${id}`;
 
-  return (
-    <div className="flex flex-col gap-6 px-2 pt-4 h-full pb-3">
-      <HeadText
-        head="Редактирование клиента"
-        label={`Обновите данные компании <strong>${clientName} (#${id})</strong>`}
-        labelSize="sm"
-        variant="black-gray"
-      />
+  const handleClose = () => {
+    navigate("/admin/clients");
+  };
 
-      <UpdateClientForm clientData={data.data} />
+  return (
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] gap-6 px-2 pt-4 pb-3">
+      {/* Header with close button */}
+      <div className="flex items-center justify-between">
+        <HeadText
+          head="Редактирование клиента"
+          label={`Обновите данные компании <strong>${clientName} (#${id})</strong>`}
+          labelSize="sm"
+          variant="black-gray"
+        />
+        <button
+          onClick={handleClose}
+          className="
+            p-2 rounded-full hover:bg-gray-100 transition-colors
+            flex items-center justify-center
+          "
+          title="Закрыть"
+        >
+          <X className="h-5 w-5 text-gray-600" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        <UpdateClientForm clientData={data.data} />
+      </div>
     </div>
   );
 };

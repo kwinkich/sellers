@@ -91,7 +91,7 @@ export const ModuleDetailEditPage = () => {
   }
 
   return (
-    <div className="px-2 min-h-full flex flex-col pb-3 pt-6 gap-6">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 pt-6 gap-6 px-2">
       <HeadText
         head="Редактирование деталей модуля"
         label="Обновите данные модуля"
@@ -114,7 +114,7 @@ export const ModuleDetailEditPage = () => {
         }}
         className="flex flex-col flex-1 gap-6 h-full"
       >
-        <div className="flex flex-col gap-6 flex-1">
+        <div className="flex flex-col gap-6 flex-1 overflow-auto">
           <InputFloatingLabel
             type="text"
             value={formData.title}

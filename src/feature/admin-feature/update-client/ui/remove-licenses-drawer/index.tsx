@@ -105,7 +105,7 @@ export function RemoveLicensesDrawer({
         <Button
           size="2s"
           variant="second"
-          className="w-[90px]"
+          className="w-[90px] bg-black hover:bg-black/80 text-white"
           disabled={disabled || isLoading}
         >
           Отозвать

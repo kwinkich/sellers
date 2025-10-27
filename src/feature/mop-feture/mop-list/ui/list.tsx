@@ -103,10 +103,10 @@ export const ClientMopsList = () => {
           blockDialog.mop?.displayName ? ` ${blockDialog.mop.displayName}` : ""
         }? После удаления он не сможет использовать приложение.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={isBlocking}
         userName={blockDialog.mop?.displayName}
         showCancelButton={false}
+        severity="destructive"
       />
     </>
   );

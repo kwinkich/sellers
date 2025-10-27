@@ -115,10 +115,10 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
         title="Удаление кейса"
         description={`Вы уверены, что хотите удалить кейс ${deleteDialog.caseTitle}? Это действие нельзя отменить.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={deleteCaseMutation.isPending}
         userName={deleteDialog.caseTitle}
         showCancelButton={false}
+        severity="destructive"
       />
     </>
   );

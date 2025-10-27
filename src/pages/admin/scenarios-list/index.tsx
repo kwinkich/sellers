@@ -1,34 +1,13 @@
 import MultiSelectChips from "@/components/ui/multi-select-chips";
 import { Input } from "@/components/ui/input";
 import { ScenariosList } from "@/feature";
-import { HeadText } from "@/shared";
+import { HeadText, useInfiniteList } from "@/shared";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { Search, Filter } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 
-/** Pagination helper */
-function getNextPageParamFromMeta(lastPage: any) {
-  if (!lastPage) return undefined;
-
-  // Check if lastPage has data array
-  const data = lastPage?.data;
-  if (!data || !Array.isArray(data)) {
-    return undefined;
-  }
-
-  // Get pagination info from meta (required by backend schema)
-  const pagination = lastPage?.meta?.pagination;
-  if (!pagination) {
-    return undefined;
-  }
-
-  // Backend schema guarantees these fields exist
-  const { currentPage, totalPages } = pagination;
-
-  // Return next page number if there are more pages
-  return currentPage < totalPages ? currentPage + 1 : undefined;
-}
+// Stable keys for better performance
+const SKILLS_KEY = ["skills", "list"] as const;
 
 export const AdminScenariosListPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,29 +15,24 @@ export const AdminScenariosListPage = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Skills query for filter options
-  const skills = useInfiniteQuery({
-    queryKey: ["skills", "list"],
-    queryFn: ({ pageParam = 1 }) =>
-      SkillsAPI.getSkillsPaged({ page: pageParam as number, limit: 50 }),
-    getNextPageParam: getNextPageParamFromMeta,
-    initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
-  });
+  const skills = useInfiniteList<any>(
+    SKILLS_KEY,
+    (page, limit) => SkillsAPI.getSkillsPaged({ page, limit }),
+    50
+  );
 
   // MultiSelect options (string IDs)
   const skillOptions = useMemo(
     () =>
-      (skills.data?.pages ?? [])
-        .flatMap((pg: any) => pg?.data ?? [])
-        .map((s: any) => ({
-          value: String(s.id),
-          label: s.name,
-        })),
-    [skills.data]
+      (skills.allItems ?? []).map((s: any) => ({
+        value: String(s.id),
+        label: s.name,
+      })),
+    [skills.allItems]
   );
 
   return (
-    <div className="min-h-full pb-3">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
       <div className="bg-base-bg flex gap-5 text-white flex-col w-full rounded-b-3xl px-2 pb-4 pt-4 mb-2">
         <HeadText
           head="Список сценариев"
@@ -114,7 +88,9 @@ export const AdminScenariosListPage = () => {
         </div>
       </div>
 
-      <ScenariosList searchQuery={searchQuery} skillIds={selectedSkillIds} />
+      <div className="flex-1 overflow-auto">
+        <ScenariosList searchQuery={searchQuery} skillIds={selectedSkillIds} />
+      </div>
     </div>
   );
 };

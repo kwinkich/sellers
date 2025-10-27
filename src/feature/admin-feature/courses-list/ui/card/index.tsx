@@ -71,10 +71,10 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
         title="Удалить курс"
         description={`Вы уверены, что хотите удалить курс ${data.title}? Это действие необратимо.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={isDeleting}
         userName={data.title}
         showCancelButton={false}
+        severity="destructive"
       />
     </Box>
   );

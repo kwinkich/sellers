@@ -6,7 +6,7 @@ import {
   InfiniteScrollList,
 } from "@/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ScenarioCard } from "./card";
 
 interface ScenariosListProps {
@@ -31,6 +31,12 @@ export const ScenariosList = ({
     scenarioTitle: "",
   });
 
+  // Stabilize the query key to prevent infinite re-renders
+  const queryKey = useMemo(
+    () => ["scenarios", "list", { skillIds }],
+    [skillIds]
+  );
+
   const {
     items: scenarios,
     isLoading,
@@ -40,7 +46,7 @@ export const ScenariosList = ({
     sentinelRef,
     isFetchingNextPage,
   } = useInfiniteScroll<ScenarioListItem>({
-    queryKey: ["scenarios", "list", { skillIds }],
+    queryKey,
     queryFn: (page, limit) =>
       ScenariosAPI.getScenarios({
         page,
@@ -62,7 +68,10 @@ export const ScenariosList = ({
       setRefreshToken((t) => t + 1);
 
       // Invalidate queries for eventual consistency
-      queryClient.invalidateQueries({ queryKey: ["scenarios", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: ["scenarios", "list"],
+        exact: false,
+      });
       queryClient.invalidateQueries({
         queryKey: ["scenarios", "detail", deletedId],
       });
@@ -124,10 +133,10 @@ export const ScenariosList = ({
         title="Удаление сценария"
         description={`Вы уверены, что хотите удалить сценарий ${deleteDialog.scenarioTitle}? Это действие нельзя отменить.`}
         confirmText="Удалить"
-        cancelText="Отмена"
         isLoading={deleteScenarioMutation.isPending}
         userName={deleteDialog.scenarioTitle}
         showCancelButton={false}
+        severity="destructive"
       />
     </>
   );

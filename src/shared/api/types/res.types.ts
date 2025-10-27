@@ -18,9 +18,9 @@ export interface Meta {
 
 export interface Pagination {
   limit: number;
-  totalPages?: number;
-  currentPage?: number;
-  totalItems?: number;
+  totalPages: number;
+  currentPage: number;
+  totalItems: number;
 }
 
 export interface Sort {

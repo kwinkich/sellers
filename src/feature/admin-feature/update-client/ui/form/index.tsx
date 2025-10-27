@@ -352,7 +352,7 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isUpdating}>
+        <Button type="submit" className="w-full mt-7" disabled={isUpdating}>
           {isUpdating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,5 +1,9 @@
 import { EditScenarioForm } from "@/feature";
-import { HeadText } from "@/shared";
+import {
+  HeadText,
+  useEdgeSwipeGuard,
+  useTelegramVerticalSwipes,
+} from "@/shared";
 import { useParams, useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,6 +16,10 @@ export const AdminEditScenarioPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [scenarioTitle, setScenarioTitle] = useState("");
+  const guardRef = useEdgeSwipeGuard();
+
+  // Disable Telegram vertical swipes to prevent accidental app close during editing
+  useTelegramVerticalSwipes(true);
 
   // Fetch scenario data
   const { data: scenarioData } = useQuery({
@@ -49,8 +57,8 @@ export const AdminEditScenarioPage = () => {
   };
 
   return (
-    <div className="w-dvw h-dvh bg-white flex flex-col">
-      <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4">
+    <div className="w-dvw h-svh bg-white flex flex-col overflow-hidden">
+      <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4 shrink-0">
         <div className="flex items-center justify-between">
           <HeadText
             head="Редактирование сценария"
@@ -77,8 +85,11 @@ export const AdminEditScenarioPage = () => {
           />
         )}
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 px-2 pb-3 min-h-full">
+      <div
+        ref={guardRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
+      >
+        <div className="flex flex-col gap-6 px-2 pb-[96px] min-h-full">
           <EditScenarioForm
             scenarioId={id ? parseInt(id) : undefined}
             scenarioTitle={scenarioTitle}

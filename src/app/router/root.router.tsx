@@ -44,11 +44,16 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppInitLayout, MopLayout, PracticeLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
 import { ClientLayout } from "../layouts/ClientLayout/client.layout";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 
 export const route = createBrowserRouter([
   {
     path: "/",
-    element: <AppInitLayout />,
+    element: (
+      <ErrorBoundary>
+        <AppInitLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         path: "client",

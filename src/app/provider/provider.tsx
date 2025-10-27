@@ -8,9 +8,11 @@ const qc = new QueryClient({
     queries: {
       retry: 0,
       refetchOnWindowFocus: false,
+      throwOnError: false,
     },
     mutations: {
       retry: 0,
+      throwOnError: false,
     },
   },
 });
