@@ -257,12 +257,16 @@ export const EditQuizPage = () => {
           <InputFloatingLabel
             type="number"
             value={formData.passThresholdPercent.toString()}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                passThresholdPercent: parseInt(e.target.value) || 70,
-              }))
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              const numValue = value === "" ? 0 : parseInt(value, 10);
+              if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
+                setFormData((prev) => ({
+                  ...prev,
+                  passThresholdPercent: numValue,
+                }));
+              }
+            }}
             min="1"
             max="100"
             placeholder="Порог прохождения (%)"
