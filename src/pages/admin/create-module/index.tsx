@@ -341,12 +341,16 @@ export const CreateModulePage = () => {
                 <InputFloatingLabel
                   type="number"
                   value={quizFormData.passThresholdPercent.toString()}
-                  onChange={(e) =>
-                    setQuizFormData((prev) => ({
-                      ...prev,
-                      passThresholdPercent: parseInt(e.target.value) || 70,
-                    }))
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const numValue = value === "" ? 0 : parseInt(value, 10);
+                    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
+                      setQuizFormData((prev) => ({
+                        ...prev,
+                        passThresholdPercent: numValue,
+                      }));
+                    }
+                  }}
                   min="1"
                   max="100"
                   placeholder="Порог прохождения (%)"
