@@ -12,8 +12,7 @@ import {
   useEdgeSwipeGuard,
   useTelegramVerticalSwipes,
 } from "@/shared";
-import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
+import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenarios.api";
@@ -32,7 +31,7 @@ const PREBUILT_BLOCKS = {
     skillCodes: [
       "LOGICAL_BEHAVIOR",
       "EMOTIONAL_AUTHENTICITY",
-      "CHARACTER_INTEGRITY",
+      "INTEGRITY",
     ],
     type: "SCALE_SKILL_MULTI" as BlockKind,
   },
@@ -122,9 +121,35 @@ export const AdminScenariosCreatePage = () => {
     }
   }, [activeTab, navigate]);
 
-  // Fetch skills to find IDs for pre-built blocks
-  const { data: skillsData } = useQuery(skillsQueryOptions.list());
-  const skills = useMemo(() => skillsData?.data || [], [skillsData]);
+  // Fetch ALL skills (paginated) to find IDs for pre-built blocks
+  const [allSkills, setAllSkills] = useState<Array<{ id: number; code?: string; name: string }>>([]);
+  useEffect(() => {
+    let isActive = true;
+    const limit = 50;
+    async function loadAllSkills() {
+      try {
+        let page = 1;
+        let acc: Array<{ id: number; code?: string; name: string }> = [];
+        while (true) {
+          const res = await SkillsAPI.getSkillsPaged({ page, limit });
+          const items = Array.isArray((res as any)?.data)
+            ? ((res as any).data as Array<{ id: number; code?: string; name: string }>)
+            : [];
+          acc = acc.concat(items);
+          const pag = (res as any)?.meta?.pagination;
+          const currentPage = pag?.currentPage ?? page;
+          const totalPages = pag?.totalPages ?? page;
+          if (!isActive) return;
+          setAllSkills(acc);
+          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
+          page = currentPage + 1;
+        }
+      } catch {}
+    }
+    loadAllSkills();
+    return () => { isActive = false; };
+  }, []);
+  const skills = useMemo(() => allSkills, [allSkills]);
 
   // Find skill IDs by code
   const findSkillIdByCode = (code: string) =>
