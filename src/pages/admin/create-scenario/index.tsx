@@ -719,7 +719,7 @@ export const AdminScenariosCreatePage = () => {
               <Button
                 onClick={handleNextTab}
                 disabled={!isNextEnabled()}
-                className="w-full h-12"
+                className="w-full h-12 cursor-pointer"
               >
                 Далее
               </Button>
@@ -730,14 +730,14 @@ export const AdminScenariosCreatePage = () => {
                 <Button
                   onClick={handlePrevTab}
                   variant="second"
-                  className="flex-1 h-12"
+                  className="flex-1 h-12 cursor-pointer"
                 >
                   Назад
                 </Button>
                 <Button
                   onClick={handleNextTab}
                   disabled={!isNextEnabled()}
-                  className="flex-1 h-12"
+                  className="flex-1 h-12 cursor-pointer"
                 >
                   Далее
                 </Button>
@@ -749,14 +749,14 @@ export const AdminScenariosCreatePage = () => {
                 <Button
                   onClick={handlePrevTab}
                   variant="second"
-                  className="flex-1 h-12"
+                  className="flex-1 h-12 cursor-pointer"
                 >
                   Назад
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={isPending || !isCreateScenarioEnabled()}
-                  className="flex-1 h-12"
+                  className="flex-1 h-12 cursor-pointer"
                 >
                   {isPending ? "Создание..." : "Создать сценарий"}
                 </Button>
