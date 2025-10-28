@@ -22,17 +22,17 @@ import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
 import WebApp from "@twa-dev/sdk";
 
-// Pre-built block configurations
+// Pre-built block configurations using skill codes
 const PREBUILT_BLOCKS = {
   MODERATOR: {
-    skills: ["Управление процессом", "Тайминг", "Обаяние"],
+    skillCodes: ["PROCESS_MANAGEMENT", "TIMING", "CHARISMA"],
     type: "SCALE_SKILL_MULTI" as BlockKind,
   },
   BUYER: {
-    skills: [
-      "Логичность поведения",
-      "Эмоциональная достоверность",
-      "Цельность образа",
+    skillCodes: [
+      "LOGICAL_BEHAVIOR",
+      "EMOTIONAL_AUTHENTICITY",
+      "CHARACTER_INTEGRITY",
     ],
     type: "SCALE_SKILL_MULTI" as BlockKind,
   },
@@ -126,8 +126,9 @@ export const AdminScenariosCreatePage = () => {
   const { data: skillsData } = useQuery(skillsQueryOptions.list());
   const skills = useMemo(() => skillsData?.data || [], [skillsData]);
 
-  // Find skill IDs by name
-  const findSkillId = (name: string) => skills.find((s) => s.name === name)?.id;
+  // Find skill IDs by code
+  const findSkillIdByCode = (code: string) =>
+    skills.find((s) => s.code === code)?.id;
 
   // Create scenario mutation
   const { mutate: createScenario, isPending } = useMutation({
@@ -162,8 +163,8 @@ export const AdminScenariosCreatePage = () => {
     if (skills.length === 0 || prebuiltInitialized.current) return;
 
     // Add MODERATOR pre-built block
-    const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skills
-      .map((skillName) => findSkillId(skillName))
+    const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skillCodes
+      .map((skillCode) => findSkillIdByCode(skillCode))
       .filter((id): id is number => id !== undefined);
 
     if (moderatorSkillIds.length > 0) {
@@ -182,8 +183,8 @@ export const AdminScenariosCreatePage = () => {
     }
 
     // Add BUYER pre-built block
-    const buyerSkillIds = PREBUILT_BLOCKS.BUYER.skills
-      .map((skillName) => findSkillId(skillName))
+    const buyerSkillIds = PREBUILT_BLOCKS.BUYER.skillCodes
+      .map((skillCode) => findSkillIdByCode(skillCode))
       .filter((id): id is number => id !== undefined);
 
     if (buyerSkillIds.length > 0) {

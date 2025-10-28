@@ -1,13 +1,21 @@
 import type { FormRole } from "@/entities";
 import type { FormBlock } from "@/entities/scenarios/model/types/scenarios.types";
-import { ViewTextBlock, ViewQuestionBlock, ViewAssessYN50Block, ViewAssess1to5Block } from "./blocks";
+import {
+  ViewTextBlock,
+  ViewQuestionBlock,
+  ViewAssessYN50Block,
+  ViewAssess1to5Block,
+} from "./blocks";
 
 interface ViewBlocksContainerProps {
   blocks: FormBlock[];
   role: FormRole;
 }
 
-export function ViewBlocksContainer({ blocks, role }: ViewBlocksContainerProps) {
+export function ViewBlocksContainer({
+  blocks,
+  role,
+}: ViewBlocksContainerProps) {
   if (blocks.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -64,9 +72,5 @@ function ViewBlock({ block }: ViewBlockProps) {
     }
   };
 
-  return (
-    <div className="mb-4">
-      {renderBlock()}
-    </div>
-  );
+  return <div className="mb-4">{renderBlock()}</div>;
 }
