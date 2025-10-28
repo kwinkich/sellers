@@ -28,10 +28,12 @@ export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
     switch (rule) {
       case "ALL":
         return "Все уроки";
-      case "PREVIOUS":
-        return "Предыдущий";
-      case "TEST":
-        return "После теста";
+      case "LEVEL_3":
+        return "Уровень 3";
+      case "LEVEL_4":
+        return "Уровень 4";
+      case "AFTER_PREV_MODULE":
+        return "После предыдущего";
       default:
         return rule;
     }
@@ -124,16 +126,6 @@ export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
             {getButtonText()}
             <ArrowIcon size={18} fill="#FFF" />
           </Button>
-          {/* {module.testVariant !== "NONE" && (
-						<Button
-							size="2s"
-							onClick={() =>
-								navigate(`/mop/education/quizzes/${module.quizId}`)
-							}
-						>
-							Тест
-						</Button>
-					)} */}
         </div>
       ) : (
         <Button variant="second" className="w-full" size="2s" disabled>

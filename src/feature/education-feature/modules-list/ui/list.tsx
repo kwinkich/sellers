@@ -25,12 +25,19 @@ export const ModulesList = ({ courseId }: ModulesListProps) => {
     <InfiniteScrollList
       items={modules}
       getKey={(module) => module.id}
-      renderItem={(module) => (
-        <ModuleCard
-          module={module}
-          isOpen={module.unlockRule === "ALL" || module.progressPercent > 0}
-        />
-      )}
+      renderItem={(module) => {
+        const prevModule = modules.find(
+          (m) => m.orderIndex === module.orderIndex - 1
+        );
+        const isPrevCompleted = prevModule?.progressPercent === 100;
+
+        const isOpen =
+          module.unlockRule === "AFTER_PREV_MODULE"
+            ? Boolean(isPrevCompleted) || module.progressPercent > 0
+            : true;
+
+        return <ModuleCard module={module} isOpen={isOpen} />;
+      }}
       isLoading={isLoading}
       isError={isError}
       error={error}
