@@ -121,35 +121,37 @@ export const AdminScenariosCreatePage = () => {
     }
   }, [activeTab, navigate]);
 
-  // Fetch ALL skills (paginated) to find IDs for pre-built blocks
-  const [allSkills, setAllSkills] = useState<Array<{ id: number; code?: string; name: string }>>([]);
+  // Fetch ONLY skills needed for prebuilt blocks by code (single request with filters)
+  const [skills, setSkills] = useState<Array<{ id: number; code?: string; name: string }>>([]);
   useEffect(() => {
     let isActive = true;
-    const limit = 50;
-    async function loadAllSkills() {
+    async function loadByCodes() {
       try {
-        let page = 1;
-        let acc: Array<{ id: number; code?: string; name: string }> = [];
-        while (true) {
-          const res = await SkillsAPI.getSkillsPaged({ page, limit });
+        const codes = Array.from(
+          new Set([
+            ...PREBUILT_BLOCKS.MODERATOR.skillCodes,
+            ...PREBUILT_BLOCKS.BUYER.skillCodes,
+          ])
+        );
+        // Backend list supports single code parameter; perform minimal batched requests
+        const limit = 20;
+        const results: Array<{ id: number; code?: string; name: string }> = [];
+        for (const code of codes) {
+          const res = await SkillsAPI.getSkills({ page: 1, limit, code });
           const items = Array.isArray((res as any)?.data)
             ? ((res as any).data as Array<{ id: number; code?: string; name: string }>)
             : [];
-          acc = acc.concat(items);
-          const pag = (res as any)?.meta?.pagination;
-          const currentPage = pag?.currentPage ?? page;
-          const totalPages = pag?.totalPages ?? page;
-          if (!isActive) return;
-          setAllSkills(acc);
-          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
-          page = currentPage + 1;
+          // exact match by code (server may allow contains)
+          const exact = items.find((s) => s.code === code);
+          if (exact) results.push(exact);
         }
+        if (!isActive) return;
+        setSkills(results);
       } catch {}
     }
-    loadAllSkills();
+    loadByCodes();
     return () => { isActive = false; };
   }, []);
-  const skills = useMemo(() => allSkills, [allSkills]);
 
   // Optimized skills lookup - O(1) instead of O(N)
   const skillsByCode = useMemo(() => {

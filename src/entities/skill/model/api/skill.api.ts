@@ -10,10 +10,20 @@ export const SkillsAPI = {
   createSkill: (skillData: CreateSkillRequest) =>
     API.post("skills", { json: skillData }).json<GApiResponse<Skill>>(),
 
-  // Unpaginated list is removed in favor of consistent paginated schema
-  getSkills: ({ page = 1, limit = 30 }: { page?: number; limit?: number } = {}) =>
+  // Paginated list with optional filters (e.g., code, name)
+  getSkills: ({
+    page = 1,
+    limit = 30,
+    code,
+    name,
+  }: { page?: number; limit?: number; code?: string; name?: string } = {}) =>
     API.get("skills", {
-      searchParams: { page: String(page), limit: String(limit) },
+      searchParams: {
+        page: String(page),
+        limit: String(limit),
+        ...(code ? { code } : {}),
+        ...(name ? { name } : {}),
+      },
     }).json<GApiResponse<Skill, true>>(),
 
   getSkillsPaged: ({ page, limit }: { page: number; limit: number }) =>
