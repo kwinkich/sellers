@@ -45,7 +45,7 @@ export const ClientNavBar = () => {
             route: "/client/home",
             icon: <MainIcon size={20} />,
             label: "Главная",
-            isActive: location.pathname.includes("client/home"),
+            isActive: location.pathname === "/client/home",
           }}
         />
 
@@ -54,7 +54,9 @@ export const ClientNavBar = () => {
             route: "/client/list-mop",
             icon: <ClientIcon size={20} />,
             label: "МОПы",
-            isActive: location.pathname.includes("client/list-mop"),
+            isActive:
+              location.pathname.startsWith("/client/list-mop") ||
+              location.pathname.startsWith("/client/mop/"),
           }}
         />
 
@@ -63,7 +65,7 @@ export const ClientNavBar = () => {
             route: "/client/education/courses",
             icon: <AcademyIcon size={20} />,
             label: "Академия",
-            isActive: location.pathname.includes("client/education"),
+            isActive: location.pathname.startsWith("/client/education"),
           }}
         />
 

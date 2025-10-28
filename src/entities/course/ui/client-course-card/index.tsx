@@ -20,6 +20,12 @@ export const ClientCourseCard = ({
     return new Date(dateString).toLocaleDateString("ru-RU");
   };
 
+  const getModuleText = (count: number) => {
+    if (count === 1) return "1 модуль";
+    if (count >= 2 && count <= 4) return `${count} модуля`;
+    return `${count} модулей`;
+  };
+
   const handleCardClick = () => {
     if (!isOpen) return;
     navigate(`/client/education/courses/${course.id}`);
@@ -57,13 +63,16 @@ export const ClientCourseCard = ({
         {course.shortDesc || "Описание отсутствует"}
       </p>
 
-      <div className="flex items-center gap-1 flex-wrap">
-        <Badge
-          label={course.accessScope === "ALL" ? "Для всех" : "По выбору"}
-          variant="gray"
-        />
-        {course.isIntro && <Badge label="Вводный" variant="gray" />}
-        <p className="text-xs text-base-gray px-2">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-1 flex-wrap">
+          <Badge
+            label={course.accessScope === "ALL" ? "Для всех" : "По выбору"}
+            variant="gray"
+          />
+          {course.isIntro && <Badge label="Вводный" variant="gray" />}
+          <Badge label={getModuleText(course.modulesCount)} variant="gray" />
+        </div>
+        <p className="text-xs text-base-gray">
           Создан: {formatDate(course.createdAt)}
         </p>
       </div>

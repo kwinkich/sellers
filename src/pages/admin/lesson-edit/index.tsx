@@ -15,7 +15,7 @@ import {
   lessonsQueryOptions,
   modulesQueryOptions,
 } from "@/entities";
-import { Box, HeadText, handleFormError } from "@/shared";
+import { Box, HeaderWithClose, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Edit,
@@ -246,9 +246,11 @@ export const LessonEditPage = () => {
     <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 gap-6">
       {/* Шапка с полями названия и описания */}
       <div className="w-full bg-base-bg rounded-b-2xl px-3 py-4">
-        <HeadText
-          head={isEditing ? "Редактирование урока" : lesson.title}
-          label={`Урок модуля "${moduleData?.data?.title || ""}"`}
+        <HeaderWithClose
+          title={isEditing ? "Редактирование урока" : lesson.title}
+          description={`Урок модуля "${moduleData?.data?.title || ""}"`}
+          onClose={() => navigate(-1)}
+          variant="dark"
           className="px-2 mb-6"
         />
 

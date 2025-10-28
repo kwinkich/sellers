@@ -1,4 +1,3 @@
-// pages/module/CreateModulePage.tsx
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InputFloatingLabel from "@/components/ui/inputFloating";
@@ -6,7 +5,12 @@ import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
 import { modulesMutationOptions, modulesQueryOptions } from "@/entities";
 import { quizzesMutationOptions, type QuizQuestion } from "@/entities";
-import { HeadText, handleFormSuccess, handleFormError } from "@/shared";
+import {
+  HeadText,
+  HeaderWithClose,
+  handleFormSuccess,
+  handleFormError,
+} from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -250,10 +254,11 @@ export const CreateModulePage = () => {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 pt-6 gap-6 px-2">
-      <HeadText
-        head={`Создание модуля`}
-        label="Заполните данные модуля"
-        variant="black-gray"
+      <HeaderWithClose
+        title="Создание модуля"
+        description="Заполните данные модуля"
+        onClose={() => navigate(`/admin/content/courses/${courseId}/edit`)}
+        variant="light"
         className="px-2"
       />
 
