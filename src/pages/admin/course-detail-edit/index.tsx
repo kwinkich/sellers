@@ -39,7 +39,7 @@ export const CourseDetailEditPage = () => {
       setFormData((prev) => ({
         ...prev,
         title: courseData.data.title,
-        shortDesc: courseData.data.shortDesc,
+        shortDesc: courseData.data.shortDesc || "",
         accessScope: normalizedScope,
         clientIds: Array.isArray(courseData.data.clientIds)
           ? courseData.data.clientIds
