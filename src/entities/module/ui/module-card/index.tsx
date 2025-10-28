@@ -8,9 +8,14 @@ import { useNavigate } from "react-router-dom";
 interface ModuleCardProps {
   module: Module;
   isOpen?: boolean;
+  courseId?: number;
 }
 
-export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
+export const ModuleCard = ({
+  module,
+  isOpen = false,
+  courseId,
+}: ModuleCardProps) => {
   const navigate = useNavigate();
 
   const getTestVariantText = (variant: string) => {
@@ -120,7 +125,9 @@ export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
             className="flex-1 hover:bg-base-main/80"
             size="2s"
             onClick={() =>
-              navigate(`/mop/education/courses/${module.id}/lessons`)
+              navigate(
+                `/mop/education/courses/${courseId}/modules/${module.id}/lessons`
+              )
             }
           >
             {getButtonText()}

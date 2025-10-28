@@ -1,13 +1,16 @@
 import { modulesQueryOptions } from "@/entities";
 import { LessonsList } from "@/feature/education-feature/lessons-list";
-import { HeadText } from "@/shared";
+import { HeaderWithClose } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export const MopLessonsPage = () => {
-  const { moduleId } = useParams<{ moduleId: string }>();
+  const { courseId, moduleId } = useParams<{
+    courseId: string;
+    moduleId: string;
+  }>();
   const navigate = useNavigate();
 
   const {
@@ -48,10 +51,17 @@ export const MopLessonsPage = () => {
 
   return (
     <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
-      <HeadText
-        head={moduleResponse?.data.title || ""}
-        label={moduleResponse?.data.shortDesc || ""}
-        className="px-2 mb-4"
+      <HeaderWithClose
+        title={moduleResponse?.data.title || ""}
+        description={moduleResponse?.data.shortDesc || ""}
+        onClose={() => {
+          if (courseId) {
+            navigate(`/mop/education/courses/${courseId}`);
+          } else {
+            navigate("/mop/education/courses");
+          }
+        }}
+        variant="dark"
       />
 
       <div className="px-2 mb-4">
@@ -62,7 +72,10 @@ export const MopLessonsPage = () => {
         </div>
       </div>
 
-      <LessonsList moduleId={Number(moduleId)} />
+      <LessonsList
+        moduleId={Number(moduleId)}
+        courseId={courseId ? Number(courseId) : undefined}
+      />
 
       {moduleResponse?.data.testVariant === "QUIZ" &&
         moduleResponse?.data.quizId && (
@@ -72,7 +85,9 @@ export const MopLessonsPage = () => {
               size="xs"
               className="w-full"
               onClick={() =>
-                navigate(`/mop/education/quizzes/${moduleResponse.data.quizId}`)
+                navigate(
+                  `/mop/education/courses/${courseId}/modules/${moduleId}/quizzes/${moduleResponse.data.quizId}`
+                )
               }
             >
               Пройти тест

@@ -2,7 +2,10 @@ import { LessonCard, LessonsAPI } from "@/entities";
 import { useInfiniteScroll, InfiniteScrollList } from "@/shared";
 import type { FC } from "react";
 
-export const LessonsList: FC<{ moduleId: number }> = ({ moduleId }) => {
+export const LessonsList: FC<{ moduleId: number; courseId?: number }> = ({
+  moduleId,
+  courseId,
+}) => {
   const {
     items: lessons,
     isLoading,
@@ -22,7 +25,9 @@ export const LessonsList: FC<{ moduleId: number }> = ({ moduleId }) => {
     <InfiniteScrollList
       items={lessons}
       getKey={(lesson) => lesson.id}
-      renderItem={(lesson) => <LessonCard lesson={lesson} />}
+      renderItem={(lesson) => (
+        <LessonCard lesson={lesson} courseId={courseId} moduleId={moduleId} />
+      )}
       isLoading={isLoading}
       isError={isError}
       error={error}
