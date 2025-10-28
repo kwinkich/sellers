@@ -29,19 +29,6 @@ export function ViewAssess1to5Block({
         <CardTitle>Оценка по шкале</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Selected Skills */}
-        {selectedSkills.length > 0 && (
-          <div className="space-y-2">
-            <Label>Выбранные навыки</Label>
-            <div className="flex flex-wrap gap-2">
-              {selectedSkillNames.map((skillName, index) => (
-                <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-lg">
-                  {skillName}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
          {/* Scale Options */}
          {scaleOptions.length > 0 && (
