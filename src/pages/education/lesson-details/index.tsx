@@ -4,7 +4,6 @@ import { ArrowIcon, HeaderWithClose } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { EyeIcon } from "lucide-react";
 
 export const LessonDetailsPage = () => {
   const { courseId, moduleId, lessonId } = useParams<{

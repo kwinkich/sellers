@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InputFloatingLabel from "@/components/ui/inputFloating";
-import { useState } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import React from "react";
+import debounce from "lodash.debounce";
 
 interface QuestionBlockProps {
   id: string;
@@ -11,13 +13,29 @@ interface QuestionBlockProps {
   onQuestionChange?: (question: string) => void;
 }
 
-export function QuestionBlock({ onDelete, questionContent = "", onQuestionChange }: QuestionBlockProps) {
+export const QuestionBlock = React.memo(function QuestionBlock({
+  onDelete,
+  questionContent = "",
+  onQuestionChange,
+}: QuestionBlockProps) {
   const [question, setQuestion] = useState(questionContent);
 
-  const handleQuestionChange = (value: string) => {
-    setQuestion(value);
-    onQuestionChange?.(value);
-  };
+  // Debounce parent updates to prevent re-renders on every keystroke
+  const debouncedNotify = useMemo(
+    () => debounce((value: string) => onQuestionChange?.(value), 300),
+    [onQuestionChange]
+  );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => () => debouncedNotify.cancel(), [debouncedNotify]);
+
+  const handleQuestionChange = useCallback(
+    (value: string) => {
+      setQuestion(value);
+      debouncedNotify(value); // Parent gets batched updates, not every key
+    },
+    [debouncedNotify]
+  );
 
   return (
     <Card>
@@ -44,6 +62,4 @@ export function QuestionBlock({ onDelete, questionContent = "", onQuestionChange
       </CardContent>
     </Card>
   );
-}
-
-
+});

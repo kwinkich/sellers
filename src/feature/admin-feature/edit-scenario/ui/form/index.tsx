@@ -470,7 +470,7 @@ export function EditScenarioForm({
     <div className="space-y-4 min-h-0">
       {/* Tabs for different roles */}
       <Tabs value={activeTab}>
-        <div className="sticky top-0 bg-white z-10 pb-2">
+        <div className="sticky top-0 bg-white z-50 pb-2">
           <TabsList
             variant="second"
             className="grid grid-cols-3 w-full pointer-events-none"

@@ -126,9 +126,21 @@ export const AdminScenariosCreatePage = () => {
   const { data: skillsData } = useQuery(skillsQueryOptions.list());
   const skills = useMemo(() => skillsData?.data || [], [skillsData]);
 
-  // Find skill IDs by code
-  const findSkillIdByCode = (code: string) =>
-    skills.find((s) => s.code === code)?.id;
+  // Optimized skills lookup - O(1) instead of O(N)
+  const skillsByCode = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const skill of skills) {
+      if (skill.code) {
+        map.set(skill.code, skill.id);
+      }
+    }
+    return map;
+  }, [skills]);
+
+  const findSkillIdByCode = useCallback(
+    (code: string) => skillsByCode.get(code),
+    [skillsByCode]
+  );
 
   // Create scenario mutation
   const { mutate: createScenario, isPending } = useMutation({
@@ -206,7 +218,7 @@ export const AdminScenariosCreatePage = () => {
     prebuiltInitialized.current = true;
   }, [skills]);
 
-  const handleAdd =
+  const handleAdd = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
       const createItem = (t: BlockKind): ExtendedBlockItem => {
         const baseItem: ExtendedBlockItem = {
@@ -246,9 +258,11 @@ export const AdminScenariosCreatePage = () => {
         setBuyerBlocks((prev) => [...prev, createItem(type)]);
       if (role === "MODERATOR")
         setModeratorBlocks((prev) => [...prev, createItem(type)]);
-    };
+    },
+    []
+  );
 
-  const handleRemove =
+  const handleRemove = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string) => {
       if (role === "SELLER")
         setSellerBlocks((prev) => prev.filter((b) => b.id !== id));
@@ -256,55 +270,73 @@ export const AdminScenariosCreatePage = () => {
         setBuyerBlocks((prev) => prev.filter((b) => b.id !== id));
       if (role === "MODERATOR")
         setModeratorBlocks((prev) => prev.filter((b) => b.id !== id));
-    };
+    },
+    []
+  );
 
-  const handleDataChange =
+  // Optimized block update function
+  const updateById = useCallback(
+    <T extends { id: string }>(arr: T[], id: string, patch: Partial<T>) => {
+      const idx = arr.findIndex((b) => b.id === id);
+      if (idx === -1) return arr;
+      const next = arr.slice();
+      next[idx] = { ...next[idx], ...patch };
+      return next;
+    },
+    []
+  );
+
+  const handleDataChange = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string, data: any) => {
-      const updateBlock = (blocks: ExtendedBlockItem[]) =>
-        blocks.map((block) =>
-          block.id === id ? { ...block, ...data } : block
-        );
-
-      if (role === "SELLER") setSellerBlocks((prev) => updateBlock(prev));
-      if (role === "BUYER") setBuyerBlocks((prev) => updateBlock(prev));
-      if (role === "MODERATOR") setModeratorBlocks((prev) => updateBlock(prev));
-    };
+      if (role === "SELLER")
+        setSellerBlocks((prev) => updateById(prev, id, data));
+      if (role === "BUYER")
+        setBuyerBlocks((prev) => updateById(prev, id, data));
+      if (role === "MODERATOR")
+        setModeratorBlocks((prev) => updateById(prev, id, data));
+    },
+    [updateById]
+  );
 
   // Tab navigation helpers
-  const handleNextTab = () => {
+  const handleNextTab = useCallback(() => {
     if (activeTab === "SELLER") {
       setActiveTab("BUYER");
     } else if (activeTab === "BUYER") {
       setActiveTab("MODERATOR");
     }
-  };
+  }, [activeTab]);
 
-  const handlePrevTab = () => {
+  const handlePrevTab = useCallback(() => {
     if (activeTab === "BUYER") {
       setActiveTab("SELLER");
     } else if (activeTab === "MODERATOR") {
       setActiveTab("BUYER");
     }
-  };
+  }, [activeTab]);
 
   // Check if next button should be enabled
-  const isNextEnabled = () => {
+  const isNextEnabled = useCallback(() => {
     if (activeTab === "SELLER") {
       return sellerBlocks.length >= 3;
     } else if (activeTab === "BUYER") {
       return buyerBlocks.length >= 1;
     }
     return false;
-  };
+  }, [activeTab, sellerBlocks.length, buyerBlocks.length]);
 
-  const handleSubmit = () => {
-    if (!formData.title.trim()) {
-      handleFormError("Ошибка валидации", "Заполните название сценария");
-      return;
+  // Optimized skills lookup for convertBlocksToFormBlocks - O(1) instead of O(N)
+  const skillsById = useMemo(() => {
+    const map = new Map<number, { id: number; name: string }>();
+    for (const skill of skills) {
+      map.set(skill.id, skill);
     }
+    return map;
+  }, [skills]);
 
-    // Convert blocks to proper format for API
-    const convertBlocksToFormBlocks = (blocks: ExtendedBlockItem[]): any[] => {
+  // Convert blocks to proper format for API
+  const convertBlocksToFormBlocks = useCallback(
+    (blocks: ExtendedBlockItem[]): any[] => {
       return blocks.map((block, index) => {
         // Generate block title according to specification
 
@@ -347,9 +379,9 @@ export const AdminScenariosCreatePage = () => {
               countsTowardsScore: opt.countsTowardsScore,
             })),
           };
-          // Items are skills (skill names as titles)
+          // Items are skills (skill names as titles) - O(1) lookup
           baseBlock.items = (block.selectedSkills || []).map((skillId, pos) => {
-            const skill = skills.find((s) => s.id === skillId);
+            const skill = skillsById.get(skillId);
             return {
               title: skill?.name || `Навык ${skillId}`,
               position: pos,
@@ -360,7 +392,55 @@ export const AdminScenariosCreatePage = () => {
 
         return baseBlock;
       });
-    };
+    },
+    [skillsById]
+  );
+
+  // Stable per-role handlers to prevent function creation during render
+  const onAddSeller = useCallback(
+    (type: BlockKind) => handleAdd("SELLER")(type),
+    [handleAdd]
+  );
+  const onRemoveSeller = useCallback(
+    (id: string) => handleRemove("SELLER")(id),
+    [handleRemove]
+  );
+  const onDataChangeSeller = useCallback(
+    (id: string, data: any) => handleDataChange("SELLER")(id, data),
+    [handleDataChange]
+  );
+
+  const onAddBuyer = useCallback(
+    (type: BlockKind) => handleAdd("BUYER")(type),
+    [handleAdd]
+  );
+  const onRemoveBuyer = useCallback(
+    (id: string) => handleRemove("BUYER")(id),
+    [handleRemove]
+  );
+  const onDataChangeBuyer = useCallback(
+    (id: string, data: any) => handleDataChange("BUYER")(id, data),
+    [handleDataChange]
+  );
+
+  const onAddModerator = useCallback(
+    (type: BlockKind) => handleAdd("MODERATOR")(type),
+    [handleAdd]
+  );
+  const onRemoveModerator = useCallback(
+    (id: string) => handleRemove("MODERATOR")(id),
+    [handleRemove]
+  );
+  const onDataChangeModerator = useCallback(
+    (id: string, data: any) => handleDataChange("MODERATOR")(id, data),
+    [handleDataChange]
+  );
+
+  const handleSubmit = useCallback(() => {
+    if (!formData.title.trim()) {
+      handleFormError("Ошибка валидации", "Заполните название сценария");
+      return;
+    }
 
     const requestData: CreateScenarioRequest = {
       title: formData.title,
@@ -388,7 +468,14 @@ export const AdminScenariosCreatePage = () => {
 
     // Call the actual API
     createScenario(requestData);
-  };
+  }, [
+    formData.title,
+    convertBlocksToFormBlocks,
+    sellerBlocks,
+    buyerBlocks,
+    moderatorBlocks,
+    createScenario,
+  ]);
 
   return (
     <div className="w-dvw h-svh bg-white flex flex-col overflow-hidden">
@@ -412,7 +499,7 @@ export const AdminScenariosCreatePage = () => {
       >
         <div className="flex flex-col pb-[calc(96px+env(safe-area-inset-bottom))] gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
-            <div className="sticky top-0 bg-white z-10 pb-2">
+            <div className="sticky top-0 bg-white z-50 pb-2">
               <TabsList
                 variant="second"
                 className="grid grid-cols-3 w-full pointer-events-none"
@@ -432,51 +519,54 @@ export const AdminScenariosCreatePage = () => {
             <TabsContent
               value="SELLER"
               className="pt-3 data-[state=inactive]:hidden"
-              forceMount
             >
               <div className="overflow-visible min-h-0">
                 <BlocksContainer
                   blocks={sellerBlocks}
-                  onAdd={handleAdd("SELLER")}
-                  onRemove={handleRemove("SELLER")}
-                  onDataChange={handleDataChange("SELLER")}
+                  onAdd={onAddSeller}
+                  onRemove={onRemoveSeller}
+                  onDataChange={onDataChangeSeller}
                 />
                 {sellerBlocks.length < 3 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 3 блока</p>
+                  <p className="mt-2 text-xs text-muted-foreground text-center">
+                    Необходимо добавить минимум 3 блока
+                  </p>
                 )}
               </div>
             </TabsContent>
             <TabsContent
               value="BUYER"
               className="pt-3 data-[state=inactive]:hidden"
-              forceMount
             >
               <div className="overflow-visible min-h-0">
                 <BlocksContainer
                   blocks={buyerBlocks}
-                  onAdd={handleAdd("BUYER")}
-                  onRemove={handleRemove("BUYER")}
-                  onDataChange={handleDataChange("BUYER")}
+                  onAdd={onAddBuyer}
+                  onRemove={onRemoveBuyer}
+                  onDataChange={onDataChangeBuyer}
                 />
                 {buyerBlocks.length < 1 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 1 блок</p>
+                  <p className="mt-2 text-xs text-muted-foreground text-center">
+                    Необходимо добавить минимум 1 блок
+                  </p>
                 )}
               </div>
             </TabsContent>
             <TabsContent
               value="MODERATOR"
               className="pt-3 data-[state=inactive]:hidden"
-              forceMount
             >
               <div className="overflow-visible min-h-0">
                 <BlocksContainer
                   blocks={moderatorBlocks}
-                  onAdd={handleAdd("MODERATOR")}
-                  onRemove={handleRemove("MODERATOR")}
-                  onDataChange={handleDataChange("MODERATOR")}
+                  onAdd={onAddModerator}
+                  onRemove={onRemoveModerator}
+                  onDataChange={onDataChangeModerator}
                 />
                 {moderatorBlocks.length < 1 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 1 блок</p>
+                  <p className="mt-2 text-xs text-muted-foreground text-center">
+                    Необходимо добавить минимум 1 блок
+                  </p>
                 )}
               </div>
             </TabsContent>
