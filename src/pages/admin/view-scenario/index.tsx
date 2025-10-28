@@ -8,6 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import WebApp from "@twa-dev/sdk";
 import { useQuery } from "@tanstack/react-query";
+import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { scenariosQueryOptions } from "@/entities";
 import InputFloatingLabel from "@/components/ui/inputFloating";
 
@@ -24,6 +25,9 @@ export const AdminViewScenarioPage = () => {
     ...scenariosQueryOptions.byId(id ? parseInt(id) : 0, true), // includeForms = true
     enabled: !!id,
   });
+
+  // Warm up all skills cache once per page
+  useQuery(skillsQueryOptions.all({ by: "name", order: "asc" }));
 
   // Telegram back button handler
   useEffect(() => {

@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
-import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
+import { useMemo, useState } from "react";
 import { Plus, X, Trash2 } from "lucide-react";
 import { createYN50Scale } from "@/shared/lib/scaleUtils";
 import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
@@ -30,48 +31,13 @@ export function AssessYN50Block({
   scaleOptions: initialScaleOptions = createYN50Scale(),
   onDataChange,
 }: AssessYN50BlockProps) {
-  // Skills selection (load all pages in background)
-  const [allSkills, setAllSkills] = useState<
-    Array<{ id: number; name: string }>
-  >([]);
-  useEffect(() => {
-    let isActive = true;
-    const limit = 50;
-    async function loadAll() {
-      try {
-        let page = 1;
-        let aggregated: Array<{ id: number; name: string }> = [];
-        while (true) {
-          const res = await SkillsAPI.getSkillsPaged({ page, limit });
-          const items = Array.isArray((res as any)?.data)
-            ? ((res as any).data as Array<{ id: number; name: string }>)
-            : [];
-          aggregated = aggregated.concat(items);
-          const pag = (res as any)?.meta?.pagination;
-          const currentPage = pag?.currentPage ?? page;
-          const totalPages = pag?.totalPages ?? page;
-          if (!isActive) return;
-          setAllSkills(aggregated);
-          if (
-            typeof currentPage !== "number" ||
-            typeof totalPages !== "number" ||
-            currentPage >= totalPages
-          )
-            break;
-          page = currentPage + 1;
-        }
-      } catch (e) {
-        // noop
-      }
-    }
-    loadAll();
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  // Use warmed all-skills cache
+  const { data: allSkillsResp } = useQuery(
+    skillsQueryOptions.all({ by: "name", order: "asc" })
+  );
   const skillOptions = useMemo(
-    () => allSkills.map((s) => ({ value: String(s.id), label: s.name })),
-    [allSkills]
+    () => (allSkillsResp?.data ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+    [allSkillsResp]
   );
 
   // Scale options with normalized values
