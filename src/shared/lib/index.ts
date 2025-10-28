@@ -11,4 +11,3 @@ export * from "./telegram";
 export * from "./telegramContact";
 export * from "./unauthorizedInterceptor";
 export * from "./mockInitData";
-export * from "./userSwitching";
