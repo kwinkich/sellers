@@ -26,7 +26,6 @@ export const ClientLayout = () => {
   const shouldApplySecondBg =
     location.pathname.includes("/client/list-mop") ||
     location.pathname.includes("/client/mop/") ||
-    location.pathname.includes("/client/courses") ||
     location.pathname.includes("/client/education") ||
     location.pathname.includes("/practice");
 

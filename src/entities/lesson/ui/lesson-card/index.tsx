@@ -6,22 +6,17 @@ import { useNavigate } from "react-router-dom";
 
 interface LessonCardProps {
   lesson: Lesson;
-  courseId?: number;
-  moduleId?: number;
+  courseId: number;
+  moduleId: number;
 }
 
 export const LessonCard = ({ lesson, courseId, moduleId }: LessonCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    if (courseId && moduleId) {
-      navigate(
-        `/mop/education/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`
-      );
-    } else {
-      // Fallback for cases where courseId/moduleId are not provided
-      navigate(`/mop/education/lesson/${lesson.id}`);
-    }
+    navigate(
+      `/mop/education/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`
+    );
   };
 
   const getButtonText = () => {

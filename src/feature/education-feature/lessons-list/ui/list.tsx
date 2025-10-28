@@ -2,7 +2,7 @@ import { LessonCard, LessonsAPI } from "@/entities";
 import { useInfiniteScroll, InfiniteScrollList } from "@/shared";
 import type { FC } from "react";
 
-export const LessonsList: FC<{ moduleId: number; courseId?: number }> = ({
+export const LessonsList: FC<{ moduleId: number; courseId: number }> = ({
   moduleId,
   courseId,
 }) => {
