@@ -18,7 +18,13 @@ export const PracticePastList = ({ searchQuery = "" }: Props) => {
     isFetchingNextPage,
   } = useInfiniteScroll<PracticeCardType>({
     queryKey: ["practices", "past"],
-    queryFn: (page, limit) => PracticesAPI.getPastPractices({ page, limit }),
+    queryFn: (page, limit) =>
+      PracticesAPI.getPastPractices({
+        page,
+        limit,
+        by: "finishedAt",
+        order: "desc",
+      }),
     limit: 20,
   });
 

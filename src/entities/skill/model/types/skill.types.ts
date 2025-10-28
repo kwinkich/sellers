@@ -13,3 +13,8 @@ export interface UpdateSkillRequest {
   name?: string;
   code?: string | null;
 }
+
+export interface GetAllSkillsParams {
+  by?: "id" | "name";
+  order?: "asc" | "desc";
+}

@@ -37,7 +37,13 @@ export const CasesList = ({ searchQuery }: CasesListProps) => {
     isFetchingNextPage,
   } = useInfiniteScroll<CaseListItem>({
     queryKey: ["cases", "list"],
-    queryFn: (page, limit) => CasesAPI.getCases({ page, limit }),
+    queryFn: (page, limit) =>
+      CasesAPI.getCases({
+        page,
+        limit,
+        by: "createdAt",
+        order: "desc",
+      }),
     limit: 20,
     resetKey: refreshToken,
     excludeIds,

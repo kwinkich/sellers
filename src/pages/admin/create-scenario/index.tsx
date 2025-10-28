@@ -12,9 +12,9 @@ import {
   useEdgeSwipeGuard,
   useTelegramVerticalSwipes,
 } from "@/shared";
-import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
+import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { Button } from "@/components/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenarios.api";
 import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { useNavigate } from "react-router-dom";
@@ -121,64 +121,17 @@ export const AdminScenariosCreatePage = () => {
     }
   }, [activeTab, navigate]);
 
-  // Fetch only the specific skills needed for prebuilt blocks
-  const [prebuiltSkills, setPrebuiltSkills] = useState<
-    Array<{ id: number; code?: string; name: string }>
-  >([]);
-  const [skillsLoading, setSkillsLoading] = useState(true);
+  // Fetch ALL skills with the new getAllSkills endpoint
+  const { data: skillsResponse, isLoading: skillsLoading } = useQuery(
+    skillsQueryOptions.all({ by: "name", order: "asc" })
+  );
 
-  useEffect(() => {
-    let isActive = true;
+  const skills = useMemo(() => {
+    if (!skillsResponse?.data) return [];
+    return skillsResponse.data;
+  }, [skillsResponse]);
 
-    async function loadPrebuiltSkills() {
-      try {
-        setSkillsLoading(true);
-
-        // Get all unique skill codes from PREBUILT_BLOCKS
-        const allSkillCodes = [
-          ...PREBUILT_BLOCKS.MODERATOR.skillCodes,
-          ...PREBUILT_BLOCKS.BUYER.skillCodes,
-        ];
-
-        // Use the new single endpoint to get all skills at once
-        const res = await SkillsAPI.getSkillsByCodes(allSkillCodes);
-        const skills = Array.isArray((res as any)?.data)
-          ? (res as any).data
-          : [];
-
-        // Log if some expected skills are missing
-        const foundCodes = skills.map((s: any) => s.code).filter(Boolean);
-        const missingCodes = allSkillCodes.filter(
-          (code) => !foundCodes.includes(code)
-        );
-        if (missingCodes.length > 0) {
-          console.warn("Some prebuilt skills not found:", missingCodes);
-        }
-
-        const validSkills = skills;
-
-        if (isActive) {
-          setPrebuiltSkills(validSkills);
-          setSkillsLoading(false);
-        }
-      } catch (error) {
-        console.error("Failed to load prebuilt skills:", error);
-        if (isActive) {
-          setPrebuiltSkills([]);
-          setSkillsLoading(false);
-        }
-      }
-    }
-
-    loadPrebuiltSkills();
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  const skills = useMemo(() => prebuiltSkills, [prebuiltSkills]);
-
-  // Optimized skills lookup - O(1) instead of O(N)
+  // Optimized skills lookup
   const skillsByCode = useMemo(() => {
     const map = new Map<string, number>();
     for (const skill of skills) {
@@ -206,7 +159,7 @@ export const AdminScenariosCreatePage = () => {
 
       handleFormSuccess("Сценарий успешно создан");
 
-      navigate("/admin/home");
+      navigate("/admin/content/scenarios");
     },
     onError: (error: any) => {
       console.error("Ошибка при создании сценария:", error);
@@ -224,7 +177,8 @@ export const AdminScenariosCreatePage = () => {
 
   // Create pre-built blocks when skills are loaded (only once)
   useEffect(() => {
-    if (skillsLoading || prebuiltInitialized.current) return;
+    if (skillsLoading || prebuiltInitialized.current || skills.length === 0)
+      return;
 
     // Add MODERATOR pre-built block
     const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skillCodes
@@ -382,12 +336,56 @@ export const AdminScenariosCreatePage = () => {
     if (activeTab === "SELLER") {
       return sellerBlocks.length >= 3;
     } else if (activeTab === "BUYER") {
+      // For BUYER, we need at least 1 block (preset block is always created)
       return buyerBlocks.length >= 1;
+    } else if (activeTab === "MODERATOR") {
+      // For MODERATOR, we need at least 1 block (preset block is always created)
+      return moderatorBlocks.length >= 1;
     }
     return false;
-  }, [activeTab, sellerBlocks.length, buyerBlocks.length]);
+  }, [
+    activeTab,
+    sellerBlocks.length,
+    buyerBlocks.length,
+    moderatorBlocks.length,
+  ]);
 
-  // Optimized skills lookup for convertBlocksToFormBlocks - O(1) instead of O(N)
+  // Check if create scenario button should be enabled (all roles must have required blocks)
+  const isCreateScenarioEnabled = useCallback(() => {
+    // Check if all TEXT blocks have content
+    const allTextBlocksHaveContent = (blocks: ExtendedBlockItem[]) => {
+      return blocks.every((block) => {
+        if (block.type === "TEXT") {
+          return block.textContent && block.textContent.trim().length > 0;
+        }
+        if (block.type === "QA") {
+          return (
+            block.questionContent && block.questionContent.trim().length > 0
+          );
+        }
+        return true; // Other block types don't need content validation
+      });
+    };
+
+    const enabled =
+      sellerBlocks.length >= 3 &&
+      buyerBlocks.length >= 1 &&
+      moderatorBlocks.length >= 1 &&
+      formData.title.trim().length > 0 &&
+      allTextBlocksHaveContent(sellerBlocks) &&
+      allTextBlocksHaveContent(buyerBlocks) &&
+      allTextBlocksHaveContent(moderatorBlocks);
+
+    return enabled;
+  }, [
+    sellerBlocks,
+    buyerBlocks,
+    moderatorBlocks,
+    formData.title,
+    skillsLoading,
+  ]);
+
+  // Optimized skills lookup for convertBlocksToFormBlocks
   const skillsById = useMemo(() => {
     const map = new Map<number, { id: number; name: string }>();
     for (const skill of skills) {
@@ -400,8 +398,6 @@ export const AdminScenariosCreatePage = () => {
   const convertBlocksToFormBlocks = useCallback(
     (blocks: ExtendedBlockItem[]): any[] => {
       return blocks.map((block, index) => {
-        // Generate block title according to specification
-
         const baseBlock: any = {
           type: block.type,
           required: true,
@@ -411,12 +407,26 @@ export const AdminScenariosCreatePage = () => {
         // Handle different block types with REAL data
         if (block.type === "TEXT") {
           // TEXT blocks: use textContent as title, no scale and items
-          baseBlock.title = block.textContent || "Текстовый блок";
+          if (!block.textContent || block.textContent.trim().length === 0) {
+            throw new Error("TEXT блок должен содержать текст");
+          }
+          baseBlock.title = block.textContent.trim();
+          // Ensure no scale or items properties for TEXT blocks
+          console.log("TEXT block created:", baseBlock);
         } else if (block.type === "QA") {
           // QA blocks: use questionContent as title, no scale and items
-          baseBlock.title = block.questionContent || "Блок вопросов";
+          if (
+            !block.questionContent ||
+            block.questionContent.trim().length === 0
+          ) {
+            throw new Error("QA блок должен содержать вопросы");
+          }
+          baseBlock.title = block.questionContent.trim();
+          // Ensure no scale or items properties for QA blocks
+          console.log("QA block created:", baseBlock);
         } else if (block.type === "SCALE_SKILL_SINGLE") {
-          // SCALE_SKILL_SINGLE: use real scale options and questions (no title)
+          // SCALE_SKILL_SINGLE: use real scale options and questions
+          baseBlock.title = "Оценка навыка";
           baseBlock.scale = {
             options: (block.scaleOptions || []).map((opt, ord) => ({
               ord,
@@ -431,8 +441,10 @@ export const AdminScenariosCreatePage = () => {
             position: pos,
             skillId: block.selectedSkillId || 1,
           }));
+          console.log("SCALE_SKILL_SINGLE block created:", baseBlock);
         } else if (block.type === "SCALE_SKILL_MULTI") {
-          // SCALE_SKILL_MULTI: use real scale options and skills (no title)
+          // SCALE_SKILL_MULTI: use real scale options and skills
+          baseBlock.title = "Оценка навыков";
           baseBlock.scale = {
             options: (block.scaleOptionsMulti || []).map((opt, ord) => ({
               ord,
@@ -450,6 +462,7 @@ export const AdminScenariosCreatePage = () => {
               skillId: skillId,
             };
           });
+          console.log("SCALE_SKILL_MULTI block created:", baseBlock);
         }
 
         return baseBlock;
@@ -504,32 +517,48 @@ export const AdminScenariosCreatePage = () => {
       return;
     }
 
-    const requestData: CreateScenarioRequest = {
-      title: formData.title,
-      forms: [
-        {
-          role: "SELLER",
-          title: "Форма продавца",
-          descr: "Сценарий для продавца",
-          blocks: convertBlocksToFormBlocks(sellerBlocks),
-        },
-        {
-          role: "BUYER",
-          title: "Форма покупателя",
-          descr: "Сценарий для покупателя",
-          blocks: convertBlocksToFormBlocks(buyerBlocks),
-        },
-        {
-          role: "MODERATOR",
-          title: "Форма модератора",
-          descr: "Сценарий для модератора",
-          blocks: convertBlocksToFormBlocks(moderatorBlocks),
-        },
-      ],
-    };
+    try {
+      const requestData: CreateScenarioRequest = {
+        title: formData.title,
+        forms: [
+          {
+            role: "SELLER",
+            title: "Форма продавца",
+            descr: "Сценарий для продавца",
+            blocks: convertBlocksToFormBlocks(sellerBlocks),
+          },
+          {
+            role: "BUYER",
+            title: "Форма покупателя",
+            descr: "Сценарий для покупателя",
+            blocks: convertBlocksToFormBlocks(buyerBlocks),
+          },
+          {
+            role: "MODERATOR",
+            title: "Форма модератора",
+            descr: "Сценарий для модератора",
+            blocks: convertBlocksToFormBlocks(moderatorBlocks),
+          },
+        ],
+      };
 
-    // Call the actual API
-    createScenario(requestData);
+      // Debug: Log the request data to see what we're sending
+      console.log(
+        "Scenario creation request:",
+        JSON.stringify(requestData, null, 2)
+      );
+
+      // Call the actual API
+      createScenario(requestData);
+    } catch (error) {
+      console.error("Validation error:", error);
+      handleFormError(
+        "Ошибка валидации",
+        error instanceof Error
+          ? error.message
+          : "Проверьте заполнение всех блоков"
+      );
+    }
   }, [
     formData.title,
     convertBlocksToFormBlocks,
@@ -594,6 +623,16 @@ export const AdminScenariosCreatePage = () => {
                     Необходимо добавить минимум 3 блока
                   </p>
                 )}
+                {sellerBlocks.some(
+                  (block) =>
+                    block.type === "TEXT" &&
+                    (!block.textContent ||
+                      block.textContent.trim().length === 0)
+                ) && (
+                  <p className="mt-2 text-xs text-amber-600 text-center">
+                    Заполните текст во всех текстовых блоках
+                  </p>
+                )}
               </div>
             </TabsContent>
             <TabsContent
@@ -618,6 +657,16 @@ export const AdminScenariosCreatePage = () => {
                     {buyerBlocks.length < 1 && (
                       <p className="mt-2 text-xs text-muted-foreground text-center">
                         Необходимо добавить минимум 1 блок
+                      </p>
+                    )}
+                    {buyerBlocks.some(
+                      (block) =>
+                        block.type === "TEXT" &&
+                        (!block.textContent ||
+                          block.textContent.trim().length === 0)
+                    ) && (
+                      <p className="mt-2 text-xs text-amber-600 text-center">
+                        Заполните текст во всех текстовых блоках
                       </p>
                     )}
                   </>
@@ -646,6 +695,16 @@ export const AdminScenariosCreatePage = () => {
                     {moderatorBlocks.length < 1 && (
                       <p className="mt-2 text-xs text-muted-foreground text-center">
                         Необходимо добавить минимум 1 блок
+                      </p>
+                    )}
+                    {moderatorBlocks.some(
+                      (block) =>
+                        block.type === "TEXT" &&
+                        (!block.textContent ||
+                          block.textContent.trim().length === 0)
+                    ) && (
+                      <p className="mt-2 text-xs text-amber-600 text-center">
+                        Заполните текст во всех текстовых блоках
                       </p>
                     )}
                   </>
@@ -696,7 +755,7 @@ export const AdminScenariosCreatePage = () => {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  disabled={isPending || !formData.title.trim()}
+                  disabled={isPending || !isCreateScenarioEnabled()}
                   className="flex-1 h-12"
                 >
                   {isPending ? "Создание..." : "Создать сценарий"}

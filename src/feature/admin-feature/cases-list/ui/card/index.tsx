@@ -25,12 +25,12 @@ export const CaseCard: FC<CaseCardProps> = ({ data, onDelete }) => {
 
   return (
     <Box variant="dark" justify="start" className="gap-3 p-3">
-      <div className="flex items-center w-full justify-between text-white">
-        <p className="text-lg font-medium leading-[100%]">
+      <div className="flex items-start w-full justify-between text-white gap-3">
+        <p className="text-lg font-medium leading-[100%] flex-1 min-w-0">
           {data.title} (#{data.id})
         </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Badge
             variant="main-opacity"
             label={getSellerLevelLabel(data.recommendedSellerLevel)}

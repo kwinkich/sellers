@@ -32,8 +32,8 @@ export function CreateCaseForm() {
       handleFormSuccess("Кейс успешно создан");
 
       form.reset();
-      // Navigate to cases list or back to admin
-      navigate("/admin/home");
+      // Navigate to cases list
+      navigate("/admin/content/cases");
     },
     onError: (error: any) => {
       console.error("Ошибка при создании кейса:", error);
