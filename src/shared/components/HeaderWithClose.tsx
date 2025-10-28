@@ -18,7 +18,7 @@ export const HeaderWithClose = ({
   const isDark = variant === "dark";
 
   return (
-    <div className={`flex flex-col gap-1 mb-6 ${className}`}>
+    <div className={`flex flex-col gap-1 mb-6 pl-2 ${className}`}>
       {/* Title and close button */}
       <div className="flex items-center justify-between">
         <h1
