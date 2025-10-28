@@ -28,6 +28,7 @@ export const ModulesList = ({ courseId }: ModulesListProps) => {
       renderItem={(module) => (
         <ModuleCard
           module={module}
+          courseId={courseId}
           isOpen={module.unlockRule === "ALL" || module.progressPercent > 0}
         />
       )}

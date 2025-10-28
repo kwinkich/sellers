@@ -97,6 +97,10 @@ export const route = createBrowserRouter(
                   element: <ClientLessonDetailsPage />,
                 },
                 {
+                  path: "courses/:courseId/modules/:moduleId/quizzes/:id",
+                  element: <ClientQuizPage />,
+                },
+                {
                   path: "quizzes/:id",
                   element: <ClientQuizPage />,
                 },
@@ -130,6 +134,10 @@ export const route = createBrowserRouter(
                 {
                   path: "courses/:courseId/modules/:moduleId/lessons/:lessonId",
                   element: <LessonDetailsPage />,
+                },
+                {
+                  path: "courses/:courseId/modules/:moduleId/quizzes/:id",
+                  element: <QuizPage />,
                 },
                 {
                   path: "quizzes/:id",
