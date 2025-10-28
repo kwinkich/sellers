@@ -53,13 +53,6 @@ export const ClientLessonContent = ({ lesson }: ClientLessonContentProps) => {
               </div>
             </div>
           )}
-
-          <div className="pt-4 border-t border-gray-600">
-            <div className="text-xs text-gray-400">
-              <p>Этот урок доступен только для просмотра.</p>
-              <p>Для участия в обучении обратитесь к администратору.</p>
-            </div>
-          </div>
         </div>
       </Box>
     </div>
