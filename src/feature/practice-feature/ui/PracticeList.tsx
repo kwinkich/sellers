@@ -23,7 +23,7 @@ export const PracticeList = ({ searchQuery = "" }: Props) => {
         page,
         limit,
         by: "startAt",
-        order: "desc",
+        order: "asc",
       }),
     limit: 20,
   });
