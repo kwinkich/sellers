@@ -511,6 +511,7 @@ export const ModuleDetailEditPage = () => {
           )}
 
           <SelectFloatingLabel
+            key={`unlock-${formData.unlockRule}`}
             placeholder="Выберите правило доступа"
             value={formData.unlockRule}
             onValueChange={(value) => handleChange("unlockRule", value)}
