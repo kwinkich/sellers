@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { useQuery } from "@tanstack/react-query";
+import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
 import { scenariosQueryOptions } from "@/entities";
 
 export const AdminEditScenarioPage = () => {
@@ -25,6 +26,9 @@ export const AdminEditScenarioPage = () => {
     ...scenariosQueryOptions.byId(id ? parseInt(id) : 0, true), // includeForms = true
     enabled: !!id,
   });
+
+  // Warm up all skills cache once per page
+  useQuery(skillsQueryOptions.all({ by: "name", order: "asc" }));
 
   // Initialize title when data loads
   useEffect(() => {
