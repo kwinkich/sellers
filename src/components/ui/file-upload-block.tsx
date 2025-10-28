@@ -320,7 +320,7 @@ export const FileUploadBlock = ({
             <p className="text-sm text-gray-600 mb-2">
               Загрузите {getFileTypeText()}
             </p>
-            <Button type="button" size="sm" onClick={handleFileSelect}>
+            <Button type="button" size="xs" onClick={handleFileSelect}>
               Выбрать файл
             </Button>
             <p className="text-xs text-gray-500 mt-2">{getFileSizeLimit()}</p>
