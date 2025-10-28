@@ -31,7 +31,7 @@ const PREBUILT_BLOCKS = {
     skillCodes: [
       "LOGICAL_BEHAVIOR",
       "EMOTIONAL_AUTHENTICITY",
-      "INTEGRITY",
+      "CHARACTER_INTEGRITY",
     ],
     type: "SCALE_SKILL_MULTI" as BlockKind,
   },
@@ -121,35 +121,62 @@ export const AdminScenariosCreatePage = () => {
     }
   }, [activeTab, navigate]);
 
-  // Fetch ALL skills (paginated) to find IDs for pre-built blocks
-  const [allSkills, setAllSkills] = useState<Array<{ id: number; code?: string; name: string }>>([]);
+  // Fetch only the specific skills needed for prebuilt blocks
+  const [prebuiltSkills, setPrebuiltSkills] = useState<
+    Array<{ id: number; code?: string; name: string }>
+  >([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+
   useEffect(() => {
     let isActive = true;
-    const limit = 50;
-    async function loadAllSkills() {
+
+    async function loadPrebuiltSkills() {
       try {
-        let page = 1;
-        let acc: Array<{ id: number; code?: string; name: string }> = [];
-        while (true) {
-          const res = await SkillsAPI.getSkillsPaged({ page, limit });
-          const items = Array.isArray((res as any)?.data)
-            ? ((res as any).data as Array<{ id: number; code?: string; name: string }>)
-            : [];
-          acc = acc.concat(items);
-          const pag = (res as any)?.meta?.pagination;
-          const currentPage = pag?.currentPage ?? page;
-          const totalPages = pag?.totalPages ?? page;
-          if (!isActive) return;
-          setAllSkills(acc);
-          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
-          page = currentPage + 1;
+        setSkillsLoading(true);
+
+        // Get all unique skill codes from PREBUILT_BLOCKS
+        const allSkillCodes = [
+          ...PREBUILT_BLOCKS.MODERATOR.skillCodes,
+          ...PREBUILT_BLOCKS.BUYER.skillCodes,
+        ];
+
+        // Use the new single endpoint to get all skills at once
+        const res = await SkillsAPI.getSkillsByCodes(allSkillCodes);
+        const skills = Array.isArray((res as any)?.data)
+          ? (res as any).data
+          : [];
+
+        // Log if some expected skills are missing
+        const foundCodes = skills.map((s: any) => s.code).filter(Boolean);
+        const missingCodes = allSkillCodes.filter(
+          (code) => !foundCodes.includes(code)
+        );
+        if (missingCodes.length > 0) {
+          console.warn("Some prebuilt skills not found:", missingCodes);
         }
-      } catch {}
+
+        const validSkills = skills;
+
+        if (isActive) {
+          setPrebuiltSkills(validSkills);
+          setSkillsLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to load prebuilt skills:", error);
+        if (isActive) {
+          setPrebuiltSkills([]);
+          setSkillsLoading(false);
+        }
+      }
     }
-    loadAllSkills();
-    return () => { isActive = false; };
+
+    loadPrebuiltSkills();
+    return () => {
+      isActive = false;
+    };
   }, []);
-  const skills = useMemo(() => allSkills, [allSkills]);
+
+  const skills = useMemo(() => prebuiltSkills, [prebuiltSkills]);
 
   // Optimized skills lookup - O(1) instead of O(N)
   const skillsByCode = useMemo(() => {
@@ -197,7 +224,7 @@ export const AdminScenariosCreatePage = () => {
 
   // Create pre-built blocks when skills are loaded (only once)
   useEffect(() => {
-    if (skills.length === 0 || prebuiltInitialized.current) return;
+    if (skillsLoading || prebuiltInitialized.current) return;
 
     // Add MODERATOR pre-built block
     const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skillCodes
@@ -217,6 +244,11 @@ export const AdminScenariosCreatePage = () => {
         ],
       };
       setModeratorBlocks((prev) => [...prev, prebuiltBlock]);
+    } else {
+      console.warn(
+        "No MODERATOR skills found for prebuilt block. Expected codes:",
+        PREBUILT_BLOCKS.MODERATOR.skillCodes
+      );
     }
 
     // Add BUYER pre-built block
@@ -237,11 +269,16 @@ export const AdminScenariosCreatePage = () => {
         ],
       };
       setBuyerBlocks((prev) => [...prev, prebuiltBlock]);
+    } else {
+      console.warn(
+        "No BUYER skills found for prebuilt block. Expected codes:",
+        PREBUILT_BLOCKS.BUYER.skillCodes
+      );
     }
 
     // Mark as initialized
     prebuiltInitialized.current = true;
-  }, [skills]);
+  }, [skills, skillsLoading, findSkillIdByCode]);
 
   const handleAdd = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
@@ -564,16 +601,26 @@ export const AdminScenariosCreatePage = () => {
               className="pt-3 data-[state=inactive]:hidden"
             >
               <div className="overflow-visible min-h-0">
-                <BlocksContainer
-                  blocks={buyerBlocks}
-                  onAdd={onAddBuyer}
-                  onRemove={onRemoveBuyer}
-                  onDataChange={onDataChangeBuyer}
-                />
-                {buyerBlocks.length < 1 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">
-                    Необходимо добавить минимум 1 блок
-                  </p>
+                {skillsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-muted-foreground">
+                      Загрузка предустановленных блоков...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <BlocksContainer
+                      blocks={buyerBlocks}
+                      onAdd={onAddBuyer}
+                      onRemove={onRemoveBuyer}
+                      onDataChange={onDataChangeBuyer}
+                    />
+                    {buyerBlocks.length < 1 && (
+                      <p className="mt-2 text-xs text-muted-foreground text-center">
+                        Необходимо добавить минимум 1 блок
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </TabsContent>
@@ -582,16 +629,26 @@ export const AdminScenariosCreatePage = () => {
               className="pt-3 data-[state=inactive]:hidden"
             >
               <div className="overflow-visible min-h-0">
-                <BlocksContainer
-                  blocks={moderatorBlocks}
-                  onAdd={onAddModerator}
-                  onRemove={onRemoveModerator}
-                  onDataChange={onDataChangeModerator}
-                />
-                {moderatorBlocks.length < 1 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">
-                    Необходимо добавить минимум 1 блок
-                  </p>
+                {skillsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-muted-foreground">
+                      Загрузка предустановленных блоков...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <BlocksContainer
+                      blocks={moderatorBlocks}
+                      onAdd={onAddModerator}
+                      onRemove={onRemoveModerator}
+                      onDataChange={onDataChangeModerator}
+                    />
+                    {moderatorBlocks.length < 1 && (
+                      <p className="mt-2 text-xs text-muted-foreground text-center">
+                        Необходимо добавить минимум 1 блок
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </TabsContent>

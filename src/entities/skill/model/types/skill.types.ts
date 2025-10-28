@@ -1,7 +1,7 @@
 export interface Skill {
   id: number;
   name: string;
-  code: string;
+  code: string | null;
 }
 
 export interface CreateSkillRequest {

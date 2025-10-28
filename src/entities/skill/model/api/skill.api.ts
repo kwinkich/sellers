@@ -11,15 +11,48 @@ export const SkillsAPI = {
     API.post("skills", { json: skillData }).json<GApiResponse<Skill>>(),
 
   // Unpaginated list is removed in favor of consistent paginated schema
-  getSkills: ({ page = 1, limit = 30 }: { page?: number; limit?: number } = {}) =>
+  getSkills: ({
+    page = 1,
+    limit = 30,
+  }: { page?: number; limit?: number } = {}) =>
     API.get("skills", {
       searchParams: { page: String(page), limit: String(limit) },
     }).json<GApiResponse<Skill, true>>(),
 
-  getSkillsPaged: ({ page, limit }: { page: number; limit: number }) =>
-    API.get("skills", {
-      searchParams: { page: String(page), limit: String(limit) },
-    }).json<GApiResponse<Skill, true>>(),
+  getSkillsPaged: (
+    {
+      page,
+      limit,
+      code,
+      name,
+      id,
+    }: {
+      page: number;
+      limit: number;
+      code?: string;
+      name?: string;
+      id?: number | number[];
+    } = { page: 1, limit: 30 }
+  ) => {
+    const searchParams: Record<string, string> = {
+      page: String(page),
+      limit: String(limit),
+    };
+
+    if (code) searchParams.code = code;
+    if (name) searchParams.name = name;
+    if (id) {
+      if (Array.isArray(id)) {
+        searchParams.id = id.join(",");
+      } else {
+        searchParams.id = String(id);
+      }
+    }
+
+    return API.get("skills", {
+      searchParams,
+    }).json<GApiResponse<Skill, true>>();
+  },
 
   getSkillById: (id: number) =>
     API.get(`skills/${id}`).json<GApiResponse<Skill>>(),
@@ -29,6 +62,13 @@ export const SkillsAPI = {
 
   deleteSkill: (id: number) =>
     API.delete(`skills/${id}`).json<GApiResponse<void>>(),
+
+  getSkillsByCodes: (codes: string[]) => {
+    const codesString = codes.join(",");
+    return API.get(`skills/by-codes`, {
+      searchParams: { codes: codesString },
+    }).json<GApiResponse<Skill>>();
+  },
 };
 
 export const skillsQueryOptions = {
