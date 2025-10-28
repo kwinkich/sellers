@@ -59,7 +59,7 @@ export const MopCourseDetailPage = () => {
     <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
       <HeadText
         head={course.title}
-        label={course.shortDesc}
+        label={course.shortDesc || ""}
         className="px-2 mb-6"
       />
 
