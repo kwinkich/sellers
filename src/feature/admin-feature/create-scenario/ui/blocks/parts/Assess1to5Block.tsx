@@ -6,7 +6,10 @@ import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Minus, X, Trash2 } from "lucide-react";
-import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/components/ui/button-group";
 import { create1to5Scale } from "@/shared/lib/scaleUtils";
 import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
 
@@ -22,21 +25,28 @@ interface Assess1to5BlockProps {
   }) => void;
 }
 
-export function Assess1to5Block({ 
-  id, 
-  onDelete, 
-  prebuiltSkills, 
-  selectedSkills: initialSelectedSkills = [], 
-  scaleOptionsMulti: initialScaleOptions = create1to5Scale(["плохо", "хорошо", "отлично"]),
-  onDataChange 
+export function Assess1to5Block({
+  id,
+  onDelete,
+  prebuiltSkills,
+  selectedSkills: initialSelectedSkills = [],
+  scaleOptionsMulti: initialScaleOptions = create1to5Scale([
+    "плохо",
+    "хорошо",
+    "отлично",
+  ]),
+  onDataChange,
 }: Assess1to5BlockProps) {
-  const isPrebuilt = id.includes('prebuilt');
-  
+  const isPrebuilt = id.includes("prebuilt");
+
   // Scale options with normalized values
-  const [scaleOptions, setScaleOptions] = useState<ScaleOption[]>(initialScaleOptions);
-  
+  const [scaleOptions, setScaleOptions] =
+    useState<ScaleOption[]>(initialScaleOptions);
+
   // Skills selection (load all pages in background)
-  const [allSkills, setAllSkills] = useState<Array<{ id: number; name: string }>>([]);
+  const [allSkills, setAllSkills] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
   useEffect(() => {
     let isActive = true;
     const limit = 50;
@@ -46,14 +56,21 @@ export function Assess1to5Block({
         let aggregated: Array<{ id: number; name: string }> = [];
         while (true) {
           const res = await SkillsAPI.getSkillsPaged({ page, limit });
-          const items = Array.isArray((res as any)?.data) ? ((res as any).data as Array<{ id: number; name: string }>) : [];
+          const items = Array.isArray((res as any)?.data)
+            ? ((res as any).data as Array<{ id: number; name: string }>)
+            : [];
           aggregated = aggregated.concat(items);
           const pag = (res as any)?.meta?.pagination;
           const currentPage = pag?.currentPage ?? page;
           const totalPages = pag?.totalPages ?? page;
           if (!isActive) return;
           setAllSkills(aggregated);
-          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
+          if (
+            typeof currentPage !== "number" ||
+            typeof totalPages !== "number" ||
+            currentPage >= totalPages
+          )
+            break;
           page = currentPage + 1;
         }
       } catch (e) {
@@ -65,15 +82,18 @@ export function Assess1to5Block({
       isActive = false;
     };
   }, []);
-  const skillOptions = useMemo(() => allSkills.map((s) => ({ value: String(s.id), label: s.name })), [allSkills]);
-  
+  const skillOptions = useMemo(
+    () => allSkills.map((s) => ({ value: String(s.id), label: s.name })),
+    [allSkills]
+  );
+
   // Initialize with prebuilt skills if provided
   const [selectedSkills, setSelectedSkills] = useState<string[]>(() => {
     if (prebuiltSkills && prebuiltSkills.length > 0) {
-      return prebuiltSkills.map(id => String(id));
+      return prebuiltSkills.map((id) => String(id));
     }
     if (initialSelectedSkills.length > 0) {
-      return initialSelectedSkills.map(id => String(id));
+      return initialSelectedSkills.map((id) => String(id));
     }
     return [];
   });
@@ -82,8 +102,8 @@ export function Assess1to5Block({
     const updatedSkills = [...selectedSkills, ""];
     setSelectedSkills(updatedSkills);
     onDataChange?.({
-      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
-      scaleOptionsMulti: scaleOptions
+      selectedSkills: updatedSkills.filter(Boolean).map((id) => parseInt(id)),
+      scaleOptionsMulti: scaleOptions,
     });
   };
 
@@ -91,8 +111,8 @@ export function Assess1to5Block({
     const updatedSkills = selectedSkills.filter((_, i) => i !== idx);
     setSelectedSkills(updatedSkills);
     onDataChange?.({
-      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
-      scaleOptionsMulti: scaleOptions
+      selectedSkills: updatedSkills.filter(Boolean).map((id) => parseInt(id)),
+      scaleOptionsMulti: scaleOptions,
     });
   };
 
@@ -100,8 +120,8 @@ export function Assess1to5Block({
     const updatedSkills = selectedSkills.map((v, i) => (i === idx ? value : v));
     setSelectedSkills(updatedSkills);
     onDataChange?.({
-      selectedSkills: updatedSkills.filter(Boolean).map(id => parseInt(id)),
-      scaleOptionsMulti: scaleOptions
+      selectedSkills: updatedSkills.filter(Boolean).map((id) => parseInt(id)),
+      scaleOptionsMulti: scaleOptions,
     });
   };
 
@@ -110,11 +130,16 @@ export function Assess1to5Block({
   const addScalePoint = () => {
     if (scaleOptions.length < 5) {
       const newLabel = `Опция ${scaleOptions.length + 1}`;
-      const newScale = create1to5Scale([...scaleOptions.map(opt => opt.label), newLabel]);
+      const newScale = create1to5Scale([
+        ...scaleOptions.map((opt) => opt.label),
+        newLabel,
+      ]);
       setScaleOptions(newScale);
       onDataChange?.({
-        selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
-        scaleOptionsMulti: newScale
+        selectedSkills: selectedSkills
+          .filter(Boolean)
+          .map((id) => parseInt(id)),
+        scaleOptionsMulti: newScale,
       });
     }
   };
@@ -124,20 +149,22 @@ export function Assess1to5Block({
       const newScale = scaleOptions.slice(0, -1);
       setScaleOptions(newScale);
       onDataChange?.({
-        selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
-        scaleOptionsMulti: newScale
+        selectedSkills: selectedSkills
+          .filter(Boolean)
+          .map((id) => parseInt(id)),
+        scaleOptionsMulti: newScale,
       });
     }
   };
 
   const updateScaleLabel = (index: number, label: string) => {
-    const updatedScale = scaleOptions.map((opt, i) => 
+    const updatedScale = scaleOptions.map((opt, i) =>
       i === index ? { ...opt, label } : opt
     );
     setScaleOptions(updatedScale);
     onDataChange?.({
-      selectedSkills: selectedSkills.filter(Boolean).map(id => parseInt(id)),
-      scaleOptionsMulti: updatedScale
+      selectedSkills: selectedSkills.filter(Boolean).map((id) => parseInt(id)),
+      scaleOptionsMulti: updatedScale,
     });
   };
 
@@ -147,7 +174,12 @@ export function Assess1to5Block({
         <CardTitle>
           {isPrebuilt ? "Предустановленная оценка" : "Оценка по шкале"}
         </CardTitle>
-        <Button size="2s" variant="ghost" onClick={onDelete} aria-label="Удалить блок">
+        <Button
+          size="2s"
+          variant="ghost"
+          onClick={onDelete}
+          aria-label="Удалить блок"
+        >
           <X className="h-5 w-5 text-black" />
         </Button>
       </CardHeader>
@@ -159,7 +191,9 @@ export function Assess1to5Block({
             <div className="space-y-2">
               {scaleOptions.map((option, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <span className="w-[20px] text-xs text-muted-foreground">{idx + 1}.</span>
+                  <span className="w-[20px] text-xs text-muted-foreground">
+                    {idx + 1}.
+                  </span>
                   <Input
                     value={option.label}
                     onChange={(e) => updateScaleLabel(idx, e.target.value)}
@@ -170,7 +204,10 @@ export function Assess1to5Block({
               ))}
             </div>
             <div className="flex items-center justify-end pt-1">
-              <ButtonGroup aria-label="Изменить размер шкалы" className="border rounded-lg overflow-hidden">
+              <ButtonGroup
+                aria-label="Изменить размер шкалы"
+                className="border rounded-lg overflow-hidden"
+              >
                 <Button
                   variant="ghost"
                   size="2s"
@@ -206,16 +243,29 @@ export function Assess1to5Block({
                     placeholder="Выберите навык"
                     value={val}
                     onValueChange={(v) => updateSkill(idx, v)}
-                    options={skillOptions.filter((o) => o.value === val || !taken.has(o.value))}
+                    options={skillOptions.filter(
+                      (o) => o.value === val || !taken.has(o.value)
+                    )}
                   />
-                  <Button size="2s" variant="ghost" onClick={() => removeSkill(idx)} aria-label="Удалить">
+                  <Button
+                    size="2s"
+                    variant="ghost"
+                    onClick={() => removeSkill(idx)}
+                    aria-label="Удалить"
+                  >
                     <Trash2 className="h-4 w-4 text-black" />
                   </Button>
                 </div>
               ))}
             </div>
-            <Button type="button" variant="second" onClick={addSkill} className="h-12 gap-2 w-full text-center">
-              <Plus className="h-4 w-4" /> Добавить навык
+            <Button
+              type="button"
+              variant="second"
+              onClick={addSkill}
+              className="h-12 gap-2 w-full text-center mt-2"
+            >
+              <Plus className="h-4 w-4" />
+              Добавить навык
             </Button>
           </div>
         </div>
