@@ -5,10 +5,10 @@ import {
   type BlockKind,
   type ScenarioBlockItem,
 } from "@/feature/admin-feature/create-scenario/ui/blocks/parts/BlocksContainer";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getRoleLabel, ConfirmationDialog } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
+import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { scenariosMutationOptions } from "@/entities/scenarios/model/api/scenarios.api";
 import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
@@ -91,9 +91,41 @@ export function EditScenarioForm({
     enabled: !!scenarioId,
   });
 
-  // Fetch skills
-  const { data: skillsData } = useQuery(skillsQueryOptions.list());
-  const skills = useMemo(() => skillsData?.data || [], [skillsData]);
+  // Load only required skills by IDs to avoid missing names due to pagination
+  const [skillsById, setSkillsById] = useState<Record<number, { id: number; name: string; code?: string }>>({});
+  useEffect(() => {
+    async function loadSkillsForScenario() {
+      const forms = scenarioData?.data?.forms;
+      if (!forms || !Array.isArray(forms)) return;
+
+      const ids = new Set<number>();
+      for (const f of forms) {
+        const blocks = f?.blocks ?? [];
+        for (const b of blocks) {
+          if (b?.type === "SCALE_SKILL_SINGLE") {
+            for (const it of b?.items ?? []) {
+              if (typeof it?.skillId === "number") ids.add(it.skillId);
+            }
+          } else if (b?.type === "SCALE_SKILL_MULTI") {
+            for (const it of b?.items ?? []) {
+              if (typeof it?.skillId === "number") ids.add(it.skillId);
+            }
+          }
+        }
+      }
+
+      if (ids.size === 0) return;
+      try {
+        const idArray = Array.from(ids);
+        const res = await SkillsAPI.getSkillsPaged({ page: 1, limit: idArray.length || 30, id: idArray });
+        const rows = Array.isArray((res as any)?.data) ? ((res as any).data as Array<{ id: number; name: string; code?: string }>) : [];
+        const map: Record<number, { id: number; name: string; code?: string }> = {};
+        for (const s of rows) map[s.id] = s;
+        setSkillsById(map);
+      } catch {}
+    }
+    loadSkillsForScenario();
+  }, [scenarioData]);
 
   // Initialize form with scenario data
   useEffect(() => {
@@ -404,14 +436,11 @@ export function EditScenarioForm({
               countsTowardsScore: opt.countsTowardsScore,
             })),
           };
-          baseBlock.items = (block.selectedSkills || []).map((skillId, pos) => {
-            const skill = skills.find((s) => s.id === skillId);
-            return {
-              title: skill?.name || `Навык ${skillId}`,
-              position: pos,
-              skillId: skillId,
-            };
-          });
+          baseBlock.items = (block.selectedSkills || []).map((skillId, pos) => ({
+            title: skillsById[skillId]?.name || `Навык ${skillId}`,
+            position: pos,
+            skillId: skillId,
+          }));
         }
 
         return baseBlock;

@@ -77,11 +77,13 @@ const SelectFloatingLabel = React.forwardRef<
 							selectFloatingVariants({ variant, className }),
 							"pl-4 pr-10",
 							"row-start-1 col-start-1",
-							"flex items-center justify-start",
+							"flex items-center justify-start min-w-0",
 							isLabelLifted ? "pt-6 pb-2" : "py-4"
 						)}
 					>
-						<SelectValue />
+						<div className="w-full min-w-0 truncate text-left">
+							<SelectValue />
+						</div>
 					</SelectTrigger>
 
 					<label
@@ -105,7 +107,7 @@ const SelectFloatingLabel = React.forwardRef<
 								aria-label={option.label}
 								className="py-3"
 							>
-								{option.label}
+								<span className="block truncate max-w-full">{option.label}</span>
 							</SelectItem>
 						))}
 					</SelectContent>
