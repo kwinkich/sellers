@@ -63,7 +63,7 @@ export const AdminHomePage = () => {
 
               <Button
                 variant="link"
-                className="justify-between"
+                className="justify-between cursor-pointer"
                 text="main"
                 size="link"
                 onClick={() => navigate("/practice")}
@@ -85,7 +85,7 @@ export const AdminHomePage = () => {
 
               <Button
                 variant="link"
-                className="justify-between"
+                className="justify-between cursor-pointer"
                 text="main"
                 size="link"
                 onClick={() => navigate("/admin/clients")}
@@ -97,7 +97,7 @@ export const AdminHomePage = () => {
 
           <div className="w-full gap-2 flex">
             <Button
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               variant="main-opacity"
               text="main"
               size="2s"
@@ -106,7 +106,7 @@ export const AdminHomePage = () => {
               Создать практику
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               variant="main-opacity"
               text="main"
               size="2s"
@@ -140,7 +140,7 @@ export const AdminHomePage = () => {
               <div className="flex flex-col gap-2">
                 <Button
                   variant="link"
-                  className="justify-between w-full"
+                  className="justify-between w-full cursor-pointer"
                   text="main"
                   size="link"
                   onClick={() => navigate("/admin/content/cases")}
@@ -148,7 +148,7 @@ export const AdminHomePage = () => {
                   Открыть список <LinkIcon />
                 </Button>
                 <Button
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   variant="main-opacity"
                   text="main"
                   size="2s"
@@ -172,7 +172,7 @@ export const AdminHomePage = () => {
               <div className="flex flex-col gap-2">
                 <Button
                   variant="link"
-                  className="justify-between w-full"
+                  className="justify-between w-full cursor-pointer"
                   text="main"
                   size="link"
                   onClick={() => navigate("/admin/content/scenarios")}
@@ -180,7 +180,7 @@ export const AdminHomePage = () => {
                   Открыть список <LinkIcon />
                 </Button>
                 <Button
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   variant="main-opacity"
                   text="main"
                   size="2s"
@@ -212,7 +212,7 @@ export const AdminHomePage = () => {
                 variant={"dark"}
                 rounded="3xl"
                 direction="row"
-                className="h-[90px]"
+                className="h-[90px] cursor-pointer"
               >
                 <CreateAdminIcon size={36} fill="#06935F" />
                 <p className="font-medium text-white leading-[100%]">

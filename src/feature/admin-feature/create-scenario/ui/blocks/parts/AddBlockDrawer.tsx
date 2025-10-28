@@ -22,7 +22,7 @@ export function AddBlockDrawer({ onPick }: AddBlockDrawerProps) {
           type="button"
           className={cn(
             "w-full rounded-[24px] border-2 border-emerald-500 border-dashed bg-emerald-50/90 text-emerald-700",
-            "px-2 py-3 text-center font-medium"
+            "px-2 py-3 text-center font-medium cursor-pointer"
           )}
         >
           Добавить блок
