@@ -26,6 +26,7 @@
 
 :root {
   --nav-h: 80px; /* h-20 - navigation bar height for better mobile usability */
+  --kb: 0px; /* iOS keyboard height - set by useIosKeyboardInsetVar hook */
 }
 
 @theme inline {
@@ -140,7 +141,8 @@
     @apply border-border outline-ring/50;
   }
 
-  html, body {
+  html,
+  body {
     overscroll-behavior-y: none; /* stop chaining to the host */
   }
 

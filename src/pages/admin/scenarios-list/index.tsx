@@ -1,10 +1,11 @@
 import MultiSelectChips from "@/components/ui/multi-select-chips";
 import { Input } from "@/components/ui/input";
 import { ScenariosList } from "@/feature";
-import { HeadText, useInfiniteList } from "@/shared";
+import { HeaderWithClose, useInfiniteList } from "@/shared";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { Search, Filter } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Stable keys for better performance
 const SKILLS_KEY = ["skills", "list"] as const;
@@ -13,6 +14,7 @@ export const AdminScenariosListPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const navigate = useNavigate();
 
   // Skills query for filter options
   const skills = useInfiniteList<any>(
@@ -32,13 +34,15 @@ export const AdminScenariosListPage = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
-      <div className="bg-base-bg flex gap-5 text-white flex-col w-full rounded-b-3xl px-2 pb-4 pt-4 mb-2">
-        <HeadText
-          head="Список сценариев"
-          label="Список всех сценариев, доступных в системе"
-        />
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+      <HeaderWithClose
+        title="Список сценариев"
+        description="Список всех сценариев, доступных в системе"
+        onClose={() => navigate("/admin/home")}
+        variant="dark"
+      />
 
+      <div className="bg-base-bg flex gap-5 text-white flex-col w-full rounded-2xl px-4 pb-4 pt-4 mb-6">
         <div className="flex flex-col gap-3">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

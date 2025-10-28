@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { coursesMutationOptions } from "@/entities";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export const CourseCard: FC<{ data: Course }> = ({ data }) => {
   const navigate = useNavigate();
@@ -18,11 +18,11 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
     ...coursesMutationOptions.delete(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses", "list"] });
-      toast.success("Курс удалён");
+      handleFormSuccess("Курс удалён");
       setIsConfirmOpen(false);
     },
-    onError: () => {
-      toast.error("Не удалось удалить курс");
+    onError: (error) => {
+      handleFormError(error, ERROR_MESSAGES.DELETE);
     },
   });
 
@@ -56,7 +56,7 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
       <Separator className="bg-[#FFFFFF1A]" />
 
       <Button
-        variant="second"
+        variant="default"
         className="w-full"
         size="2s"
         onClick={() => navigate(`/admin/content/courses/${data.id}/edit`)}

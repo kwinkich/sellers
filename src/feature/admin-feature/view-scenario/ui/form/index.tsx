@@ -152,8 +152,8 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Navigation buttons based on active tab - sticky within the page scroller */}
-      <div className="sticky bottom-0 bg-white pt-4 pb-4">
+      {/* Navigation buttons based on active tab */}
+      <div className="pt-4 pb-4">
         <div className="flex gap-2">
           {activeTab === "SELLER" && (
             <Button onClick={handleNextTab} className="flex-1 h-12">

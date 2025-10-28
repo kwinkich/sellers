@@ -15,7 +15,7 @@ import {
   lessonsQueryOptions,
   modulesQueryOptions,
 } from "@/entities";
-import { Box, HeadText } from "@/shared";
+import { Box, HeadText, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Edit,
@@ -56,12 +56,12 @@ export const LessonEditPage = () => {
         refetch();
         setIsEditing(false);
       } else {
-        alert("Не удалось обновить урок. Попробуйте еще раз.");
+        handleFormError("Не удалось обновить урок", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error updating lesson:", error);
-      alert("Произошла ошибка при обновлении урока. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при обновлении урока");
     },
   });
 

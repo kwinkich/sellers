@@ -17,7 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import WebApp from "@twa-dev/sdk";
 import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
-import { useKeyboardChrome, RouteChromeResetter } from "@/shared";
+import { useKeyboardChrome, RouteChromeResetter, ScrollToTop } from "@/shared";
 
 export const AppInitLayout = () => {
   const { isLoading, isError, userData } = useAppInit();
@@ -171,6 +171,7 @@ export const AppInitLayout = () => {
     <>
       <TelegramBackSync closeOnRootBack={false} />
       <RouteChromeResetter />
+      <ScrollToTop />
       <UserRoleProvider
         role={currentRole as "CLIENT" | "ADMIN" | "MOP" | null}
         userId={userData?.sub || null}

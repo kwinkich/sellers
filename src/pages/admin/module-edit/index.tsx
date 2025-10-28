@@ -5,13 +5,19 @@ import {
   lessonsMutationOptions,
   type Lesson,
 } from "@/entities";
-import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
+import {
+  Badge,
+  Box,
+  HeaderWithClose,
+  ConfirmationDialog,
+  EditButton,
+} from "@/shared";
 import { X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit, Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export const ModuleEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +36,11 @@ export const ModuleEditPage = () => {
       queryClient.invalidateQueries({
         queryKey: ["lessons", "by-module", moduleId],
       });
-      toast.success("Урок удалён");
+      handleFormSuccess("Урок удалён");
       setConfirmState({ isOpen: false, lessonId: null, lessonTitle: null });
     },
-    onError: () => {
-      toast.error("Не удалось удалить урок");
+    onError: (error) => {
+      handleFormError(error, ERROR_MESSAGES.DELETE);
     },
   });
 
@@ -93,27 +99,26 @@ export const ModuleEditPage = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
-      {/* Шапка с названием модуля */}
-      <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-4">
-        <div className="flex items-center justify-between px-2 mb-6">
-          <HeadText
-            head={module.title}
-            label="Редактирование модуля"
-            className="px-0 mb-0"
-          />
-          <Button
-            size="xs"
-            className="text-base-main bg-transparent text-md"
-            onClick={() =>
-              navigate(
-                `/admin/content/courses/${module.courseId}/modules/${moduleId}/detail-edit`
-              )
-            }
-          >
-            изменить
-          </Button>
-        </div>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+      <HeaderWithClose
+        title={module.title}
+        description="Редактирование модуля"
+        onClose={() =>
+          navigate(`/admin/content/courses/${module.courseId}/edit`)
+        }
+      />
+
+      {/* Action buttons */}
+      <div className="flex flex-col gap-3 mb-6">
+        <EditButton
+          children="Редактировать детали модуля"
+          size="2s"
+          onClick={() =>
+            navigate(
+              `/admin/content/courses/${module.courseId}/modules/${moduleId}/detail-edit`
+            )
+          }
+        />
         <Button
           onClick={() =>
             navigate(
@@ -122,7 +127,6 @@ export const ModuleEditPage = () => {
           }
           className="w-full"
           size="xs"
-          text="white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Добавить урок
@@ -130,7 +134,7 @@ export const ModuleEditPage = () => {
       </div>
 
       {/* Список уроков */}
-      <div className="flex-1 overflow-auto px-4">
+      <div className="flex-1 overflow-auto">
         <h3 className="text-lg font-semibold mb-4">Уроки модуля</h3>
 
         {lessonsLoading ? (
@@ -218,7 +222,7 @@ export const ModuleEditPage = () => {
       </div>
 
       {module.testVariant !== "NONE" && (
-        <div className="px-4 my-2">
+        <div className="px-2 my-2">
           <Button
             className="w-full"
             size="sm"

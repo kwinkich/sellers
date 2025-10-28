@@ -5,12 +5,18 @@ import {
   modulesMutationOptions,
   type Module,
 } from "@/entities";
-import { Badge, Box, HeadText, ConfirmationDialog } from "@/shared";
+import {
+  Badge,
+  Box,
+  HeaderWithClose,
+  ConfirmationDialog,
+  EditButton,
+} from "@/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { X } from "lucide-react";
 
 export const CourseEditPage = () => {
@@ -30,11 +36,11 @@ export const CourseEditPage = () => {
       queryClient.invalidateQueries({
         queryKey: ["modules", "by-course", courseId],
       });
-      toast.success("Модуль удалён");
+      handleFormSuccess("Модуль удалён");
       setConfirmState({ isOpen: false, moduleId: null, moduleTitle: null });
     },
-    onError: () => {
-      toast.error("Не удалось удалить модуль");
+    onError: (error) => {
+      handleFormError(error, ERROR_MESSAGES.DELETE);
     },
   });
 
@@ -93,32 +99,28 @@ export const CourseEditPage = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
-      {/* Шапка с названием курса */}
-      <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
-        <div className="flex items-center justify-between px-2 mb-6">
-          <HeadText
-            head={course.title}
-            label="Редактирование курса"
-            className="px-0 mb-0"
-          />
-          <Button
-            size="xs"
-            className="text-base-main bg-transparent text-md"
-            onClick={() =>
-              navigate(`/admin/content/courses/${courseId}/detail-edit`)
-            }
-          >
-            изменить
-          </Button>
-        </div>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+      <HeaderWithClose
+        title={course.title}
+        description="Редактирование курса"
+        onClose={() => navigate("/admin/content/courses")}
+      />
+
+      {/* Action buttons */}
+      <div className="flex flex-col gap-3 mb-6">
+        <EditButton
+          children="Редактировать детали курса"
+          size="2s"
+          onClick={() =>
+            navigate(`/admin/content/courses/${courseId}/detail-edit`)
+          }
+        />
         <Button
           onClick={() =>
             navigate(`/admin/content/courses/${courseId}/modules/create`)
           }
           className="w-full"
           size="xs"
-          text="white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Добавить модуль
@@ -126,7 +128,7 @@ export const CourseEditPage = () => {
       </div>
 
       {/* Список модулей */}
-      <div className="flex-1 overflow-auto px-4">
+      <div className="flex-1 overflow-auto">
         <h3 className="text-lg font-semibold mb-4">Модули курса</h3>
 
         {modulesLoading ? (

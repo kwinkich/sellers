@@ -20,7 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError } from "@/shared";
 
 function PracticeInfoCardSimple({
   data,
@@ -171,7 +171,7 @@ export const PracticeFinishModal = () => {
   const finishMutation = useMutation({
     ...practicesMutationOptions.finish(),
     onSuccess: () => {
-      toast.success("Практика успешно завершена");
+      handleFormSuccess("Практика успешно завершена");
       hide();
       // Show the finished modal to the moderator
       if (practiceId) {
@@ -188,9 +188,7 @@ export const PracticeFinishModal = () => {
       }
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Ошибка завершения практики"
-      );
+      handleFormError(error, "Ошибка завершения практики");
     },
   });
 

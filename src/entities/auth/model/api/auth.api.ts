@@ -22,7 +22,21 @@ export const AuthAPI = {
     );
   },
 
-  refreshTelegram: () =>  
+  authTelegramWithInitData: (initData: string) => {
+    if (!initData) {
+      throw new Error("initData is required for manual authentication");
+    }
+
+    return pTimeout(
+      API.post("auth/telegram", {
+        json: { initData },
+      }).json<GResponse<AuthResponse>>(),
+      8000,
+      "auth timeout"
+    );
+  },
+
+  refreshTelegram: () =>
     pTimeout(
       API.post("auth/refresh").json<GResponse<AuthResponse>>(),
       8000,

@@ -60,10 +60,10 @@ export const ClientNavBar = () => {
 
         <NavItem
           data={{
-            route: "/client/courses",
+            route: "/client/education/courses",
             icon: <AcademyIcon size={20} />,
             label: "Академия",
-            isActive: location.pathname.includes("client/courses"),
+            isActive: location.pathname.includes("client/education"),
           }}
         />
 

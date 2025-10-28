@@ -11,7 +11,7 @@ import type {
 } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { practiceEvaluationMutationOptions } from "@/entities/practice-evaluation/model/api/practice-evaluation.api";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError } from "@/shared";
 import { useNavigate } from "react-router-dom";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
@@ -367,7 +367,7 @@ export const EvaluationForm = ({
               const payload: EvaluationBatchSubmission = { submissions };
               console.log(payload);
               await submitEvaluation({ practiceId, data: payload });
-              toast.success("Оценка отправленаf");
+              handleFormSuccess("Оценка отправлена");
 
               const userRole = practiceData?.data?.myRole;
               if (userRole === "MODERATOR") {
@@ -379,7 +379,7 @@ export const EvaluationForm = ({
                 navigate(`/practice`);
               }
             } catch (e) {
-              toast.error("Не удалось отправить оценку");
+              handleFormError(e, "Не удалось отправить оценку");
             }
           })();
         }}

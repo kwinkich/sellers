@@ -2,14 +2,15 @@ import { Button } from "@/components/ui/button";
 import InputFloatingLabel from "@/components/ui/inputFloating";
 import { adminsMutationOptions } from "@/entities";
 import { AdminsList } from "@/feature/admin-feature/admins-list/ui/list";
-import { HeadText } from "@/shared";
+import { HeaderWithClose } from "@/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const AdminsControlPage = () => {
   const [username, setUsername] = useState<string>("");
-
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { mutate: createAdmin, isPending } = useMutation({
@@ -24,14 +25,15 @@ export const AdminsControlPage = () => {
   });
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3">
-      <div className="bg-base-bg flex text-white flex-col w-full rounded-b-3xl p-2 mb-6">
-        <HeadText
-          className="gap-0.5 mb-8 pl-2 pt-2"
-          head="Добавление администратора"
-          label="Назначайте ответственных за управление и контроль"
-        />
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+      <HeaderWithClose
+        title="Добавление администратора"
+        description="Назначайте ответственных за управление и контроль"
+        onClose={() => navigate("/admin/home")}
+        variant="dark"
+      />
 
+      <div className="bg-base-bg flex text-white flex-col w-full rounded-2xl p-4 mb-6">
         <div className="flex flex-col gap-3">
           <InputFloatingLabel
             placeholder="Введите @username"

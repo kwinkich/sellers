@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, Loader2, Upload } from "lucide-react";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError } from "@/shared";
 
 export const PracticeUploadRecordingModal = () => {
   const { isOpen, practiceId, hide } = useUploadRecordingStore();
@@ -24,16 +24,22 @@ export const PracticeUploadRecordingModal = () => {
     if (!file) return;
 
     if (!file.type.startsWith("video/") && !file.type.startsWith("audio/")) {
-      toast.error("Пожалуйста, выберите видео или аудио файл");
+      handleFormError(
+        "Пожалуйста, выберите видео или аудио файл",
+        "Поддерживаются только видео и аудио файлы"
+      );
       return;
     }
 
     setIsUploading(true);
     try {
-      const presignResult = await PracticesAPI.getRecordingPresignUrl(practiceId, {
-        filename: file.name,
-        contentType: file.type,
-      });
+      const presignResult = await PracticesAPI.getRecordingPresignUrl(
+        practiceId,
+        {
+          filename: file.name,
+          contentType: file.type,
+        }
+      );
 
       if (!presignResult.success || !presignResult.data) {
         throw new Error("Не удалось получить URL для загрузки");
@@ -59,13 +65,13 @@ export const PracticeUploadRecordingModal = () => {
       });
 
       setUploadedUrl(publicUrl);
-      toast.success("Запись встречи успешно загружена");
+      handleFormSuccess("Запись встречи успешно загружена");
       hide();
       setUploadedUrl(null);
       navigate("/practice");
     } catch (error) {
       console.error("Error uploading recording:", error);
-      toast.error(error instanceof Error ? error.message : "Ошибка загрузки");
+      handleFormError(error, "Ошибка загрузки");
     } finally {
       setIsUploading(false);
     }
@@ -86,9 +92,7 @@ export const PracticeUploadRecordingModal = () => {
         </div>
 
         <h2 className="text-xl font-semibold mb-2">Игра закончена!</h2>
-        <p className="text-sm text-gray-600 mb-6">
-          Загрузите запись встречи
-        </p>
+        <p className="text-sm text-gray-600 mb-6">Загрузите запись встречи</p>
 
         <input
           type="file"
@@ -106,11 +110,23 @@ export const PracticeUploadRecordingModal = () => {
         ) : uploadedUrl ? (
           <div className="w-full border-2 border-teal-500 bg-teal-50 rounded-xl p-8 flex flex-col items-center justify-center">
             <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-6 h-6 text-teal-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <p className="text-sm text-teal-700 font-medium">Файл успешно загружен</p>
+            <p className="text-sm text-teal-700 font-medium">
+              Файл успешно загружен
+            </p>
           </div>
         ) : (
           <button
@@ -118,12 +134,15 @@ export const PracticeUploadRecordingModal = () => {
             className="w-full border-2 border-dashed border-teal-500 bg-teal-50 rounded-xl p-8 flex flex-col items-center justify-center hover:border-teal-600 hover:bg-teal-100 transition-colors cursor-pointer"
           >
             <Upload className="h-8 w-8 text-teal-600 mb-2" />
-            <p className="text-sm text-teal-700 font-medium">Загрузите запись встречи</p>
-            <p className="text-xs text-gray-500 mt-1">Нажмите для выбора файла</p>
+            <p className="text-sm text-teal-700 font-medium">
+              Загрузите запись встречи
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Нажмите для выбора файла
+            </p>
           </button>
         )}
       </div>
     </BlockingModal>
   );
 };
-

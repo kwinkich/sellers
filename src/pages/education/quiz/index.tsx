@@ -4,7 +4,12 @@ import {
   quizzesQueryOptions,
   type QuizOption,
 } from "@/entities";
-import { ArrowIcon, HeadText } from "@/shared";
+import {
+  ArrowIcon,
+  HeadText,
+  handleFormSuccess,
+  handleFormError,
+} from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -36,15 +41,17 @@ export const QuizPage = () => {
         // Обработка успешной отправки
         console.log("Quiz result:", result.data);
         // Можно добавить навигацию на страницу результатов или показать уведомление
-        alert(`Квиз завершен! Результат: ${result.data.scorePercent}%`);
+        handleFormSuccess(
+          `Квиз завершен! Результат: ${result.data.scorePercent}%`
+        );
         navigate(-1); // Возврат назад
       } else {
-        alert("Ошибка при отправке квиза. Попробуйте еще раз.");
+        handleFormError("Ошибка при отправке квиза", "Попробуйте еще раз");
       }
     },
     onError: (error) => {
       console.error("Error submitting quiz:", error);
-      alert("Произошла ошибка при отправке квиза. Попробуйте еще раз.");
+      handleFormError(error, "Ошибка при отправке квиза");
     },
   });
 

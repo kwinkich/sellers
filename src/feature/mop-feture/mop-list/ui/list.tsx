@@ -11,7 +11,7 @@ import {
 } from "@/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export const ClientMopsList = () => {
   const queryClient = useQueryClient();
@@ -51,12 +51,12 @@ export const ClientMopsList = () => {
       queryClient.invalidateQueries({ queryKey: ["clients", "mop-profiles"] });
       queryClient.invalidateQueries({ queryKey: ["clients", "profile"] });
 
-      toast.success("МОП успешно удален");
+      handleFormSuccess("МОП успешно удален");
       setBlockDialog({ isOpen: false, mop: null });
     },
     onError: (error) => {
       console.error("Ошибка при удалении МОПа:", error);
-      toast.error("Ошибка при удалении МОПа");
+      handleFormError(error, ERROR_MESSAGES.DELETE);
     },
   });
 

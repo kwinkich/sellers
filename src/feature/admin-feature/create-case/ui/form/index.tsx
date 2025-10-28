@@ -16,8 +16,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { createCaseSchema, type CreateCaseFormData } from "../../model";
+import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export function CreateCaseForm() {
   const queryClient = useQueryClient();
@@ -29,7 +29,7 @@ export function CreateCaseForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cases"] });
 
-      toast.success("Кейс успешно создан ");
+      handleFormSuccess("Кейс успешно создан");
 
       form.reset();
       // Navigate to cases list or back to admin
@@ -38,20 +38,14 @@ export function CreateCaseForm() {
     onError: (error: any) => {
       console.error("Ошибка при создании кейса:", error);
 
-      // Handle unique constraint violation (409 Conflict)
+      const errorMessage = handleFormError(error, ERROR_MESSAGES.CREATE);
+
+      // Handle unique constraint violation (409 Conflict) - set form field error
       if (error?.status === 409 || error?.error?.code === "CONFLICT") {
-        const errorMessage =
-          error?.error?.message || "Кейс с таким названием уже существует";
         form.setError("title", {
           type: "manual",
           message: errorMessage,
         });
-        toast.error(errorMessage);
-      } else {
-        // Handle other errors
-        const errorMessage =
-          error?.error?.message || "Ошибка при создании кейса";
-        toast.error(errorMessage);
       }
     },
   });
@@ -71,7 +65,7 @@ export function CreateCaseForm() {
 
   const onSubmit = (formData: CreateCaseFormData) => {
     if (!userId) {
-      toast.error("Ошибка авторизации");
+      handleFormError("Ошибка авторизации", "Необходимо войти в систему");
       return;
     }
 
