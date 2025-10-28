@@ -1,8 +1,8 @@
 import { clientsQueryOptions } from "@/entities";
 import { UpdateClientForm } from "@/feature";
-import { HeadText } from "@/shared";
+import { HeaderWithClose } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 
 export const AdminUpdateClientPage = () => {
@@ -15,12 +15,11 @@ export const AdminUpdateClientPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 px-2 pt-4">
-        <HeadText
-          head="Редактирование клиента"
-          label="Загрузка данных..."
-          labelSize="sm"
-          variant="black-gray"
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+        <HeaderWithClose
+          title="Редактирование клиента"
+          description="Загрузка данных..."
+          onClose={() => navigate("/admin/clients")}
         />
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -31,12 +30,11 @@ export const AdminUpdateClientPage = () => {
 
   if (error || !data) {
     return (
-      <div className="flex flex-col gap-6 px-2 pt-4">
-        <HeadText
-          head="Редактирование клиента"
-          label="Ошибка загрузки данных клиента"
-          labelSize="sm"
-          variant="black-gray"
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+        <HeaderWithClose
+          title="Редактирование клиента"
+          description="Ошибка загрузки данных клиента"
+          onClose={() => navigate("/admin/clients")}
         />
         <div className="text-center py-8 text-destructive">
           {error?.message || "Клиент не найден"}
@@ -53,27 +51,14 @@ export const AdminUpdateClientPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] gap-6 px-2 pt-4 pb-3">
-      {/* Header with close button */}
-      <div className="flex items-center justify-between">
-        <HeadText
-          head="Редактирование клиента"
-          label={`Обновите данные компании <strong>${clientName} (#${id})</strong>`}
-          labelSize="sm"
-          variant="black-gray"
-        />
-        <button
-          onClick={handleClose}
-          className="
-            p-2 rounded-full hover:bg-gray-100 transition-colors
-            flex items-center justify-center
-          "
-          title="Закрыть"
-        >
-          <X className="h-5 w-5 text-gray-600" />
-        </button>
-      </div>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] px-2 pt-4 pb-3">
+      <HeaderWithClose
+        title="Редактирование клиента"
+        description={`Обновите данные компании ${clientName} (#${id})`}
+        onClose={handleClose}
+      />
 
+      {/* Content section */}
       <div className="flex-1 overflow-auto">
         <UpdateClientForm clientData={data.data} />
       </div>

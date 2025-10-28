@@ -7,7 +7,7 @@ import {
 } from "@/feature/admin-feature/create-scenario/ui/blocks/parts/BlocksContainer";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
-  HeadText,
+  HeaderWithClose,
   getRoleLabel,
   useEdgeSwipeGuard,
   useTelegramVerticalSwipes,
@@ -392,7 +392,12 @@ export const AdminScenariosCreatePage = () => {
   return (
     <div className="w-dvw h-svh bg-white flex flex-col overflow-hidden">
       <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4 shrink-0">
-        <HeadText head="Создание сценария" label="Добавьте новый сценарий" />
+        <HeaderWithClose
+          title="Создание сценария"
+          description="Добавьте новый сценарий"
+          onClose={() => navigate("/admin/home")}
+          variant="dark"
+        />
         <CreateScenarioForm
           onFormDataChange={setFormData}
           titleError={titleError}

@@ -1,6 +1,7 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { practicesQueryOptions } from "@/entities/practices";
+import { HeaderWithClose } from "@/shared";
 
 const formatDate = (iso?: string) => {
   if (!iso) return "";
@@ -20,6 +21,7 @@ const formatDate = (iso?: string) => {
 
 const PracticeReplayPage = () => {
   const { practiceId } = useParams<{ practiceId: string }>();
+  const navigate = useNavigate();
   const id = Number(practiceId);
 
   const { data, isLoading, error } = useQuery({
@@ -32,7 +34,11 @@ const PracticeReplayPage = () => {
   return (
     <div className="bg-second-bg min-h-[calc(100vh-4rem)]">
       <div className="px-3 py-3">
-        <h1 className="text-white text-xl font-semibold">Повтор практики</h1>
+        <HeaderWithClose
+          title="Повтор практики"
+          onClose={() => navigate("/practice?tab=past")}
+          variant="dark"
+        />
       </div>
 
       <div className="px-3 py-2">

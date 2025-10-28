@@ -1,11 +1,10 @@
 import { EditScenarioForm } from "@/feature";
 import {
-  HeadText,
+  HeaderWithClose,
   useEdgeSwipeGuard,
   useTelegramVerticalSwipes,
 } from "@/shared";
 import { useParams, useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import InputFloatingLabel from "@/components/ui/inputFloating";
@@ -59,22 +58,12 @@ export const AdminEditScenarioPage = () => {
   return (
     <div className="w-dvw h-svh bg-white flex flex-col overflow-hidden">
       <div className="bg-base-bg text-white rounded-b-3xl px-2 pt-4 pb-4 mb-2 flex flex-col gap-4 shrink-0">
-        <div className="flex items-center justify-between">
-          <HeadText
-            head="Редактирование сценария"
-            label="Редактируйте данные сценария"
-          />
-          <button
-            onClick={handleClose}
-            className="
-							p-2 rounded-full hover:bg-white/10 transition-colors
-							flex items-center justify-center
-						"
-            title="Закрыть"
-          >
-            <X className="h-5 w-5 text-white" />
-          </button>
-        </div>
+        <HeaderWithClose
+          title="Редактирование сценария"
+          description="Редактируйте данные сценария"
+          onClose={handleClose}
+          variant="dark"
+        />
         {scenarioData?.data && (
           <InputFloatingLabel
             variant="dark"

@@ -9,26 +9,37 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="top-center"
-      richColors={true}
-      closeButton={true}
+      richColors={false}
+      closeButton={false}
       duration={4000}
+      toastOptions={{
+        classNames: {
+          title: "!font-medium !text-white",
+          description: "!text-white/80",
+          toast: "!bg-black !border-gray-700",
+          success: "!bg-black !border-gray-700",
+          error: "!bg-black !border-gray-700",
+          warning: "!bg-black !border-gray-700",
+          info: "!bg-black !border-gray-700",
+        },
+      }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--success-bg": "hsl(142, 76%, 36%)",
-          "--success-text": "hsl(355, 7%, 97%)",
-          "--success-border": "hsl(142, 76%, 36%)",
-          "--error-bg": "hsl(0, 84%, 60%)",
-          "--error-text": "hsl(355, 7%, 97%)",
-          "--error-border": "hsl(0, 84%, 60%)",
-          "--warning-bg": "hsl(38, 92%, 50%)",
-          "--warning-text": "hsl(355, 7%, 97%)",
-          "--warning-border": "hsl(38, 92%, 50%)",
-          "--info-bg": "hsl(221, 83%, 53%)",
-          "--info-text": "hsl(355, 7%, 97%)",
-          "--info-border": "hsl(221, 83%, 53%)",
+          "--normal-bg": "#000000",
+          "--normal-text": "#ffffff",
+          "--normal-border": "#374151",
+          "--success-bg": "#000000",
+          "--success-text": "#ffffff",
+          "--success-border": "#374151",
+          "--error-bg": "#000000",
+          "--error-text": "#ffffff",
+          "--error-border": "#374151",
+          "--warning-bg": "#000000",
+          "--warning-text": "#ffffff",
+          "--warning-border": "#374151",
+          "--info-bg": "#000000",
+          "--info-text": "#ffffff",
+          "--info-border": "#374151",
         } as React.CSSProperties
       }
       {...props}

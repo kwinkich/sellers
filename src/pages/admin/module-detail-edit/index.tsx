@@ -3,7 +3,7 @@ import InputFloatingLabel from "@/components/ui/inputFloating";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { Textarea } from "@/components/ui/textarea";
 import { modulesMutationOptions, modulesQueryOptions } from "@/entities";
-import { HeadText } from "@/shared";
+import { HeaderWithClose } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -91,12 +91,17 @@ export const ModuleDetailEditPage = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 pt-6 gap-6 px-2">
-      <HeadText
-        head="Редактирование деталей модуля"
-        label="Обновите данные модуля"
-        variant="black-gray"
-        className="px-2"
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] pb-3 pt-4 gap-6 px-2">
+      <HeaderWithClose
+        title="Редактирование деталей модуля"
+        description="Обновите данные модуля"
+        onClose={() => {
+          if (module) {
+            navigate(
+              `/admin/content/courses/${module.courseId}/modules/${moduleId}/edit`
+            );
+          }
+        }}
       />
 
       <form

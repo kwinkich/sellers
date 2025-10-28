@@ -18,12 +18,17 @@ import { CasesAPI } from "@/entities/case/model/api/case.api";
 import { ScenariosAPI } from "@/entities/scenarios/model/api/scenarios.api";
 import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useCreatePracticeStore } from "@/feature/practice-feature";
-import { useUserRole } from "@/shared";
+import {
+  HeaderWithClose,
+  handleFormSuccess,
+  handleFormError,
+  useUserRole,
+  useUiChrome,
+} from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { handleFormSuccess, handleFormError } from "@/shared";
 import { useInfiniteList } from "@/shared";
 
 /** Convert local date + "HH:MM" to UTC ISO string */
@@ -40,6 +45,7 @@ const PracticeCreatePage = () => {
   const store = useCreatePracticeStore();
   const navigate = useNavigate();
   const { role } = useUserRole();
+  const { hide, show } = useUiChrome();
 
   // store keeps numeric IDs, UI uses strings to avoid equality glitches
   const { scenarioId, caseId, skillIds, practiceType, scenarioTitle } = store;
@@ -58,6 +64,38 @@ const PracticeCreatePage = () => {
   // Used to visually reset the MultiSelectChips back to clean placeholder state
   const [skillsResetVersion, setSkillsResetVersion] = React.useState(0);
   const [isCreatingMeeting, setIsCreatingMeeting] = React.useState(false);
+
+  // Handle date/time picker focus to prevent navbar hiding
+  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
+  const [isTimeInputFocused, setIsTimeInputFocused] = React.useState(false);
+
+  // Effect to manage navbar visibility based on picker states
+  React.useEffect(() => {
+    if (isDatePickerOpen || isTimeInputFocused) {
+      hide("picker");
+    } else {
+      show("picker");
+    }
+  }, [isDatePickerOpen, isTimeInputFocused, hide, show]);
+
+  // Cleanup effect to ensure navbar is shown when component unmounts
+  React.useEffect(() => {
+    return () => {
+      show("picker");
+    };
+  }, [show]);
+
+  const handleDatePickerOpenChange = (open: boolean) => {
+    setIsDatePickerOpen(open);
+  };
+
+  const handleTimeInputFocus = () => {
+    setIsTimeInputFocused(true);
+  };
+
+  const handleTimeInputBlur = () => {
+    setIsTimeInputFocused(false);
+  };
 
   // ---- Queries ----
 
@@ -271,7 +309,11 @@ const PracticeCreatePage = () => {
   return (
     <div className="bg-white text-black min-h-[calc(100vh-var(--nav-h,80px))] flex flex-col pb-3">
       <div className="px-4 py-4 flex-1 overflow-auto">
-        <h1 className="text-xl font-semibold mb-4">Создайте свою практику</h1>
+        <HeaderWithClose
+          title="Создайте свою практику"
+          description="Настройте параметры практики"
+          onClose={() => navigate("/practice")}
+        />
 
         <div className="space-y-3">
           {/* Skills (optional filters). When cleared or reduced, we reset downstream selections. */}
@@ -407,11 +449,14 @@ const PracticeCreatePage = () => {
               placeholder="Дата проведения (локальная)"
               value={dateLocal}
               onValueChange={(d) => setDateLocal(d)}
+              onOpenChange={handleDatePickerOpenChange}
             />
             <input
               type="time"
               value={timeLocal}
               onChange={(e) => setTimeLocal(e.target.value)}
+              onFocus={handleTimeInputFocus}
+              onBlur={handleTimeInputBlur}
               className="w-2/5 h-16 rounded-2xl bg-white-gray px-4 text-base font-medium placeholder:text-second-gray"
               placeholder="Время (локальное)"
               step={300}

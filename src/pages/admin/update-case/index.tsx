@@ -1,7 +1,6 @@
 import { UpdateCaseForm } from "@/feature";
-import { HeadText, ConfirmationDialog } from "@/shared";
+import { HeaderWithClose, ConfirmationDialog } from "@/shared";
 import { useParams, useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 
@@ -57,24 +56,11 @@ export const AdminUpdateCasePage = () => {
         data-scroll-container
       >
         <div className="flex flex-col gap-6 px-2 pt-4 pb-[calc(96px+env(safe-area-inset-bottom))] min-h-full">
-          {/* Header with close button */}
-          <div className="flex items-center justify-between">
-            <HeadText
-              head="Изменение кейса"
-              label="Редактируйте данные кейса"
-              variant="black-gray"
-            />
-            <button
-              onClick={handleClose}
-              className="
-								p-2 rounded-full hover:bg-gray-100 transition-colors
-								flex items-center justify-center
-							"
-              title="Закрыть"
-            >
-              <X className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
+          <HeaderWithClose
+            title="Изменение кейса"
+            description="Редактируйте данные кейса"
+            onClose={handleClose}
+          />
 
           <UpdateCaseForm
             caseId={id ? parseInt(id) : undefined}

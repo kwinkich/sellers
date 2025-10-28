@@ -32,6 +32,10 @@ import {
   MopProfilePage,
   QuizPage,
 } from "@/pages";
+import { ClientCoursesPage } from "@/pages/client/education/courses";
+import { ClientCourseDetailPage } from "@/pages/client/education/course-detail";
+import { ClientLessonsPage } from "@/pages/client/education/lessons";
+import { ClientLessonDetailsPage } from "@/pages/client/education/lesson-details";
 import { CourseEditPage } from "@/pages/admin/course-edit";
 import { AdminCourseListPage } from "@/pages/admin/course-list";
 import { ModuleEditPage } from "@/pages/admin/module-edit";
@@ -73,8 +77,30 @@ export const route = createBrowserRouter(
               element: <MopDetailsPage />,
             },
             {
+              path: "education",
+              children: [
+                {
+                  path: "courses",
+                  element: <ClientCoursesPage />,
+                },
+                {
+                  path: "courses/:courseId",
+                  element: <ClientCourseDetailPage />,
+                },
+                {
+                  path: "courses/:moduleId/lessons",
+                  element: <ClientLessonsPage />,
+                },
+                {
+                  path: "lesson/:lessonId",
+                  element: <ClientLessonDetailsPage />,
+                },
+              ],
+            },
+            // Keep old route for backward compatibility, but redirect to new route
+            {
               path: "courses",
-              element: <MopCoursesPage />,
+              element: <ClientCoursesPage />,
             },
           ],
         },

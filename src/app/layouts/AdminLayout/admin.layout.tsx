@@ -1,8 +1,26 @@
 import { AdminNavBar } from "@/widget";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useUserRole } from "@/shared";
+import { useEffect } from "react";
 
 export const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { role } = useUserRole();
+
+  // Redirect non-ADMIN users to their appropriate home
+  useEffect(() => {
+    if (role && role !== "ADMIN") {
+      const routes = {
+        CLIENT: "/client/home",
+        MOP: "/mop/home",
+      } as const;
+      const targetRoute = routes[role as keyof typeof routes];
+      if (targetRoute) {
+        navigate(targetRoute, { replace: true });
+      }
+    }
+  }, [role, navigate]);
 
   // Define routes that should have dark backgrounds (list/management pages)
   const darkBackgroundRoutes = [

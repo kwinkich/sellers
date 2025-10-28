@@ -1,4 +1,3 @@
-// features/update-client-form.tsx
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -8,7 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import InputFloatingLabel from "@/components/ui/inputFloating";
-import { RemoveLicensesDrawer } from "../remove-licenses-drawer";
+import { RemoveLicensesDialog } from "../remove-licenses-dialog";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import {
   clientsMutationOptions,
@@ -20,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import {
@@ -36,6 +36,8 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [removeLicensesDialogOpen, setRemoveLicensesDialogOpen] =
+    useState(false);
 
   const { mutate: updateClient, isPending: isUpdating } = useMutation({
     ...clientsMutationOptions.update(),
@@ -294,22 +296,16 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
                 currentLicenseCount={form.watch("licenseCount")}
                 disabled={isMutating}
               />
-              <RemoveLicensesDrawer
-                onSave={handleRemoveLicenses}
-                licenseCounts={{
-                  active:
-                    licensesData?.data?.filter((l) => l.status === "ACTIVE")
-                      .length || 0,
-                  notActive:
-                    licensesData?.data?.filter((l) => l.status === "NOT_ACTIVE")
-                      .length || 0,
-                  expired:
-                    licensesData?.data?.filter((l) => l.status === "EXPIRED")
-                      .length || 0,
-                }}
-                isLoading={isRemovingLicenses}
+              <Button
+                type="button"
+                size="2s"
+                variant="second"
+                className="w-[90px] bg-black hover:bg-black/80 text-white"
                 disabled={isMutating || !licensesData?.data?.length}
-              />
+                onClick={() => setRemoveLicensesDialogOpen(true)}
+              >
+                Отозвать
+              </Button>
             </div>
           </div>
 
@@ -363,6 +359,24 @@ export function UpdateClientForm({ clientData }: UpdateClientFormProps) {
           )}
         </Button>
       </form>
+
+      <RemoveLicensesDialog
+        open={removeLicensesDialogOpen}
+        onOpenChange={setRemoveLicensesDialogOpen}
+        onSave={handleRemoveLicenses}
+        licenseCounts={{
+          active:
+            licensesData?.data?.filter((l) => l.status === "ACTIVE").length ||
+            0,
+          notActive:
+            licensesData?.data?.filter((l) => l.status === "NOT_ACTIVE")
+              .length || 0,
+          expired:
+            licensesData?.data?.filter((l) => l.status === "EXPIRED").length ||
+            0,
+        }}
+        isLoading={isRemovingLicenses}
+      />
     </Form>
   );
 }

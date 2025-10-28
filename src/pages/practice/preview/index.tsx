@@ -17,6 +17,8 @@ import {
   SkillsIcon,
   useUserRole,
   getRoleLabel,
+  handleFormSuccess,
+  handleFormError,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
@@ -94,10 +96,29 @@ const PracticePreviewPage = () => {
     ...practicesMutationOptions.create(),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
+      handleFormSuccess("Практика успешно создана");
       store.close();
       navigate("/practice");
     },
+    onError: (error) => {
+      console.error("Error creating practice:", error);
+      handleFormError(error, "Ошибка при создании практики");
+    },
   });
+
+  const handlePublish = () => {
+    if (!scenarioId || !startAt || !initialRole || !practiceType) return;
+
+    create.mutate({
+      scenarioId,
+      practiceType,
+      caseId: practiceType === "WITHOUT_CASE" ? undefined : caseId,
+      skillIds,
+      startAt,
+      initialRole,
+      zoomLink,
+    } as any);
+  };
 
   return (
     <div className="bg-white text-black min-h-full pb-3">
@@ -209,19 +230,7 @@ const PracticePreviewPage = () => {
         <Button
           className="w-full"
           disabled={create.isPending || !initialRole || !zoomLink}
-          onClick={() => {
-            if (!scenarioId || !startAt || !initialRole || !practiceType)
-              return;
-            create.mutate({
-              scenarioId,
-              practiceType,
-              caseId: practiceType === "WITHOUT_CASE" ? undefined : caseId,
-              skillIds,
-              startAt,
-              initialRole,
-              zoomLink,
-            } as any);
-          }}
+          onClick={handlePublish}
         >
           {create.isPending ? "Публикация…" : "Опубликовать"}
         </Button>
