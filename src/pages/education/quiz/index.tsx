@@ -160,7 +160,7 @@ export const QuizPage = () => {
 
       {/* Вопрос */}
       <div className="px-4 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 text-white">
           {currentQuestion.text}
         </h2>
 
@@ -172,7 +172,7 @@ export const QuizPage = () => {
               onClick={() => handleOptionSelect(option.id!)}
               className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
                 selectedOptions[currentQuestion.id!] === option.id
-                  ? "border-base-main bg-base-opacity10-main"
+                  ? "border-base-main bg-white"
                   : "border-gray-200 bg-white hover:border-gray-300"
               }`}
             >
