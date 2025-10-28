@@ -50,7 +50,6 @@ function ViewBlock({ block }: ViewBlockProps) {
       case "SCALE_SKILL_MULTI":
         return (
           <ViewAssess1to5Block
-            selectedSkills={block.items?.map(item => item.skillId) || []}
             items={block.items}
             scaleOptions={block.scale?.options}
           />

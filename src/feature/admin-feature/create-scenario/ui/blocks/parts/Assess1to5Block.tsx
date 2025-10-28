@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
-import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
-import { useMemo, useState } from "react";
+import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Minus, X, Trash2 } from "lucide-react";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { create1to5Scale } from "@/shared/lib/scaleUtils";
@@ -36,9 +35,37 @@ export function Assess1to5Block({
   // Scale options with normalized values
   const [scaleOptions, setScaleOptions] = useState<ScaleOption[]>(initialScaleOptions);
   
-  // Skills selection
-  const { data } = useQuery(skillsQueryOptions.list());
-  const skillOptions = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
+  // Skills selection (load all pages in background)
+  const [allSkills, setAllSkills] = useState<Array<{ id: number; name: string }>>([]);
+  useEffect(() => {
+    let isActive = true;
+    const limit = 50;
+    async function loadAll() {
+      try {
+        let page = 1;
+        let aggregated: Array<{ id: number; name: string }> = [];
+        while (true) {
+          const res = await SkillsAPI.getSkillsPaged({ page, limit });
+          const items = Array.isArray((res as any)?.data) ? ((res as any).data as Array<{ id: number; name: string }>) : [];
+          aggregated = aggregated.concat(items);
+          const pag = (res as any)?.meta?.pagination;
+          const currentPage = pag?.currentPage ?? page;
+          const totalPages = pag?.totalPages ?? page;
+          if (!isActive) return;
+          setAllSkills(aggregated);
+          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
+          page = currentPage + 1;
+        }
+      } catch (e) {
+        // noop: keep whatever loaded
+      }
+    }
+    loadAll();
+    return () => {
+      isActive = false;
+    };
+  }, []);
+  const skillOptions = useMemo(() => allSkills.map((s) => ({ value: String(s.id), label: s.name })), [allSkills]);
   
   // Initialize with prebuilt skills if provided
   const [selectedSkills, setSelectedSkills] = useState<string[]>(() => {

@@ -1,8 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
-import { useMemo } from "react";
 import type { ScaleOption, FormBlockItem } from "@/entities/scenarios/model/types/scenarios.types";
 
 interface ViewAssess1to5BlockProps {
@@ -12,17 +9,9 @@ interface ViewAssess1to5BlockProps {
 }
 
 export function ViewAssess1to5Block({ 
-  selectedSkills = [], 
   items = [], 
   scaleOptions = []
 }: ViewAssess1to5BlockProps) {
-  const { data } = useQuery(skillsQueryOptions.list());
-  const skillOptions = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
-  
-  const selectedSkillNames = selectedSkills
-    .map(skillId => skillOptions.find(s => s.value === String(skillId))?.label)
-    .filter(Boolean);
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
