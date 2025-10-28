@@ -10,7 +10,6 @@ import {
   LinkIcon,
   PracticeIcon,
   ScenarioIcon,
-  UserSwitcher,
 } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -220,11 +219,6 @@ export const AdminHomePage = () => {
                 </p>
               </Box>
             </Link>
-
-            {/* Development/Testing Tools */}
-            <div className="flex justify-center gap-2 mt-2">
-              <UserSwitcher />
-            </div>
           </div>
         </div>
       </div>

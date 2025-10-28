@@ -283,7 +283,7 @@ export function handleApiError(
  */
 export function handleFormSuccess(message: string, options?: ToastOptions) {
   return showSuccessToast(message, {
-    duration: 3000,
+    duration: 1500,
     ...options,
   });
 }
@@ -351,7 +351,7 @@ export function handleFormError(
 
   showErrorToast(mainMessage, {
     description,
-    duration: isValidationError ? 5000 : 6000,
+    duration: isValidationError ? 4500 : 6000,
   });
 
   return mainMessage;

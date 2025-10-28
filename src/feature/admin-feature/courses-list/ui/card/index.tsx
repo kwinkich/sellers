@@ -18,7 +18,10 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
   const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
     ...coursesMutationOptions.delete(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: ["courses"],
+        exact: false,
+      });
       handleFormSuccess("Курс удалён");
       setIsConfirmOpen(false);
     },

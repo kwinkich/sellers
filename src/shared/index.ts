@@ -3,7 +3,6 @@ export * from "./components/ErrorBoundary";
 export * from "./components/RouteChromeResetter";
 export * from "./components/ScrollToTop";
 export * from "./components/EditButton";
-export * from "./components/UserSwitcher";
 export * from "./components/HeaderWithClose";
 export * from "./hooks/useInit";
 export * from "./hooks/useCopyToClipboard";
