@@ -99,15 +99,16 @@ const SelectFloatingLabel = React.forwardRef<
 						{placeholder}
 					</label>
 
-					<SelectContent className="rounded-2xl">
+					<SelectContent className="rounded-2xl w-[var(--radix-select-trigger-width)]">
 						{options.map((option) => (
 							<SelectItem
 								key={option.value}
 								value={option.value}
 								aria-label={option.label}
-								className="py-3"
+								className="py-3 block"
+								title={option.label}
 							>
-								<span className="block truncate max-w-full">{option.label}</span>
+								<span className="block max-w-full truncate text-left" title={option.label}>{option.label}</span>
 							</SelectItem>
 						))}
 					</SelectContent>
