@@ -1,12 +1,13 @@
 import { ModulesList } from "@/feature/education-feature/modules-list";
-import { HeadText } from "@/shared";
+import { HeaderWithClose } from "@/shared";
 import { coursesQueryOptions } from "@/entities";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const MopCourseDetailPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
 
   const {
     data: courseData,
@@ -57,10 +58,11 @@ export const MopCourseDetailPage = () => {
 
   return (
     <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
-      <HeadText
-        head={course.title}
-        label={course.shortDesc || ""}
-        className="px-2 mb-6"
+      <HeaderWithClose
+        title={course.title}
+        description={course.shortDesc || ""}
+        onClose={() => navigate("/mop/education/courses")}
+        variant="dark"
       />
 
       <ModulesList courseId={Number(courseId)} />

@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { lessonsQueryOptions, type ContentBlock } from "@/entities";
-import { ArrowIcon, HeadText } from "@/shared";
+import { ArrowIcon, HeaderWithClose } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { EyeIcon } from "lucide-react";
 
 export const LessonDetailsPage = () => {
-  const { lessonId } = useParams<{ lessonId: string }>();
+  const { courseId, moduleId, lessonId } = useParams<{
+    courseId: string;
+    moduleId: string;
+    lessonId: string;
+  }>();
   const navigate = useNavigate();
 
   const {
@@ -160,10 +165,19 @@ export const LessonDetailsPage = () => {
   return (
     <div className="min-h-full pb-3">
       <div className="w-full bg-base-bg rounded-b-3xl px-3 py-4 mb-6">
-        <HeadText
-          aligin="center"
-          head={lesson.title}
-          label={`Урок ${lesson.orderIndex}`}
+        <HeaderWithClose
+          title={lesson.title}
+          description={`Урок ${lesson.orderIndex}`}
+          onClose={() => {
+            if (courseId && moduleId) {
+              navigate(
+                `/mop/education/courses/${courseId}/modules/${moduleId}/lessons`
+              );
+            } else {
+              navigate("/mop/education/courses");
+            }
+          }}
+          variant="dark"
         />
       </div>
 
@@ -194,9 +208,13 @@ export const LessonDetailsPage = () => {
           <Button
             className="w-full"
             size="sm"
-            onClick={() => navigate(`/mop/education/quizzes/${lesson.quizId}`)}
+            onClick={() =>
+              navigate(
+                `/mop/education/courses/${courseId}/modules/${moduleId}/quizzes/${lesson.quizId}`
+              )
+            }
           >
-            Пройти завершающий тест
+            Пройти тест
             <ArrowIcon />
           </Button>
         </div>
