@@ -66,7 +66,9 @@ function ViewBlock({ block }: ViewBlockProps) {
       default:
         return (
           <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">Неизвестный тип блока: {block.type}</p>
+            <p className="text-gray-500">
+              Неизвестный тип блока: {(block as any).type}
+            </p>
           </div>
         );
     }
