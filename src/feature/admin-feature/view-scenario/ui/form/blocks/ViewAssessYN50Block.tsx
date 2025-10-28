@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { SelectFloatingLabel } from "@/components/ui/selectFloating";
 import { useQuery } from "@tanstack/react-query";
-import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
+import { SkillsAPI } from "@/entities/skill/model/api/skill.api";
 import { useMemo } from "react";
 import type { ScaleOption, FormBlockItem } from "@/entities/scenarios/model/types/scenarios.types";
 
@@ -17,8 +17,17 @@ export function ViewAssessYN50Block({
   questions = [], 
   scaleOptions = []
 }: ViewAssessYN50BlockProps) {
-  const { data } = useQuery(skillsQueryOptions.list());
-  const skillOptions = useMemo(() => data?.data?.map((s) => ({ value: String(s.id), label: s.name })) ?? [], [data]);
+  // Fetch selected skill by ID to ensure correct name even if not in options
+  const skillQuery = useQuery({
+    queryKey: ["skills", "detail", selectedSkillId],
+    queryFn: () => SkillsAPI.getSkillById(selectedSkillId),
+    enabled: selectedSkillId > 0,
+  });
+  const selectedSkillName = skillQuery.data?.data?.name ?? (selectedSkillId > 0 ? `Навык #${selectedSkillId}` : "");
+  const skillOptions = useMemo(
+    () => (selectedSkillId > 0 ? [{ value: String(selectedSkillId), label: selectedSkillName }] : []),
+    [selectedSkillId, selectedSkillName]
+  );
   
   return (
     <Card>
