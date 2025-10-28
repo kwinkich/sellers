@@ -140,6 +140,8 @@ const PracticeCreatePage = () => {
         skillIds: (skillIds?.length ? (skillIds as any) : undefined) as any,
         page,
         limit,
+        by: "createdAt",
+        order: "desc",
       }),
     50
   );
@@ -166,6 +168,8 @@ const PracticeCreatePage = () => {
       CasesAPI.getCases({
         page,
         limit,
+        by: "createdAt",
+        order: "desc",
       }),
     50
   );

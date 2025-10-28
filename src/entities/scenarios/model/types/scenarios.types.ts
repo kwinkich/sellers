@@ -1,4 +1,3 @@
-
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
 export type BlockType =
   | "TEXT"
@@ -57,15 +56,29 @@ export interface Scale {
   options: ScaleOption[];
 }
 
-export interface FormBlock {
+// Base block properties that all blocks have
+export interface BaseFormBlock {
   id?: number;
   type: BlockType;
   title: string;
   required: boolean;
   position: number;
+}
+
+// TEXT and QA blocks only have base properties
+export interface TextFormBlock extends BaseFormBlock {
+  type: "TEXT" | "QA";
+}
+
+// SCALE blocks have additional properties
+export interface ScaleFormBlock extends BaseFormBlock {
+  type: "SCALE_SKILL_SINGLE" | "SCALE_SKILL_MULTI";
   scale: Scale;
   items: FormBlockItem[];
 }
+
+// Union type for all possible block types
+export type FormBlock = TextFormBlock | ScaleFormBlock;
 
 export interface ScenarioOption {
   id: number;

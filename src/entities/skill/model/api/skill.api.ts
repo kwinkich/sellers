@@ -4,6 +4,7 @@ import type {
   CreateSkillRequest,
   Skill,
   UpdateSkillRequest,
+  GetAllSkillsParams,
 } from "../types/skill.types";
 
 export const SkillsAPI = {
@@ -68,6 +69,17 @@ export const SkillsAPI = {
       searchParams: { codes: codesString },
     }).json<GApiResponse<Skill>>();
   },
+
+  getAllSkills: (params?: GetAllSkillsParams) => {
+    const searchParams: Record<string, string> = {};
+
+    if (params?.by) searchParams.by = params.by;
+    if (params?.order) searchParams.order = params.order;
+
+    return API.get("skills/all", {
+      searchParams,
+    }).json<GApiResponse<Skill[]>>();
+  },
 };
 
 export const skillsQueryOptions = {
@@ -88,6 +100,12 @@ export const skillsQueryOptions = {
     queryOptions({
       queryKey: ["skills", "detail", id],
       queryFn: () => SkillsAPI.getSkillById(id),
+    }),
+
+  all: (params?: GetAllSkillsParams) =>
+    queryOptions({
+      queryKey: ["skills", "all", params],
+      queryFn: () => SkillsAPI.getAllSkills(params),
     }),
 };
 

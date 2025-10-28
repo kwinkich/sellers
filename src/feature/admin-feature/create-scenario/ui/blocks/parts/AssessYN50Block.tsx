@@ -22,16 +22,18 @@ interface AssessYN50BlockProps {
   }) => void;
 }
 
-export function AssessYN50Block({ 
-  id, 
-  onDelete, 
-  selectedSkillId = 0, 
-  questions = [], 
+export function AssessYN50Block({
+  id,
+  onDelete,
+  selectedSkillId = 0,
+  questions = [],
   scaleOptions: initialScaleOptions = createYN50Scale(),
-  onDataChange 
+  onDataChange,
 }: AssessYN50BlockProps) {
   // Skills selection (load all pages in background)
-  const [allSkills, setAllSkills] = useState<Array<{ id: number; name: string }>>([]);
+  const [allSkills, setAllSkills] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
   useEffect(() => {
     let isActive = true;
     const limit = 50;
@@ -41,14 +43,21 @@ export function AssessYN50Block({
         let aggregated: Array<{ id: number; name: string }> = [];
         while (true) {
           const res = await SkillsAPI.getSkillsPaged({ page, limit });
-          const items = Array.isArray((res as any)?.data) ? ((res as any).data as Array<{ id: number; name: string }>) : [];
+          const items = Array.isArray((res as any)?.data)
+            ? ((res as any).data as Array<{ id: number; name: string }>)
+            : [];
           aggregated = aggregated.concat(items);
           const pag = (res as any)?.meta?.pagination;
           const currentPage = pag?.currentPage ?? page;
           const totalPages = pag?.totalPages ?? page;
           if (!isActive) return;
           setAllSkills(aggregated);
-          if (typeof currentPage !== "number" || typeof totalPages !== "number" || currentPage >= totalPages) break;
+          if (
+            typeof currentPage !== "number" ||
+            typeof totalPages !== "number" ||
+            currentPage >= totalPages
+          )
+            break;
           page = currentPage + 1;
         }
       } catch (e) {
@@ -60,58 +69,96 @@ export function AssessYN50Block({
       isActive = false;
     };
   }, []);
-  const skillOptions = useMemo(() => allSkills.map((s) => ({ value: String(s.id), label: s.name })), [allSkills]);
-  
+  const skillOptions = useMemo(
+    () => allSkills.map((s) => ({ value: String(s.id), label: s.name })),
+    [allSkills]
+  );
+
   // Scale options with normalized values
-  const [scaleOptions, setScaleOptions] = useState<ScaleOption[]>(initialScaleOptions);
-  
+  const [scaleOptions, setScaleOptions] =
+    useState<ScaleOption[]>(initialScaleOptions);
+
   // Questions with skill assignment
-  const [questionsState, setQuestionsState] = useState<Array<{ id: string; text: string; skillId: number }>>(questions);
-  
+  const [questionsState, setQuestionsState] =
+    useState<Array<{ id: string; text: string; skillId: number }>>(questions);
+
   const [selectedSkill, setSelectedSkill] = useState(selectedSkillId);
 
   const addQuestion = () => {
-    const newQuestion = { id: `${id}-q-${Date.now()}`, text: "", skillId: selectedSkill };
+    const newQuestion = {
+      id: `${id}-q-${Date.now()}`,
+      text: "",
+      skillId: selectedSkill,
+    };
     const updatedQuestions = [...questionsState, newQuestion];
     setQuestionsState(updatedQuestions);
-    onDataChange?.({ selectedSkillId: selectedSkill, questions: updatedQuestions, scaleOptions });
+    onDataChange?.({
+      selectedSkillId: selectedSkill,
+      questions: updatedQuestions,
+      scaleOptions,
+    });
   };
-  
+
   const removeQuestion = (questionId: string) => {
-    const updatedQuestions = questionsState.filter(q => q.id !== questionId);
+    const updatedQuestions = questionsState.filter((q) => q.id !== questionId);
     setQuestionsState(updatedQuestions);
-    onDataChange?.({ selectedSkillId: selectedSkill, questions: updatedQuestions, scaleOptions });
+    onDataChange?.({
+      selectedSkillId: selectedSkill,
+      questions: updatedQuestions,
+      scaleOptions,
+    });
   };
-  
-  const updateQuestion = (questionId: string, field: 'text' | 'skillId', value: string | number) => {
-    const updatedQuestions = questionsState.map(q => 
+
+  const updateQuestion = (
+    questionId: string,
+    field: "text" | "skillId",
+    value: string | number
+  ) => {
+    const updatedQuestions = questionsState.map((q) =>
       q.id === questionId ? { ...q, [field]: value } : q
     );
     setQuestionsState(updatedQuestions);
-    onDataChange?.({ selectedSkillId: selectedSkill, questions: updatedQuestions, scaleOptions });
+    onDataChange?.({
+      selectedSkillId: selectedSkill,
+      questions: updatedQuestions,
+      scaleOptions,
+    });
   };
-  
+
   const updateScaleLabel = (index: number, label: string) => {
-    const updatedScale = scaleOptions.map((opt, i) => 
+    const updatedScale = scaleOptions.map((opt, i) =>
       i === index ? { ...opt, label } : opt
     );
     setScaleOptions(updatedScale);
-    onDataChange?.({ selectedSkillId: selectedSkill, questions: questionsState, scaleOptions: updatedScale });
+    onDataChange?.({
+      selectedSkillId: selectedSkill,
+      questions: questionsState,
+      scaleOptions: updatedScale,
+    });
   };
 
   const handleSkillChange = (skillId: number) => {
     setSelectedSkill(skillId);
     // Update all questions to use the new skill
-    const updatedQuestions = questionsState.map(q => ({ ...q, skillId }));
+    const updatedQuestions = questionsState.map((q) => ({ ...q, skillId }));
     setQuestionsState(updatedQuestions);
-    onDataChange?.({ selectedSkillId: skillId, questions: updatedQuestions, scaleOptions });
+    onDataChange?.({
+      selectedSkillId: skillId,
+      questions: updatedQuestions,
+      scaleOptions,
+    });
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Оценка Да/Нет/50 на 50</CardTitle>
-        <Button size="2s" variant="ghost" onClick={onDelete} aria-label="Удалить блок">
+        <Button
+          size="2s"
+          variant="ghost"
+          onClick={onDelete}
+          aria-label="Удалить блок"
+        >
           <X className="h-5 w-5 text-black" />
         </Button>
       </CardHeader>
@@ -134,7 +181,9 @@ export function AssessYN50Block({
             <div className="space-y-2">
               {scaleOptions.map((option, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <span className="w-[20px] text-xs text-muted-foreground">{idx + 1}.</span>
+                  <span className="w-[20px] text-xs text-muted-foreground">
+                    {idx + 1}.
+                  </span>
                   <Input
                     value={option.label}
                     onChange={(e) => updateScaleLabel(idx, e.target.value)}
@@ -154,13 +203,15 @@ export function AssessYN50Block({
                 <div key={question.id} className="flex items-center gap-2">
                   <Input
                     value={question.text}
-                    onChange={(e) => updateQuestion(question.id, 'text', e.target.value)}
+                    onChange={(e) =>
+                      updateQuestion(question.id, "text", e.target.value)
+                    }
                     placeholder="Введите вопрос"
                     className="h-10 flex-1"
                   />
-                  <Button 
-                    size="2s" 
-                    variant="ghost" 
+                  <Button
+                    size="2s"
+                    variant="ghost"
                     onClick={() => removeQuestion(question.id)}
                     aria-label="Удалить вопрос"
                   >
@@ -169,7 +220,12 @@ export function AssessYN50Block({
                 </div>
               ))}
             </div>
-            <Button type="button" variant="second" onClick={addQuestion} className="h-12 gap-2 w-full text-center">
+            <Button
+              type="button"
+              variant="second"
+              onClick={addQuestion}
+              className="h-12 gap-2 w-full text-center"
+            >
               <Plus className="h-4 w-4" /> Добавить вопрос
             </Button>
           </div>

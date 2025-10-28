@@ -51,6 +51,8 @@ export const ScenariosList = ({
       ScenariosAPI.getScenarios({
         page,
         limit,
+        by: "createdAt",
+        order: "desc",
         skillIds: skillIds?.length ? skillIds : undefined,
       }),
     limit: 20,
