@@ -10,6 +10,7 @@ import { coursesMutationOptions } from "@/entities";
 import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export const CourseCard: FC<{ data: Course }> = ({ data }) => {
+  console.log("Admin CourseCard rendered with data:", data);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -30,6 +31,16 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
     return scope === "ALL" ? "Доступ всем" : "Выборочный доступ";
   };
 
+  const getModuleText = (count: number) => {
+    if (count === 1) return "1 модуль";
+    if (count >= 2 && count <= 4) return `${count} модуля`;
+    return `${count} модулей`;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("ru-RU");
+  };
+
   return (
     <Box variant="dark" className="gap-3 p-4" justify="start" align="start">
       <div className="w-full flex items-center justify-between">
@@ -47,11 +58,21 @@ export const CourseCard: FC<{ data: Course }> = ({ data }) => {
         {data.title}
       </p>
       <p className="text-xs text-base-gray leading-[100%]">{data.shortDesc}</p>
-      <div className="flex items-center gap-2">
-        <Badge
-          variant="gray-opacity"
-          label={getAccessScopeLabel(data.accessScope)}
-        />
+
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge
+            variant="gray-opacity"
+            label={getAccessScopeLabel(data.accessScope)}
+          />
+          <Badge
+            variant="gray-opacity"
+            label={getModuleText(data.modulesCount)}
+          />
+        </div>
+        <p className="text-xs text-base-gray">
+          Создан: {formatDate(data.createdAt)}
+        </p>
       </div>
       <Separator className="bg-[#FFFFFF1A]" />
 

@@ -42,6 +42,12 @@ export const ClientModuleCard = ({
     }
   };
 
+  const getLessonText = (count: number) => {
+    if (count === 1) return "1 урок";
+    if (count >= 2 && count <= 4) return `${count} урока`;
+    return `${count} уроков`;
+  };
+
   const getButtonText = () => {
     if (!isOpen) return "Заблокировано";
     return "Просмотреть модуль";
@@ -71,15 +77,14 @@ export const ClientModuleCard = ({
         {module.shortDesc || "Описание отсутствует"}
       </p>
 
-      <div className="flex items-center gap-1 flex-wrap">
-        <Badge label={`${module.lessonsCount} уроков`} variant="gray" />
-        <Badge label={getTestVariantText(module.testVariant)} variant="gray" />
-        {module.quizQuestionsCount > 0 && module.testVariant !== "NONE" && (
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-1 flex-wrap">
+          <Badge label={getLessonText(module.lessonsCount)} variant="gray" />
           <Badge
-            label={`${module.quizQuestionsCount} вопросов`}
+            label={getTestVariantText(module.testVariant)}
             variant="gray"
           />
-        )}
+        </div>
         <Badge
           label={`Доступ: ${getUnlockRuleText(module.unlockRule)}`}
           variant="gray"
@@ -94,7 +99,9 @@ export const ClientModuleCard = ({
             className="flex-1 hover:bg-base-main/80"
             size="2s"
             onClick={() =>
-              navigate(`/client/education/courses/${module.id}/lessons`)
+              navigate(
+                `/client/education/courses/${module.courseId}/modules/${module.id}/lessons`
+              )
             }
           >
             <EyeIcon size={18} className="mr-2" />

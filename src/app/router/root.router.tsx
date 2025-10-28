@@ -88,19 +88,14 @@ export const route = createBrowserRouter(
                   element: <ClientCourseDetailPage />,
                 },
                 {
-                  path: "courses/:moduleId/lessons",
+                  path: "courses/:courseId/modules/:moduleId/lessons",
                   element: <ClientLessonsPage />,
                 },
                 {
-                  path: "lesson/:lessonId",
+                  path: "courses/:courseId/modules/:moduleId/lessons/:lessonId",
                   element: <ClientLessonDetailsPage />,
                 },
               ],
-            },
-            // Keep old route for backward compatibility, but redirect to new route
-            {
-              path: "courses",
-              element: <ClientCoursesPage />,
             },
           ],
         },
@@ -124,11 +119,11 @@ export const route = createBrowserRouter(
                   element: <MopCourseDetailPage />,
                 },
                 {
-                  path: "courses/:moduleId/lessons",
+                  path: "courses/:courseId/modules/:moduleId/lessons",
                   element: <MopLessonsPage />,
                 },
                 {
-                  path: "lesson/:lessonId",
+                  path: "courses/:courseId/modules/:moduleId/lessons/:lessonId",
                   element: <LessonDetailsPage />,
                 },
                 {

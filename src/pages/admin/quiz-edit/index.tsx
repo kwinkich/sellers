@@ -7,7 +7,7 @@ import {
   quizzesQueryOptions,
   type QuizQuestion,
 } from "@/entities";
-import { HeadText, handleFormError } from "@/shared";
+import { HeaderWithClose, handleFormError } from "@/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -232,9 +232,11 @@ export const EditQuizPage = () => {
     <div className="min-h-full pb-3">
       {/* Шапка в стиле CreateQuizPage */}
       <div className="w-full bg-base-bg rounded-b-3xl px-2 py-4 mb-6">
-        <HeadText
-          head="Редактирование теста"
-          label={`ID теста: ${quizId}`}
+        <HeaderWithClose
+          title="Редактирование теста"
+          description={`ID теста: ${quizId}`}
+          onClose={() => navigate(-1)}
+          variant="dark"
           className="px-2 mb-6"
         />
 

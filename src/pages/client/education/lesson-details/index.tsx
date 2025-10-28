@@ -6,7 +6,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ClientLessonContent } from "@/feature/education-feature/client-lesson-content";
 
 export const ClientLessonDetailsPage = () => {
-  const { lessonId } = useParams<{ lessonId: string }>();
+  const { courseId, moduleId, lessonId } = useParams<{
+    courseId: string;
+    moduleId: string;
+    lessonId: string;
+  }>();
   const navigate = useNavigate();
 
   const {
@@ -51,7 +55,15 @@ export const ClientLessonDetailsPage = () => {
       <HeaderWithClose
         title={lesson.title}
         description={lesson.shortDesc || "Описание отсутствует"}
-        onClose={() => navigate("/client/education/courses")}
+        onClose={() => {
+          if (courseId && moduleId) {
+            navigate(
+              `/client/education/courses/${courseId}/modules/${moduleId}/lessons`
+            );
+          } else {
+            navigate("/client/education/courses");
+          }
+        }}
         variant="dark"
       />
 

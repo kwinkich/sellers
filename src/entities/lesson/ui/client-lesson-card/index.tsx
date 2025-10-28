@@ -7,13 +7,19 @@ import { useNavigate } from "react-router-dom";
 
 interface ClientLessonCardProps {
   lesson: Lesson;
+  courseId: number;
 }
 
-export const ClientLessonCard = ({ lesson }: ClientLessonCardProps) => {
+export const ClientLessonCard = ({
+  lesson,
+  courseId,
+}: ClientLessonCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/client/education/lesson/${lesson.id}`);
+    navigate(
+      `/client/education/courses/${courseId}/modules/${lesson.moduleId}/lessons/${lesson.id}`
+    );
   };
 
   return (

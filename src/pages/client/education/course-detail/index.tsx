@@ -60,7 +60,7 @@ export const ClientCourseDetailPage = () => {
     <div className="bg-second-bg px-2 min-h-full pb-3 pt-4">
       <HeaderWithClose
         title={course.title}
-        description={course.shortDesc}
+        description={course.shortDesc || ""}
         onClose={() => navigate("/client/education/courses")}
         variant="dark"
       />
