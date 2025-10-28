@@ -36,6 +36,7 @@ import { ClientCoursesPage } from "@/pages/client/education/courses";
 import { ClientCourseDetailPage } from "@/pages/client/education/course-detail";
 import { ClientLessonsPage } from "@/pages/client/education/lessons";
 import { ClientLessonDetailsPage } from "@/pages/client/education/lesson-details";
+import { ClientQuizPage } from "@/pages/client/education/quiz";
 import { CourseEditPage } from "@/pages/admin/course-edit";
 import { AdminCourseListPage } from "@/pages/admin/course-list";
 import { ModuleEditPage } from "@/pages/admin/module-edit";
@@ -94,6 +95,10 @@ export const route = createBrowserRouter(
                 {
                   path: "courses/:courseId/modules/:moduleId/lessons/:lessonId",
                   element: <ClientLessonDetailsPage />,
+                },
+                {
+                  path: "quizzes/:id",
+                  element: <ClientQuizPage />,
                 },
               ],
             },
