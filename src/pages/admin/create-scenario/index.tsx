@@ -441,6 +441,9 @@ export const AdminScenariosCreatePage = () => {
                   onRemove={handleRemove("SELLER")}
                   onDataChange={handleDataChange("SELLER")}
                 />
+                {sellerBlocks.length < 3 && (
+                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 3 блока</p>
+                )}
               </div>
             </TabsContent>
             <TabsContent
@@ -455,6 +458,9 @@ export const AdminScenariosCreatePage = () => {
                   onRemove={handleRemove("BUYER")}
                   onDataChange={handleDataChange("BUYER")}
                 />
+                {buyerBlocks.length < 1 && (
+                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 1 блок</p>
+                )}
               </div>
             </TabsContent>
             <TabsContent
@@ -469,6 +475,9 @@ export const AdminScenariosCreatePage = () => {
                   onRemove={handleRemove("MODERATOR")}
                   onDataChange={handleDataChange("MODERATOR")}
                 />
+                {moderatorBlocks.length < 1 && (
+                  <p className="mt-2 text-xs text-muted-foreground text-center">Необходимо добавить минимум 1 блок</p>
+                )}
               </div>
             </TabsContent>
           </Tabs>

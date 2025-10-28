@@ -1,18 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import type {
-  ScaleOption,
-  FormBlockItem,
-} from "@/entities/scenarios/model/types/scenarios.types";
+import type { ScaleOption, FormBlockItem } from "@/entities/scenarios/model/types/scenarios.types";
 
 interface ViewAssess1to5BlockProps {
   items?: FormBlockItem[];
   scaleOptions?: ScaleOption[];
 }
 
-export function ViewAssess1to5Block({
-  items = [],
-  scaleOptions = [],
+export function ViewAssess1to5Block({ 
+  items = [], 
+  scaleOptions = []
 }: ViewAssess1to5BlockProps) {
   return (
     <Card>
