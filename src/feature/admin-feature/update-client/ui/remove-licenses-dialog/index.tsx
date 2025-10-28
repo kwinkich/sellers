@@ -273,6 +273,7 @@ export function RemoveLicensesDialog({
           {/* footer: sticky bottom of panel + background/border for readability */}
           <DialogFooter
             className="
+              w-full
               sticky bottom-0
               flex-col gap-3
               px-6 py-4
@@ -283,7 +284,7 @@ export function RemoveLicensesDialog({
             <Button
               onClick={handleSave}
               disabled={totalToRemove === 0 || isLoading}
-              className={`w-full h-12 ${
+              className={`h-12 ${
                 totalToRemove === 0 || isLoading
                   ? "bg-red-600/50 hover:bg-red-600/50 cursor-not-allowed"
                   : hasActiveRemovals

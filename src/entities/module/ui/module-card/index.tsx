@@ -8,14 +8,9 @@ import { useNavigate } from "react-router-dom";
 interface ModuleCardProps {
   module: Module;
   isOpen?: boolean;
-  courseId?: number;
 }
 
-export const ModuleCard = ({
-  module,
-  isOpen = false,
-  courseId,
-}: ModuleCardProps) => {
+export const ModuleCard = ({ module, isOpen = false }: ModuleCardProps) => {
   const navigate = useNavigate();
 
   const getTestVariantText = (variant: string) => {
@@ -126,7 +121,7 @@ export const ModuleCard = ({
             size="2s"
             onClick={() =>
               navigate(
-                `/mop/education/courses/${courseId}/modules/${module.id}/lessons`
+                `/mop/education/courses/${module.courseId}/modules/${module.id}/lessons`
               )
             }
           >

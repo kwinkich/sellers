@@ -72,10 +72,7 @@ export const MopLessonsPage = () => {
         </div>
       </div>
 
-      <LessonsList
-        moduleId={Number(moduleId)}
-        courseId={courseId ? Number(courseId) : undefined}
-      />
+      <LessonsList moduleId={Number(moduleId)} courseId={Number(courseId)} />
 
       {moduleResponse?.data.testVariant === "QUIZ" &&
         moduleResponse?.data.quizId && (
