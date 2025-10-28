@@ -37,23 +37,19 @@ export const SkillsAPI = {
       id?: number | number[];
     } = { page: 1, limit: 30 }
   ) => {
-    const searchParams: Record<string, string> = {
-      page: String(page),
-      limit: String(limit),
-    };
-
-    if (code) searchParams.code = code;
-    if (name) searchParams.name = name;
-    if (id) {
-      if (Array.isArray(id)) {
-        searchParams.id = id.join(",");
-      } else {
-        searchParams.id = String(id);
-      }
+    const sp = new URLSearchParams();
+    sp.set("page", String(page));
+    sp.set("limit", String(limit));
+    if (code) sp.set("code", code);
+    if (name) sp.set("name", name);
+    if (typeof id === "number") {
+      sp.append("id", String(id));
+    } else if (Array.isArray(id)) {
+      for (const v of id) sp.append("id", String(v));
     }
 
     return API.get("skills", {
-      searchParams,
+      searchParams: sp,
     }).json<GApiResponse<Skill, true>>();
   },
 
