@@ -57,7 +57,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
 
       {/* Skills section */}
       {data.skills && data.skills.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full">
           <p className="text-sm text-white/80 font-medium">Навыки:</p>
           <div className="flex flex-wrap gap-2 justify-start">
             {data.skills.map((skill) => (
