@@ -5,17 +5,21 @@ import { X } from "lucide-react";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import React from "react";
 import debounce from "lodash.debounce";
+import { cn } from "@/lib/utils";
 
 interface TextBlockProps {
   id: string;
   onDelete?: () => void;
   textContent?: string;
+  showValidation?: boolean;
   onTextChange?: (text: string) => void;
 }
 
 export const TextBlock = React.memo(function TextBlock({
+  id,
   onDelete,
   textContent = "",
+  showValidation = false,
   onTextChange,
 }: TextBlockProps) {
   const [text, setText] = useState(textContent);
@@ -37,8 +41,26 @@ export const TextBlock = React.memo(function TextBlock({
     [debouncedNotify]
   );
 
+  // Validation: text must not be empty
+  const isValid = useMemo(() => {
+    return text.trim().length > 0;
+  }, [text]);
+
+  const validationMessage = useMemo(() => {
+    if (!text || text.trim().length === 0) {
+      return "Необходимо заполнить текст";
+    }
+    return null;
+  }, [text]);
+
   return (
-    <Card>
+    <Card
+      data-block-id={id}
+      className={cn(
+        "transition-colors",
+        !isValid && showValidation && "border-amber-500 border-1"
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Текстовый блок</CardTitle>
         <Button
@@ -52,6 +74,11 @@ export const TextBlock = React.memo(function TextBlock({
         </Button>
       </CardHeader>
       <CardContent>
+        {validationMessage && showValidation && (
+          <div className="text-sm text-amber-700 bg-amber-50 p-2 rounded-md mb-2">
+            {validationMessage}
+          </div>
+        )}
         <TextareaFloatingLabel
           placeholder="Введите текст...."
           className="min-h-[100px]"

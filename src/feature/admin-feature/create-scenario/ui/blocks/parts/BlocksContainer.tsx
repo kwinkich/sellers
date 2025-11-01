@@ -38,8 +38,14 @@ export interface ScenarioBlockItem {
 const renderBlock = (
   block: ScenarioBlockItem,
   onRemove: (id: string) => void,
-  onDataChange?: (id: string, data: any) => void
+  onDataChange?: (id: string, data: any) => void,
+  showValidation?: boolean,
+  touchedBlocks?: Set<string>
 ) => {
+  // Show validation if: validation was triggered OR block has been touched
+  const isTouched = touchedBlocks?.has(block.id) ?? false;
+  const shouldShowValidation = showValidation || isTouched;
+
   switch (block.type) {
     case "TEXT":
       return (
@@ -51,6 +57,7 @@ const renderBlock = (
           onTextChange={(text) =>
             onDataChange?.(block.id, { textContent: text })
           }
+          showValidation={shouldShowValidation}
         />
       );
     case "QA":
@@ -63,6 +70,7 @@ const renderBlock = (
           onQuestionChange={(question) =>
             onDataChange?.(block.id, { questionContent: question })
           }
+          showValidation={shouldShowValidation}
         />
       );
     case "SCALE_SKILL_SINGLE":
@@ -75,6 +83,7 @@ const renderBlock = (
           questions={block.questions}
           scaleOptions={block.scaleOptions}
           onDataChange={(data) => onDataChange?.(block.id, data)}
+          showValidation={shouldShowValidation}
         />
       );
     case "SCALE_SKILL_MULTI":
@@ -87,6 +96,7 @@ const renderBlock = (
           selectedSkills={block.selectedSkills}
           scaleOptionsMulti={block.scaleOptionsMulti}
           onDataChange={(data) => onDataChange?.(block.id, data)}
+          showValidation={shouldShowValidation}
         />
       );
     default:
@@ -99,15 +109,21 @@ export const BlocksContainer = React.memo(function BlocksContainer({
   onAdd,
   onRemove,
   onDataChange,
+  showValidation,
+  touchedBlocks,
 }: {
   blocks: ScenarioBlockItem[];
   onAdd: (type: BlockKind) => void;
   onRemove: (id: string) => void;
   onDataChange?: (id: string, data: any) => void;
+  showValidation?: boolean;
+  touchedBlocks?: Set<string>;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      {blocks.map((b) => renderBlock(b, onRemove, onDataChange))}
+      {blocks.map((b) =>
+        renderBlock(b, onRemove, onDataChange, showValidation, touchedBlocks)
+      )}
       <AddBlockDrawer onPick={onAdd} />
     </div>
   );

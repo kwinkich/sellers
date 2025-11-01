@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/button-group";
 import { create1to5Scale } from "@/shared/lib/scaleUtils";
 import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
+import { cn } from "@/lib/utils";
 
 interface Assess1to5BlockProps {
   id: string;
@@ -20,6 +21,7 @@ interface Assess1to5BlockProps {
   prebuiltSkills?: number[];
   selectedSkills?: number[];
   scaleOptionsMulti?: ScaleOption[];
+  showValidation?: boolean;
   onDataChange?: (data: {
     selectedSkills: number[];
     scaleOptionsMulti: ScaleOption[];
@@ -36,6 +38,7 @@ export function Assess1to5Block({
     "хорошо",
     "отлично",
   ]),
+  showValidation = false,
   onDataChange,
 }: Assess1to5BlockProps) {
   const isPrebuilt = id.includes("prebuilt");
@@ -49,7 +52,11 @@ export function Assess1to5Block({
     skillsQueryOptions.all({ by: "name", order: "asc" })
   );
   const skillOptions = useMemo(
-    () => (allSkillsResp?.data ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+    () =>
+      (allSkillsResp?.data ?? []).map((s) => ({
+        value: String(s.id),
+        label: s.name,
+      })),
     [allSkillsResp]
   );
 
@@ -134,8 +141,27 @@ export function Assess1to5Block({
     });
   };
 
+  // Validation: at least 1 skill must be selected
+  const isValid = useMemo(() => {
+    const hasSkills = selectedSkills.filter(Boolean).length > 0;
+    return hasSkills;
+  }, [selectedSkills]);
+
+  const validationMessage = useMemo(() => {
+    if (selectedSkills.filter(Boolean).length === 0) {
+      return "Необходимо выбрать хотя бы один навык";
+    }
+    return null;
+  }, [selectedSkills]);
+
   return (
-    <Card>
+    <Card
+      data-block-id={id}
+      className={cn(
+        "transition-colors",
+        !isValid && showValidation && "border-amber-500 border-1"
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>
           {isPrebuilt ? "Предустановленная оценка" : "Оценка по шкале"}
@@ -151,6 +177,11 @@ export function Assess1to5Block({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {validationMessage && showValidation && (
+            <div className="text-sm text-amber-700 bg-amber-50 p-2 rounded-md">
+              {validationMessage}
+            </div>
+          )}
           {/* 1) Scale editor */}
           <div className="space-y-2">
             <Label className="text-sm">Система оценивания</Label>

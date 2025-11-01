@@ -94,6 +94,24 @@ export const AdminScenariosCreatePage = () => {
     "SELLER"
   );
 
+  // Track validation triggers per tab (only show validation after Next is clicked)
+  const [validationTriggered, setValidationTriggered] = useState({
+    SELLER: false,
+    BUYER: false,
+    MODERATOR: false,
+  });
+
+  // Track which blocks have been edited/touched (per tab)
+  const [touchedBlocks, setTouchedBlocks] = useState<{
+    SELLER: Set<string>;
+    BUYER: Set<string>;
+    MODERATOR: Set<string>;
+  }>({
+    SELLER: new Set(),
+    BUYER: new Set(),
+    MODERATOR: new Set(),
+  });
+
   // Track if pre-built blocks have been initialized
   const prebuiltInitialized = useRef(false);
 
@@ -304,6 +322,12 @@ export const AdminScenariosCreatePage = () => {
 
   const handleDataChange = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string, data: any) => {
+      // Mark block as touched/edited
+      setTouchedBlocks((prev) => ({
+        ...prev,
+        [role]: new Set(prev[role]).add(id),
+      }));
+
       if (role === "SELLER")
         setSellerBlocks((prev) => updateById(prev, id, data));
       if (role === "BUYER")
@@ -314,14 +338,83 @@ export const AdminScenariosCreatePage = () => {
     [updateById]
   );
 
+  // Validate a single block based on its type
+  const validateBlock = useCallback((block: ExtendedBlockItem): boolean => {
+    switch (block.type) {
+      case "TEXT":
+        return !!(block.textContent && block.textContent.trim().length > 0);
+      case "QA":
+        return !!(
+          block.questionContent && block.questionContent.trim().length > 0
+        );
+      case "SCALE_SKILL_SINGLE":
+        // Must have skill selected and at least 1 question with text
+        const hasSkill = !!(block.selectedSkillId && block.selectedSkillId > 0);
+        const hasValidQuestions = !!(
+          block.questions &&
+          block.questions.some((q) => q.text && q.text.trim().length > 0)
+        );
+        return hasSkill && hasValidQuestions;
+      case "SCALE_SKILL_MULTI":
+        // Must have at least 1 skill selected
+        return !!(block.selectedSkills && block.selectedSkills.length > 0);
+      default:
+        return true;
+    }
+  }, []);
+
+  // Check if all blocks are valid
+  const areAllBlocksValid = useCallback(
+    (blocks: ExtendedBlockItem[]): boolean => {
+      if (blocks.length === 0) return false;
+      return blocks.every(validateBlock);
+    },
+    [validateBlock]
+  );
+
   // Tab navigation helpers
   const handleNextTab = useCallback(() => {
+    // Get current blocks based on active tab
+    const currentBlocks =
+      activeTab === "SELLER"
+        ? sellerBlocks
+        : activeTab === "BUYER"
+        ? buyerBlocks
+        : moderatorBlocks;
+
+    // Validate blocks
+    const invalidBlockIndex = currentBlocks.findIndex(
+      (block) => !validateBlock(block)
+    );
+
+    // Trigger validation for current tab
+    setValidationTriggered((prev) => ({ ...prev, [activeTab]: true }));
+
+    // If there are invalid blocks, scroll to first invalid one
+    if (invalidBlockIndex !== -1) {
+      const invalidBlock = currentBlocks[invalidBlockIndex];
+      const blockElement = document.querySelector(
+        `[data-block-id="${invalidBlock.id}"]`
+      );
+      if (blockElement) {
+        // Small delay to ensure DOM is updated with validation messages
+        setTimeout(() => {
+          blockElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 100);
+      }
+      return; // Don't proceed to next tab
+    }
+
+    // All blocks are valid, proceed to next tab
     if (activeTab === "SELLER") {
       setActiveTab("BUYER");
     } else if (activeTab === "BUYER") {
       setActiveTab("MODERATOR");
     }
-  }, [activeTab]);
+  }, [activeTab, sellerBlocks, buyerBlocks, moderatorBlocks, validateBlock]);
 
   const handlePrevTab = useCallback(() => {
     if (activeTab === "BUYER") {
@@ -329,52 +422,40 @@ export const AdminScenariosCreatePage = () => {
     } else if (activeTab === "MODERATOR") {
       setActiveTab("BUYER");
     }
+    // Reset validation trigger for the tab we're leaving
+    setValidationTriggered((prev) => ({ ...prev, [activeTab]: false }));
   }, [activeTab]);
 
   // Check if next button should be enabled
   const isNextEnabled = useCallback(() => {
     if (activeTab === "SELLER") {
-      return sellerBlocks.length >= 3;
+      return sellerBlocks.length >= 3 && areAllBlocksValid(sellerBlocks);
     } else if (activeTab === "BUYER") {
-      // For BUYER, we need at least 1 block (preset block is always created)
-      return buyerBlocks.length >= 1;
+      // For BUYER, we need at least 1 block and all must be valid
+      return buyerBlocks.length >= 1 && areAllBlocksValid(buyerBlocks);
     } else if (activeTab === "MODERATOR") {
-      // For MODERATOR, we need at least 1 block (preset block is always created)
-      return moderatorBlocks.length >= 1;
+      // For MODERATOR, we need at least 1 block and all must be valid
+      return moderatorBlocks.length >= 1 && areAllBlocksValid(moderatorBlocks);
     }
     return false;
   }, [
     activeTab,
-    sellerBlocks.length,
-    buyerBlocks.length,
-    moderatorBlocks.length,
+    sellerBlocks,
+    buyerBlocks,
+    moderatorBlocks,
+    areAllBlocksValid,
   ]);
 
   // Check if create scenario button should be enabled (all roles must have required blocks)
   const isCreateScenarioEnabled = useCallback(() => {
-    // Check if all TEXT blocks have content
-    const allTextBlocksHaveContent = (blocks: ExtendedBlockItem[]) => {
-      return blocks.every((block) => {
-        if (block.type === "TEXT") {
-          return block.textContent && block.textContent.trim().length > 0;
-        }
-        if (block.type === "QA") {
-          return (
-            block.questionContent && block.questionContent.trim().length > 0
-          );
-        }
-        return true; // Other block types don't need content validation
-      });
-    };
-
     const enabled =
       sellerBlocks.length >= 3 &&
       buyerBlocks.length >= 1 &&
       moderatorBlocks.length >= 1 &&
       formData.title.trim().length > 0 &&
-      allTextBlocksHaveContent(sellerBlocks) &&
-      allTextBlocksHaveContent(buyerBlocks) &&
-      allTextBlocksHaveContent(moderatorBlocks);
+      areAllBlocksValid(sellerBlocks) &&
+      areAllBlocksValid(buyerBlocks) &&
+      areAllBlocksValid(moderatorBlocks);
 
     return enabled;
   }, [
@@ -382,7 +463,7 @@ export const AdminScenariosCreatePage = () => {
     buyerBlocks,
     moderatorBlocks,
     formData.title,
-    skillsLoading,
+    areAllBlocksValid,
   ]);
 
   // Optimized skills lookup for convertBlocksToFormBlocks
@@ -590,7 +671,7 @@ export const AdminScenariosCreatePage = () => {
       >
         <div className="flex flex-col pb-[calc(96px+env(safe-area-inset-bottom))] gap-6 px-2 min-h-full">
           <Tabs value={activeTab}>
-            <div className="sticky top-0 bg-white z-50 pb-2">
+            <div className="sticky top-0 bg-white z-50">
               <TabsList
                 variant="second"
                 className="grid grid-cols-3 w-full pointer-events-none"
@@ -617,6 +698,8 @@ export const AdminScenariosCreatePage = () => {
                   onAdd={onAddSeller}
                   onRemove={onRemoveSeller}
                   onDataChange={onDataChangeSeller}
+                  showValidation={validationTriggered.SELLER}
+                  touchedBlocks={touchedBlocks.SELLER}
                 />
                 {sellerBlocks.length < 3 && (
                   <p className="mt-2 text-xs text-muted-foreground text-center">
@@ -653,6 +736,8 @@ export const AdminScenariosCreatePage = () => {
                       onAdd={onAddBuyer}
                       onRemove={onRemoveBuyer}
                       onDataChange={onDataChangeBuyer}
+                      showValidation={validationTriggered.BUYER}
+                      touchedBlocks={touchedBlocks.BUYER}
                     />
                     {buyerBlocks.length < 1 && (
                       <p className="mt-2 text-xs text-muted-foreground text-center">
@@ -691,6 +776,8 @@ export const AdminScenariosCreatePage = () => {
                       onAdd={onAddModerator}
                       onRemove={onRemoveModerator}
                       onDataChange={onDataChangeModerator}
+                      showValidation={validationTriggered.MODERATOR}
+                      touchedBlocks={touchedBlocks.MODERATOR}
                     />
                     {moderatorBlocks.length < 1 && (
                       <p className="mt-2 text-xs text-muted-foreground text-center">

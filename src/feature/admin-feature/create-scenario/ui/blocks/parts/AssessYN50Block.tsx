@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { Plus, X, Trash2 } from "lucide-react";
 import { createYN50Scale } from "@/shared/lib/scaleUtils";
 import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
+import { cn } from "@/lib/utils";
 
 interface AssessYN50BlockProps {
   id: string;
@@ -16,6 +17,7 @@ interface AssessYN50BlockProps {
   selectedSkillId?: number;
   questions?: Array<{ id: string; text: string; skillId: number }>;
   scaleOptions?: ScaleOption[];
+  showValidation?: boolean;
   onDataChange?: (data: {
     selectedSkillId: number;
     questions: Array<{ id: string; text: string; skillId: number }>;
@@ -29,6 +31,7 @@ export function AssessYN50Block({
   selectedSkillId = 0,
   questions = [],
   scaleOptions: initialScaleOptions = createYN50Scale(),
+  showValidation = false,
   onDataChange,
 }: AssessYN50BlockProps) {
   // Use warmed all-skills cache
@@ -36,7 +39,11 @@ export function AssessYN50Block({
     skillsQueryOptions.all({ by: "name", order: "asc" })
   );
   const skillOptions = useMemo(
-    () => (allSkillsResp?.data ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+    () =>
+      (allSkillsResp?.data ?? []).map((s) => ({
+        value: String(s.id),
+        label: s.name,
+      })),
     [allSkillsResp]
   );
 
@@ -115,8 +122,33 @@ export function AssessYN50Block({
     });
   };
 
+  // Validation: skill must be selected and at least 1 question with text
+  const isValid = useMemo(() => {
+    const hasSkill = selectedSkill > 0;
+    const hasValidQuestions = questionsState.some(
+      (q) => q.text && q.text.trim().length > 0
+    );
+    return hasSkill && hasValidQuestions;
+  }, [selectedSkill, questionsState]);
+
+  const validationMessage = useMemo(() => {
+    if (!selectedSkill || selectedSkill === 0) {
+      return "Необходимо выбрать навык";
+    }
+    if (!questionsState.some((q) => q.text && q.text.trim().length > 0)) {
+      return "Необходимо добавить хотя бы один вопрос с текстом";
+    }
+    return null;
+  }, [selectedSkill, questionsState]);
+
   return (
-    <Card>
+    <Card
+      data-block-id={id}
+      className={cn(
+        "transition-colors",
+        !isValid && showValidation && "border-amber-500 border-1"
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Оценка Да/Нет/50 на 50</CardTitle>
         <Button
@@ -130,6 +162,11 @@ export function AssessYN50Block({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {validationMessage && showValidation && (
+            <div className="text-sm text-amber-700 bg-amber-50 p-2 rounded-md">
+              {validationMessage}
+            </div>
+          )}
           {/* 1) Skill selector */}
           <div className="space-y-2">
             <Label className="text-sm">Навык</Label>
