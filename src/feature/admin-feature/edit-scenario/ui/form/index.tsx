@@ -5,7 +5,7 @@ import {
   type BlockKind,
   type ScenarioBlockItem,
 } from "@/feature/admin-feature/create-scenario/ui/blocks/parts/BlocksContainer";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { getRoleLabel, ConfirmationDialog } from "@/shared";
 import { useQuery } from "@tanstack/react-query";
 import { skillsQueryOptions } from "@/entities/skill/model/api/skill.api";
@@ -74,6 +74,24 @@ export function EditScenarioForm({
     "SELLER"
   );
 
+  // Track validation triggers per tab (only show validation after Next is clicked)
+  const [validationTriggered, setValidationTriggered] = useState({
+    SELLER: false,
+    BUYER: false,
+    MODERATOR: false,
+  });
+
+  // Track which blocks have been edited/touched (per tab)
+  const [touchedBlocks, setTouchedBlocks] = useState<{
+    SELLER: Set<string>;
+    BUYER: Set<string>;
+    MODERATOR: Set<string>;
+  }>({
+    SELLER: new Set(),
+    BUYER: new Set(),
+    MODERATOR: new Set(),
+  });
+
   // Confirmation dialog states
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -102,7 +120,7 @@ export function EditScenarioForm({
       map[s.id] = {
         id: s.id,
         name: s.name,
-        code: s.code || undefined
+        code: s.code || undefined,
       };
     }
     return map;
@@ -323,8 +341,14 @@ export function EditScenarioForm({
         setModeratorBlocks((prev) => prev.filter((b) => b.id !== id));
     };
 
-  const handleDataChange =
+  const handleDataChange = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string, data: any) => {
+      // Mark block as touched/edited
+      setTouchedBlocks((prev) => ({
+        ...prev,
+        [role]: new Set(prev[role]).add(id),
+      }));
+
       const updateBlock = (blocks: ExtendedBlockItem[]) =>
         blocks.map((block) =>
           block.id === id ? { ...block, ...data } : block
@@ -333,42 +357,176 @@ export function EditScenarioForm({
       if (role === "SELLER") setSellerBlocks((prev) => updateBlock(prev));
       if (role === "BUYER") setBuyerBlocks((prev) => updateBlock(prev));
       if (role === "MODERATOR") setModeratorBlocks((prev) => updateBlock(prev));
-    };
+    },
+    []
+  );
+
+  // Validate a single block based on its type
+  const validateBlock = useCallback((block: ExtendedBlockItem): boolean => {
+    switch (block.type) {
+      case "TEXT":
+        return !!(block.textContent && block.textContent.trim().length > 0);
+      case "QA":
+        return !!(
+          block.questionContent && block.questionContent.trim().length > 0
+        );
+      case "SCALE_SKILL_SINGLE":
+        // Must have skill selected and at least 1 question with text
+        const hasSkill = !!(block.selectedSkillId && block.selectedSkillId > 0);
+        const hasValidQuestions = !!(
+          block.questions &&
+          block.questions.some((q) => q.text && q.text.trim().length > 0)
+        );
+        return hasSkill && hasValidQuestions;
+      case "SCALE_SKILL_MULTI":
+        // Must have at least 1 skill selected
+        return !!(block.selectedSkills && block.selectedSkills.length > 0);
+      default:
+        return true;
+    }
+  }, []);
+
+  // Check if all blocks are valid
+  const areAllBlocksValid = useCallback(
+    (blocks: ExtendedBlockItem[]): boolean => {
+      if (blocks.length === 0) return false;
+      return blocks.every(validateBlock);
+    },
+    [validateBlock]
+  );
 
   // Tab navigation helpers
-  const handleNextTab = () => {
+  const handleNextTab = useCallback(() => {
+    // Get current blocks based on active tab
+    const currentBlocks =
+      activeTab === "SELLER"
+        ? sellerBlocks
+        : activeTab === "BUYER"
+        ? buyerBlocks
+        : moderatorBlocks;
+
+    // Validate blocks
+    const invalidBlockIndex = currentBlocks.findIndex(
+      (block) => !validateBlock(block)
+    );
+
+    // Trigger validation for current tab
+    setValidationTriggered((prev) => ({ ...prev, [activeTab]: true }));
+
+    // If there are invalid blocks, scroll to first invalid one
+    if (invalidBlockIndex !== -1) {
+      const invalidBlock = currentBlocks[invalidBlockIndex];
+      const blockElement = document.querySelector(
+        `[data-block-id="${invalidBlock.id}"]`
+      );
+      if (blockElement) {
+        // Small delay to ensure DOM is updated with validation messages
+        setTimeout(() => {
+          blockElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 100);
+      }
+      return; // Don't proceed to next tab
+    }
+
+    // All blocks are valid, proceed to next tab
     if (activeTab === "SELLER") {
       setActiveTab("BUYER");
     } else if (activeTab === "BUYER") {
       setActiveTab("MODERATOR");
     }
-  };
+  }, [activeTab, sellerBlocks, buyerBlocks, moderatorBlocks, validateBlock]);
 
-  const handlePrevTab = () => {
+  const handlePrevTab = useCallback(() => {
     if (activeTab === "BUYER") {
       setActiveTab("SELLER");
     } else if (activeTab === "MODERATOR") {
       setActiveTab("BUYER");
     }
-  };
+    // Reset validation trigger for the tab we're leaving
+    setValidationTriggered((prev) => ({ ...prev, [activeTab]: false }));
+  }, [activeTab]);
 
   // Check if next button should be enabled
-  const isNextEnabled = () => {
+  const isNextEnabled = useCallback(() => {
     if (activeTab === "SELLER") {
-      return sellerBlocks.length >= 3;
+      return sellerBlocks.length >= 3 && areAllBlocksValid(sellerBlocks);
     } else if (activeTab === "BUYER") {
-      return buyerBlocks.length >= 1;
+      return buyerBlocks.length >= 1 && areAllBlocksValid(buyerBlocks);
     }
     return false;
-  };
+  }, [activeTab, sellerBlocks, buyerBlocks, areAllBlocksValid]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
+    // Validate all blocks before submitting
+    const allTabsValid =
+      sellerBlocks.length >= 3 &&
+      areAllBlocksValid(sellerBlocks) &&
+      buyerBlocks.length >= 1 &&
+      areAllBlocksValid(buyerBlocks) &&
+      moderatorBlocks.length >= 1 &&
+      areAllBlocksValid(moderatorBlocks);
+
     if (!formData.title.trim()) {
       handleFormError("Ошибка валидации", "Заполните название сценария");
       return;
     }
+
+    if (!allTabsValid) {
+      // Trigger validation for all tabs
+      setValidationTriggered({
+        SELLER: true,
+        BUYER: true,
+        MODERATOR: true,
+      });
+
+      // Find first invalid block across all tabs
+      let firstInvalidBlock: ExtendedBlockItem | null = null;
+      let firstInvalidTab: "SELLER" | "BUYER" | "MODERATOR" = "SELLER";
+
+      if (!areAllBlocksValid(sellerBlocks)) {
+        firstInvalidBlock = sellerBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidTab = "SELLER";
+      } else if (!areAllBlocksValid(buyerBlocks)) {
+        firstInvalidBlock = buyerBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidTab = "BUYER";
+      } else if (!areAllBlocksValid(moderatorBlocks)) {
+        firstInvalidBlock =
+          moderatorBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidTab = "MODERATOR";
+      }
+
+      // Switch to tab with invalid block and scroll
+      if (firstInvalidBlock) {
+        setActiveTab(firstInvalidTab);
+        setTimeout(() => {
+          const blockElement = document.querySelector(
+            `[data-block-id="${firstInvalidBlock!.id}"]`
+          );
+          if (blockElement) {
+            blockElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }, 100);
+      }
+
+      handleFormError("Ошибка валидации", "Проверьте заполнение всех блоков");
+      return;
+    }
+
     setShowSubmitDialog(true);
-  };
+  }, [
+    formData.title,
+    sellerBlocks,
+    buyerBlocks,
+    moderatorBlocks,
+    areAllBlocksValid,
+    validateBlock,
+  ]);
 
   const confirmSubmit = () => {
     setShowSubmitDialog(false);
@@ -417,11 +575,13 @@ export function EditScenarioForm({
               countsTowardsScore: opt.countsTowardsScore,
             })),
           };
-          baseBlock.items = (block.selectedSkills || []).map((skillId, pos) => ({
-            title: skillsById[skillId]?.name || `Навык ${skillId}`,
-            position: pos,
-            skillId: skillId,
-          }));
+          baseBlock.items = (block.selectedSkills || []).map(
+            (skillId, pos) => ({
+              title: skillsById[skillId]?.name || `Навык ${skillId}`,
+              position: pos,
+              skillId: skillId,
+            })
+          );
         }
 
         return baseBlock;
@@ -508,6 +668,8 @@ export function EditScenarioForm({
               onAdd={handleAdd("SELLER")}
               onRemove={handleRemove("SELLER")}
               onDataChange={handleDataChange("SELLER")}
+              showValidation={validationTriggered.SELLER}
+              touchedBlocks={touchedBlocks.SELLER}
             />
           </div>
         </TabsContent>
@@ -522,6 +684,8 @@ export function EditScenarioForm({
               onAdd={handleAdd("BUYER")}
               onRemove={handleRemove("BUYER")}
               onDataChange={handleDataChange("BUYER")}
+              showValidation={validationTriggered.BUYER}
+              touchedBlocks={touchedBlocks.BUYER}
             />
           </div>
         </TabsContent>
@@ -536,6 +700,8 @@ export function EditScenarioForm({
               onAdd={handleAdd("MODERATOR")}
               onRemove={handleRemove("MODERATOR")}
               onDataChange={handleDataChange("MODERATOR")}
+              showValidation={validationTriggered.MODERATOR}
+              touchedBlocks={touchedBlocks.MODERATOR}
             />
           </div>
         </TabsContent>
@@ -583,7 +749,17 @@ export function EditScenarioForm({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={isPending || !formData.title.trim() || !hasChanges}
+              disabled={
+                isPending ||
+                !formData.title.trim() ||
+                !hasChanges ||
+                !areAllBlocksValid(sellerBlocks) ||
+                !areAllBlocksValid(buyerBlocks) ||
+                !areAllBlocksValid(moderatorBlocks) ||
+                sellerBlocks.length < 3 ||
+                buyerBlocks.length < 1 ||
+                moderatorBlocks.length < 1
+              }
               className="flex-1 h-12"
             >
               {isPending ? "Обновление..." : "Обновить сценарий"}
