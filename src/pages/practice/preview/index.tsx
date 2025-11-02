@@ -98,7 +98,7 @@ const PracticePreviewPage = () => {
       await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
       handleFormSuccess("Практика успешно создана");
       store.close();
-      navigate("/practice");
+      navigate("/practice?tab=mine");
     },
     onError: (error) => {
       console.error("Error creating practice:", error);

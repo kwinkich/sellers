@@ -25,6 +25,7 @@ import { useTermsStore } from "../model/terms.store";
 import { useSuccessDrawerStore } from "../model/successDrawer.store";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePracticeJoinStore } from "../model/joinDrawer.store";
 
 // Function to check if role is available based on repScore
@@ -47,6 +48,7 @@ const isRoleAvailableByRep = (
 
 export const PracticeJoinDrawer = () => {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { isOpen, practice, close, setPractice } = usePracticeJoinStore();
   const [selectedRole, setSelectedRole] =
     useState<PracticeParticipantRole | null>(null);
@@ -136,6 +138,7 @@ export const PracticeJoinDrawer = () => {
           useSuccessDrawerStore.getState().open(updated)
         );
       }
+      navigate("/practice?tab=mine");
     },
   });
 
