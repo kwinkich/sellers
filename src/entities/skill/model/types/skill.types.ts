@@ -15,6 +15,6 @@ export interface UpdateSkillRequest {
 }
 
 export interface GetAllSkillsParams {
-  by?: "id" | "name";
+  by?: "display_order" | "id" | "name";
   order?: "asc" | "desc";
 }

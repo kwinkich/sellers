@@ -15,13 +15,25 @@ export const SkillsAPI = {
   getSkills: ({
     page = 1,
     limit = 30,
-  }: { page?: number; limit?: number } = {}) =>
-    API.get("skills", {
-      searchParams: {
-        page: String(page),
-        limit: String(limit),
-      },
-    }).json<GApiResponse<Skill, true>>(),
+    by,
+    order,
+  }: {
+    page?: number;
+    limit?: number;
+    by?: "display_order" | "id" | "name";
+    order?: "asc" | "desc";
+  } = {}) => {
+    const searchParams: Record<string, string> = {
+      page: String(page),
+      limit: String(limit),
+    };
+    if (by) searchParams.by = by;
+    if (order) searchParams.order = order;
+
+    return API.get("skills", {
+      searchParams,
+    }).json<GApiResponse<Skill, true>>();
+  },
 
   getSkillsPaged: (
     {
@@ -30,12 +42,16 @@ export const SkillsAPI = {
       code,
       name,
       id,
+      by,
+      order,
     }: {
       page: number;
       limit: number;
       code?: string;
       name?: string;
       id?: number | number[];
+      by?: "display_order" | "id" | "name";
+      order?: "asc" | "desc";
     } = { page: 1, limit: 30 }
   ) => {
     const sp = new URLSearchParams();
@@ -48,6 +64,8 @@ export const SkillsAPI = {
     } else if (Array.isArray(id)) {
       for (const v of id) sp.append("id", String(v));
     }
+    if (by) sp.set("by", by);
+    if (order) sp.set("order", order);
 
     return API.get("skills", {
       searchParams: sp,
@@ -83,10 +101,20 @@ export const SkillsAPI = {
 };
 
 export const skillsQueryOptions = {
-  list: ({ page = 1, limit = 30 }: { page?: number; limit?: number } = {}) =>
+  list: ({
+    page = 1,
+    limit = 30,
+    by,
+    order,
+  }: {
+    page?: number;
+    limit?: number;
+    by?: "display_order" | "id" | "name";
+    order?: "asc" | "desc";
+  } = {}) =>
     queryOptions({
-      queryKey: ["skills", "list", { page, limit }],
-      queryFn: () => SkillsAPI.getSkills({ page, limit }),
+      queryKey: ["skills", "list", { page, limit, by, order }],
+      queryFn: () => SkillsAPI.getSkills({ page, limit, by, order }),
     }),
 
   infinite: ({ limit = 50 }: { limit?: number } = {}) =>
