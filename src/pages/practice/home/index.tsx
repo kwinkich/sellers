@@ -33,6 +33,20 @@ export const PracticeHomePage = () => {
   const { role } = useUserRole();
   const roleReady = Boolean(role);
 
+  // Sync tab state when URL changes externally (e.g., from navigation)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlTab = (params.get("tab") as TabKey | null) ?? null;
+    
+    let targetTab: TabKey = "all";
+    if (urlTab === "mine" || urlTab === "all" || urlTab === "past") {
+      targetTab = urlTab;
+    }
+    
+    // Only update if different to avoid unnecessary re-renders
+    setTab((currentTab) => (currentTab !== targetTab ? targetTab : currentTab));
+  }, [location.search]);
+
   // Function to sync tabs with URL
   const setTabAndUrl = (next: TabKey) => {
     setTab(next);

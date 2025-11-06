@@ -12,9 +12,16 @@ export const ScaleMultiReportBlock = ({
   options,
   results,
 }: {
-  items: { id?: number; title?: string; position: number; skillId: number | null }[];
+  items: {
+    id?: number;
+    title?: string;
+    position: number;
+    skillId: number | null;
+  }[];
   options: Option[];
-  results: Array<{ avgValue: number; closestOptionId: number; n: number } | null | undefined>;
+  results: Array<
+    { avgValue: number; closestOptionId: number; n: number } | null | undefined
+  >;
 }) => {
   // Create option lookup by ID for efficient matching
   const optionById = new Map<number, Option>();
@@ -27,13 +34,15 @@ export const ScaleMultiReportBlock = ({
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="mb-3 text-sm font-bold text-gray-800">Оценивание нескольких навыков</h3>
-        
+        <h3 className="mb-3 text-sm font-bold text-gray-800">
+          Оценивание нескольких навыков
+        </h3>
+
         <div className="space-y-4">
           {items.map((item, index) => {
             // Only process items that have valid IDs
             if (item.id == null) {
-              console.warn('Item missing ID:', item);
+              console.warn("Item missing ID:", item);
               return null;
             }
 
@@ -42,14 +51,16 @@ export const ScaleMultiReportBlock = ({
 
             return (
               <div key={item.id} className="flex flex-col gap-3">
-                <h4 className="text-sm font-medium text-gray-800">{item.title || "Неизвестный навык"}</h4>
+                <h4 className="text-sm font-medium text-gray-800">
+                  {item.title || "Неизвестный навык"}
+                </h4>
 
                 <div className="space-y-2">
                   {options.map((option) => {
                     const isSelected = selectedOptionId === option.id;
                     return (
-                      <div 
-                        key={option.ord} 
+                      <div
+                        key={option.ord}
                         className="flex items-center justify-start gap-3 cursor-pointer p-2 rounded-lg transition-colors"
                       >
                         <input
@@ -58,14 +69,18 @@ export const ScaleMultiReportBlock = ({
                           checked={isSelected}
                           readOnly
                         />
-                        <span className="text-sm text-gray-700">{option.label}</span>
+                        <span className="text-sm text-gray-700">
+                          {option.label}
+                        </span>
                       </div>
                     );
                   })}
                 </div>
-                {result && (
+                {result == null ? (
+                  <div className="text-sm text-amber-600 mt-1">Нет оценок</div>
+                ) : (
                   <div className="text-xs text-gray-500 mt-1">
-                    Среднее: {result.avgValue.toFixed(1)} (ответов: {result.n})
+                    Ответов: {result.n}
                   </div>
                 )}
               </div>
@@ -76,5 +91,3 @@ export const ScaleMultiReportBlock = ({
     </Card>
   );
 };
-
-
