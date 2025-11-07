@@ -6,7 +6,11 @@ interface TermsState {
   isOpen: boolean;
   role?: "MODERATOR";
   practice?: PracticeCard;
-  open: (role?: "MODERATOR", practice?: PracticeCard) => void;
+  showSuccessOnConfirm: boolean;
+  open: (
+    role?: "MODERATOR",
+    payload?: { practice?: PracticeCard; showSuccessOnConfirm?: boolean }
+  ) => void;
   close: () => void;
 }
 
@@ -14,8 +18,21 @@ export const useTermsStore = create<TermsState>((set) => ({
   isOpen: false,
   role: undefined,
   practice: undefined,
-  open: (role, practice) => set({ isOpen: true, role, practice }),
-  close: () => set({ isOpen: false, role: undefined, practice: undefined }),
+  showSuccessOnConfirm: false,
+  open: (role, payload) =>
+    set({
+      isOpen: true,
+      role,
+      practice: payload?.practice,
+      showSuccessOnConfirm: payload?.showSuccessOnConfirm ?? false,
+    }),
+  close: () =>
+    set({
+      isOpen: false,
+      role: undefined,
+      practice: undefined,
+      showSuccessOnConfirm: false,
+    }),
 }));
 
 

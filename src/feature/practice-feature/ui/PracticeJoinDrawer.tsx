@@ -46,12 +46,32 @@ const isRoleAvailableByRep = (
   }
 };
 
+const getSkillDeclension = (count: number) => {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "навыков";
+  }
+
+  if (lastDigit === 1) {
+    return "навык";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "навыка";
+  }
+
+  return "навыков";
+};
+
 export const PracticeJoinDrawer = () => {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { isOpen, practice, close, setPractice } = usePracticeJoinStore();
   const [selectedRole, setSelectedRole] =
     useState<PracticeParticipantRole | null>(null);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
   const { role } = useUserRole();
 
   // Get MOP profile info for MOP users
@@ -64,6 +84,10 @@ export const PracticeJoinDrawer = () => {
 
   useEffect(() => {
     if (!isOpen) setSelectedRole(null);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) setSkillsExpanded(false);
   }, [isOpen]);
 
   const roles: PracticeParticipantRole[] = [
@@ -129,7 +153,10 @@ export const PracticeJoinDrawer = () => {
         const updated = res?.data ?? practice!;
         close();
         requestAnimationFrame(() =>
-          useTermsStore.getState().open("MODERATOR", updated)
+          useTermsStore.getState().open("MODERATOR", {
+            practice: updated,
+            showSuccessOnConfirm: true,
+          })
         );
       } else {
         const updated = res?.data ?? practice!;
@@ -161,7 +188,10 @@ export const PracticeJoinDrawer = () => {
         close();
         if (res?.data) {
           requestAnimationFrame(() =>
-            useTermsStore.getState().open("MODERATOR", res.data)
+            useTermsStore.getState().open("MODERATOR", {
+              practice: res.data,
+              showSuccessOnConfirm: true,
+            })
           );
         }
       } else {
@@ -207,10 +237,34 @@ export const PracticeJoinDrawer = () => {
           )}
 
           {!!practice.skills?.length && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {practice.skills.map((s) => (
-                <Badge key={s.id} label={s.name} variant="gray" size="md" />
-              ))}
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-wrap gap-2">
+                {(skillsExpanded
+                  ? practice.skills
+                  : practice.skills.slice(0, 4)
+                ).map((s) => (
+                  <Badge key={s.id} label={s.name} variant="gray" size="md" />
+                ))}
+                {!skillsExpanded && practice.skills.length > 4 && (
+                  <Badge
+                    label={`+${
+                      practice.skills.length - 4
+                    } ${getSkillDeclension(practice.skills.length - 4)}`}
+                    variant="gray"
+                    size="md"
+                    className="cursor-pointer hover:opacity-80"
+                    onClick={() => setSkillsExpanded(true)}
+                  />
+                )}
+              </div>
+              {practice.skills.length > 4 && (
+                <button
+                  onClick={() => setSkillsExpanded((prev) => !prev)}
+                  className="text-xs text-base-main hover:underline self-start"
+                >
+                  {skillsExpanded ? "Скрыть" : "Показать все"}
+                </button>
+              )}
             </div>
           )}
 
@@ -329,7 +383,9 @@ export const PracticeJoinDrawer = () => {
                   // After join success, show terms in onSuccess handler above is not called here, so open now
                   close();
                   requestAnimationFrame(() =>
-                    useTermsStore.getState().open("MODERATOR")
+                    useTermsStore.getState().open("MODERATOR", {
+                      showSuccessOnConfirm: true,
+                    })
                   );
                 }
                 join.mutate({ id: practice.id, data: { as: selectedRole } });

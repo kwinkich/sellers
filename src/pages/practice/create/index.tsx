@@ -48,7 +48,16 @@ const PracticeCreatePage = () => {
   const { hide, show } = useUiChrome();
 
   // store keeps numeric IDs, UI uses strings to avoid equality glitches
-  const { scenarioId, caseId, skillIds, practiceType, scenarioTitle } = store;
+  const {
+    scenarioId,
+    caseId,
+    skillIds,
+    practiceType,
+    scenarioTitle,
+    caseTitle,
+    skillNames,
+    startAt,
+  } = store;
 
   // Local date/time for stable UX; compute UTC on submit
   const [dateLocal, setDateLocal] = React.useState<Date | undefined>(undefined);
@@ -60,6 +69,32 @@ const PracticeCreatePage = () => {
     const minutes = futureTime.getMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   });
+
+  // Restore local date/time when returning from preview page
+  React.useEffect(() => {
+    if (!startAt) return;
+    const parsedUtc = new Date(startAt);
+    if (Number.isNaN(parsedUtc.getTime())) return;
+
+    const localDateOnly = new Date(
+      parsedUtc.getFullYear(),
+      parsedUtc.getMonth(),
+      parsedUtc.getDate()
+    );
+
+    setDateLocal((prev) => {
+      if (!prev) return localDateOnly;
+      const sameDay =
+        prev.getFullYear() === localDateOnly.getFullYear() &&
+        prev.getMonth() === localDateOnly.getMonth() &&
+        prev.getDate() === localDateOnly.getDate();
+      return sameDay ? prev : localDateOnly;
+    });
+
+    const hh = parsedUtc.getHours().toString().padStart(2, "0");
+    const mm = parsedUtc.getMinutes().toString().padStart(2, "0");
+    setTimeLocal((prev) => (prev === `${hh}:${mm}` ? prev : `${hh}:${mm}`));
+  }, [startAt]);
 
   // Used to visually reset the MultiSelectChips back to clean placeholder state
   const [skillsResetVersion, setSkillsResetVersion] = React.useState(0);
@@ -120,6 +155,27 @@ const PracticeCreatePage = () => {
     [skills.allItems]
   );
 
+  const skillOptionsWithSelected = React.useMemo(() => {
+    if (!skillIds?.length) return skillOptions;
+
+    const knownIds = new Set(skillOptions.map((s) => Number(s.value)));
+    const nameById = new Map<number, string>();
+    skillIds.forEach((id, idx) => {
+      const name = skillNames?.[idx];
+      if (name) nameById.set(id, name);
+    });
+
+    const missing = skillIds
+      .filter((id) => !knownIds.has(id))
+      .map((id) => ({
+        value: String(id),
+        label: nameById.get(id) ?? `ID ${id}`,
+      }));
+
+    if (!missing.length) return skillOptions;
+    return [...missing, ...skillOptions];
+  }, [skillIds, skillNames, skillOptions]);
+
   // Scenarios: NOW enabled even without skills (skills are only filters)
   const scenariosKey = React.useMemo(
     () => [
@@ -152,7 +208,7 @@ const PracticeCreatePage = () => {
   );
 
   // Convert scenario options to SearchableSelect format
-  const scenarioSelectOptions: SearchableSelectOption[] = React.useMemo(
+  const scenarioSelectOptionsBase: SearchableSelectOption[] = React.useMemo(
     () =>
       scenarioOptions.map((s: any) => ({
         value: s.id,
@@ -160,6 +216,22 @@ const PracticeCreatePage = () => {
       })),
     [scenarioOptions]
   );
+
+  const scenarioSelectOptions: SearchableSelectOption[] = React.useMemo(() => {
+    if (!scenarioId) return scenarioSelectOptionsBase;
+    const exists = scenarioSelectOptionsBase.some(
+      (option) => Number(option.value) === Number(scenarioId)
+    );
+    if (exists) return scenarioSelectOptionsBase;
+
+    return [
+      {
+        value: scenarioId,
+        label: scenarioTitle ?? `Сценарий #${scenarioId}`,
+      },
+      ...scenarioSelectOptionsBase,
+    ];
+  }, [scenarioId, scenarioTitle, scenarioSelectOptionsBase]);
 
   // Cases: independent of scenario; disabled for WITHOUT_CASE
   const cases = useInfiniteList<any>(
@@ -180,7 +252,7 @@ const PracticeCreatePage = () => {
   );
 
   // Convert case options to SearchableSelect format
-  const caseSelectOptions: SearchableSelectOption[] = React.useMemo(
+  const caseSelectOptionsBase: SearchableSelectOption[] = React.useMemo(
     () =>
       caseOptions.map((c: any) => ({
         value: c.id,
@@ -188,6 +260,22 @@ const PracticeCreatePage = () => {
       })),
     [caseOptions]
   );
+
+  const caseSelectOptions: SearchableSelectOption[] = React.useMemo(() => {
+    if (!caseId) return caseSelectOptionsBase;
+    const exists = caseSelectOptionsBase.some(
+      (option) => Number(option.value) === Number(caseId)
+    );
+    if (exists) return caseSelectOptionsBase;
+
+    return [
+      {
+        value: caseId,
+        label: caseTitle ?? `Кейс #${caseId}`,
+      },
+      ...caseSelectOptionsBase,
+    ];
+  }, [caseId, caseTitle, caseSelectOptionsBase]);
 
   // ---- Reset & validation policy ----
 
@@ -204,24 +292,32 @@ const PracticeCreatePage = () => {
     if (scenarios.isLoading || scenarios.isFetching) return;
     if (
       scenarioId &&
-      !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId))
+      !scenarioOptions.some((s: any) => Number(s.id) === Number(scenarioId)) &&
+      !scenarioTitle
     ) {
       store.setScenario(undefined, undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioOptions, scenarios.isLoading, scenarios.isFetching]);
+  }, [
+    scenarioOptions,
+    scenarios.isLoading,
+    scenarios.isFetching,
+    scenarioId,
+    scenarioTitle,
+  ]);
 
   // Validate case against options after cases settle
   React.useEffect(() => {
     if (cases.isLoading || cases.isFetching) return;
     if (
       caseId &&
-      !caseOptions.some((c: any) => Number(c.id) === Number(caseId))
+      !caseOptions.some((c: any) => Number(c.id) === Number(caseId)) &&
+      !caseTitle
     ) {
       store.setCase(undefined, undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caseOptions, cases.isLoading, cases.isFetching]);
+  }, [caseOptions, cases.isLoading, cases.isFetching, caseId, caseTitle]);
 
   // When skills change, if a skill was REMOVED → reset dependent selections
   // and visually reset the skills control to placeholder (via key bump).
@@ -324,7 +420,7 @@ const PracticeCreatePage = () => {
           <div>
             <MultiSelectChips
               key={skillsResetVersion} // remount to restore placeholder/input state after reset
-              options={skillOptions}
+              options={skillOptionsWithSelected}
               // UI uses string IDs; convert store numeric skillIds -> string[]
               value={skillIds?.map((id) => String(id)) ?? []}
               onChange={(next) => {
@@ -332,7 +428,7 @@ const PracticeCreatePage = () => {
                 store.setSkills(ids);
 
                 const labelMap = new Map(
-                  skillOptions.map((o) => [String(o.value), o.label])
+                  skillOptionsWithSelected.map((o) => [String(o.value), o.label])
                 );
                 const names = next
                   .map((v) => labelMap.get(String(v)))
@@ -391,11 +487,18 @@ const PracticeCreatePage = () => {
               value={scenarioId}
               onChange={(value) => {
                 if (value) {
-                  const s = scenarioOptions.find(
+                  const scenarioFromApi = scenarioOptions.find(
                     (x: any) => Number(x.id) === Number(value)
                   );
-                  store.setScenario(Number(value), s?.title);
-                  if (s?.practiceType) store.setPracticeType(s.practiceType);
+                  const selectedOption = scenarioSelectOptions.find(
+                    (option) => Number(option.value) === Number(value)
+                  );
+                  store.setScenario(
+                    Number(value),
+                    scenarioFromApi?.title ?? selectedOption?.label
+                  );
+                  if (scenarioFromApi?.practiceType)
+                    store.setPracticeType(scenarioFromApi.practiceType);
                 } else {
                   store.setScenario(undefined, undefined);
                 }
@@ -420,10 +523,16 @@ const PracticeCreatePage = () => {
               value={caseId}
               onChange={(value) => {
                 if (value) {
-                  const c = caseOptions.find(
+                  const caseFromApi = caseOptions.find(
                     (x: any) => Number(x.id) === Number(value)
                   );
-                  store.setCase(Number(value), c?.title);
+                  const selectedOption = caseSelectOptions.find(
+                    (option) => Number(option.value) === Number(value)
+                  );
+                  store.setCase(
+                    Number(value),
+                    caseFromApi?.title ?? selectedOption?.label
+                  );
                 } else {
                   store.setCase(undefined, undefined);
                 }

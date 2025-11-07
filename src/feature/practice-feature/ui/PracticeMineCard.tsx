@@ -12,7 +12,7 @@ import {
 } from "@/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type {
   PracticeCard as PracticeCardType,
   PracticeRole,
@@ -22,6 +22,7 @@ import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { ReactNode } from "react";
 import type { PracticeType } from "@/shared/types/practice.types";
 import { useCaseInfoStore } from "../model/caseInfo.store";
+import { useTermsStore } from "../model/terms.store";
 import {
   Select,
   SelectContent,
@@ -63,11 +64,31 @@ const isRoleAvailableByRep = (
   }
 };
 
+const getSkillDeclension = (count: number) => {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "навыков";
+  }
+
+  if (lastDigit === 1) {
+    return "навык";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "навыка";
+  }
+
+  return "навыков";
+};
+
 export const PracticeMineCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
   const qc = useQueryClient();
   const { role } = useUserRole();
   const copyButtonRef = useRef<HTMLButtonElement>(null);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
 
   // Get MOP profile info for MOP users
   const { data: mopProfileRes } = useQuery({
@@ -76,11 +97,27 @@ export const PracticeMineCard = ({ data }: Props) => {
   });
   const mopProfile = mopProfileRes?.data;
   const repScore = mopProfile?.repScore ?? 0;
+  const openTerms = useTermsStore((s) => s.open);
+  const pendingRole = useRef<PracticeParticipantRole | null>(null);
+
   const switchRole = useMutation({
     ...practicesMutationOptions.switchRole(),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await qc.invalidateQueries({ queryKey: ["practices", "mine"] });
       await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
+
+      if (pendingRole.current === "MODERATOR" && res?.data) {
+        requestAnimationFrame(() =>
+          openTerms("MODERATOR", {
+            practice: res.data,
+            showSuccessOnConfirm: false,
+          })
+        );
+      }
+      pendingRole.current = null;
+    },
+    onError: () => {
+      pendingRole.current = null;
     },
   });
 
@@ -164,10 +201,31 @@ export const PracticeMineCard = ({ data }: Props) => {
       )}
 
       {!!data.skills?.length && (
-        <div className="flex flex-wrap gap-2">
-          {data.skills.map((s) => (
-            <Badge key={s.id} label={s.name} variant="gray" size="md" />
-          ))}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            {(skillsExpanded ? data.skills : data.skills.slice(0, 4)).map((s) => (
+              <Badge key={s.id} label={s.name} variant="gray" size="md" />
+            ))}
+            {!skillsExpanded && data.skills.length > 4 && (
+              <Badge
+                label={`+${data.skills.length - 4} ${getSkillDeclension(
+                  data.skills.length - 4
+                )}`}
+                variant="gray"
+                size="md"
+                className="cursor-pointer hover:opacity-80"
+                onClick={() => setSkillsExpanded(true)}
+              />
+            )}
+          </div>
+          {data.skills.length > 4 && (
+            <button
+              onClick={() => setSkillsExpanded((prev) => !prev)}
+              className="text-xs text-base-main hover:underline self-start"
+            >
+              {skillsExpanded ? "Скрыть" : "Показать все"}
+            </button>
+          )}
         </div>
       )}
 
@@ -199,6 +257,7 @@ export const PracticeMineCard = ({ data }: Props) => {
         </div>
         <Select
           onValueChange={(v) => {
+            pendingRole.current = v as PracticeParticipantRole;
             switchRole.mutate({
               id: data.id,
               data: { to: v as PracticeParticipantRole },

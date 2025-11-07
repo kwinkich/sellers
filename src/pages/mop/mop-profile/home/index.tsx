@@ -137,7 +137,7 @@ export const MopProfilePage = () => {
       ),
       content: (
         <div
-          className="flex flex-col gap-2 pt-2 max-h-[320px] overflow-auto"
+          className="flex flex-col gap-2 pt-2 max-h-[320px] overflow-auto scrollbar-dark"
           onScroll={handleScroll}
         >
           {isLoadingSkills && currentPage === 1 ? (

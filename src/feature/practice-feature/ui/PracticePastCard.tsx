@@ -15,9 +15,28 @@ import {
 import { getFullApiUrl } from "@/shared/lib/api-config";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import type { PracticeType } from "@/shared/types/practice.types";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCaseInfoStore } from "../model/caseInfo.store";
+
+const getSkillDeclension = (count: number) => {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "навыков";
+  }
+
+  if (lastDigit === 1) {
+    return "навык";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "навыка";
+  }
+
+  return "навыков";
+};
 
 interface Props {
   data: PracticeCardType;
@@ -27,6 +46,7 @@ export const PracticePastCard = ({ data }: Props) => {
   const openCaseInfo = useCaseInfoStore((s) => s.open);
   const { role: userRole, userId } = useUserRole();
   const navigate = useNavigate();
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
 
   const formatStart = (iso: string) => {
     if (!iso) return { date: "", time: "" };
@@ -115,10 +135,31 @@ export const PracticePastCard = ({ data }: Props) => {
       )}
 
       {!!data.skills?.length && (
-        <div className="flex flex-wrap gap-2">
-          {data.skills.map((s) => (
-            <Badge key={s.id} label={s.name} variant="gray" size="md" />
-          ))}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            {(skillsExpanded ? data.skills : data.skills.slice(0, 4)).map((s) => (
+              <Badge key={s.id} label={s.name} variant="gray" size="md" />
+            ))}
+            {!skillsExpanded && data.skills.length > 4 && (
+              <Badge
+                label={`+${data.skills.length - 4} ${getSkillDeclension(
+                  data.skills.length - 4
+                )}`}
+                variant="gray"
+                size="md"
+                className="cursor-pointer hover:opacity-80"
+                onClick={() => setSkillsExpanded(true)}
+              />
+            )}
+          </div>
+          {data.skills.length > 4 && (
+            <button
+              onClick={() => setSkillsExpanded((prev) => !prev)}
+              className="text-xs text-base-main hover:underline self-start"
+            >
+              {skillsExpanded ? "Скрыть" : "Показать все"}
+            </button>
+          )}
         </div>
       )}
 

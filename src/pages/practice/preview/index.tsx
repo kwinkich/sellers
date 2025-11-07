@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { mopProfilesQueryOptions } from "@/entities/mop";
 import { practicesMutationOptions } from "@/entities/practices";
-import { useCreatePracticeStore } from "@/feature/practice-feature";
+import { useCreatePracticeStore, useTermsStore } from "@/feature/practice-feature";
 import {
   CalendarIcon,
   PracticeTypeIcon,
@@ -94,10 +94,19 @@ const PracticePreviewPage = () => {
 
   const create = useMutation({
     ...practicesMutationOptions.create(),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
       handleFormSuccess("Практика успешно создана");
       store.close();
+
+      if (initialRole === "MODERATOR") {
+        requestAnimationFrame(() =>
+          useTermsStore.getState().open("MODERATOR", {
+            showSuccessOnConfirm: false,
+          })
+        );
+      }
+
       navigate("/practice?tab=mine");
     },
     onError: (error) => {

@@ -5,7 +5,7 @@ import { useSuccessDrawerStore } from "../model/successDrawer.store";
 import { ModeratorIcon } from "@/shared";
 
 export const ModeratorTermsDrawer = () => {
-  const { isOpen, close, practice } = useTermsStore();
+  const { isOpen, close, practice, showSuccessOnConfirm } = useTermsStore();
 
   return (
     <Drawer open={isOpen} onOpenChange={(o) => (!o ? close() : null)}>
@@ -30,7 +30,10 @@ export const ModeratorTermsDrawer = () => {
             onClick={() => {
               const p = practice;
               close();
-              if (p) requestAnimationFrame(() => useSuccessDrawerStore.getState().open(p));
+              if (showSuccessOnConfirm && p)
+                requestAnimationFrame(() =>
+                  useSuccessDrawerStore.getState().open(p)
+                );
             }}
           >
             Я согласен
