@@ -9,7 +9,10 @@ import {
 } from "@/components/ui/select";
 import { mopProfilesQueryOptions } from "@/entities/mop";
 import { practicesMutationOptions } from "@/entities/practices";
-import { useCreatePracticeStore, useTermsStore } from "@/feature/practice-feature";
+import {
+  useCreatePracticeStore,
+  useTermsStore,
+} from "@/feature/practice-feature";
 import {
   CalendarIcon,
   PracticeTypeIcon,
@@ -94,7 +97,7 @@ const PracticePreviewPage = () => {
 
   const create = useMutation({
     ...practicesMutationOptions.create(),
-    onSuccess: async (res) => {
+    onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["practices", "cards"] });
       handleFormSuccess("Практика успешно создана");
       store.close();
