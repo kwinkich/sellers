@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Badge,
   ClientIcon,
@@ -26,8 +26,33 @@ import type { PracticeCard } from "@/entities/practices";
 import { usePracticeJoinStore } from "../model/joinDrawer.store";
 import { useCaseInfoStore } from "../model/caseInfo.store";
 
+// Helper function for Russian declension of "навык"
+function getSkillDeclension(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  
+  // Special cases: 11-14 always use "навыков"
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "навыков";
+  }
+  
+  // 1, 21, 31, etc. → "навык"
+  if (lastDigit === 1) {
+    return "навык";
+  }
+  
+  // 2, 3, 4, 22, 23, 24, etc. → "навыка"
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "навыка";
+  }
+  
+  // 0, 5, 6, 7, 8, 9, 10, 20, etc. → "навыков"
+  return "навыков";
+}
+
 function PracticeInfoCard({ data }: { data: PracticeCard }) {
   const copyButtonRef = useRef<HTMLButtonElement>(null);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", {
     day: "2-digit",
@@ -67,16 +92,38 @@ function PracticeInfoCard({ data }: { data: PracticeCard }) {
       )}
 
       {!!data.skills?.length && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          {data.skills.map((s) => (
-            <Badge
-              key={s.id}
-              label={s.name}
-              variant="gray"
-              size="md"
-              className="bg-gray-300 text-gray-700"
-            />
-          ))}
+        <div className="mb-2">
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(skillsExpanded
+              ? data.skills
+              : data.skills.slice(0, 4)
+            ).map((s) => (
+              <Badge
+                key={s.id}
+                label={s.name}
+                variant="gray"
+                size="md"
+                className="bg-gray-300 text-gray-700"
+              />
+            ))}
+            {!skillsExpanded && data.skills.length > 4 && (
+              <Badge
+                label={`+${data.skills.length - 4} ${getSkillDeclension(data.skills.length - 4)}`}
+                variant="gray"
+                size="md"
+                className="bg-gray-300 text-gray-700 cursor-pointer hover:bg-gray-400"
+                onClick={() => setSkillsExpanded(true)}
+              />
+            )}
+          </div>
+          {data.skills.length > 4 && (
+            <button
+              onClick={() => setSkillsExpanded(!skillsExpanded)}
+              className="text-xs text-base-main hover:underline"
+            >
+              {skillsExpanded ? "Скрыть" : "Показать все"}
+            </button>
+          )}
         </div>
       )}
 
@@ -174,7 +221,7 @@ export const PracticeSuccessDrawer = () => {
             <SuccessIcon size={64} cn="text-base-main" />
           </div>
           <p className="text-xl font-semibold mt-4">Успешно!</p>
-          <p className="text-base-gray text-sm">Вы участвуете в сражении</p>
+          <p className="text-base-gray text-sm">Вы участвуете в практике</p>
         </DrawerHeader>
 
         <DrawerBody>

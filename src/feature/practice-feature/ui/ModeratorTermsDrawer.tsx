@@ -14,7 +14,7 @@ export const ModeratorTermsDrawer = () => {
           <DrawerTitle className="sr-only">Подтверждение роли модератора</DrawerTitle>
           <ModeratorIcon size={56} cn="text-base-main" />
           <p className="text-xl font-semibold mt-2">Ваша роль - Модератор</p>
-          <p className="text-base-gray text-sm">Вы участвуете в сражении</p>
+          <p className="text-base-gray text-sm">Вы участвуете в практике</p>
         </DrawerHeader>
 
         <div className="px-6 text-sm text-black">

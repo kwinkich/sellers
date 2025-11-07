@@ -183,7 +183,7 @@ export const AddMopDialog = ({ open, onOpenChange }: AddMopDialogProps) => {
             <Button
               onClick={handleAddMop}
               disabled={!isFormValid || isPending || availableLicenses <= 0}
-              className="w-full h-12 bg-base-main hover:bg-base-main/80 focus-visible:ring-base-main text-white"
+              className=" h-12 bg-base-main hover:bg-base-main/80 focus-visible:ring-base-main text-white"
             >
               {isPending ? (
                 <>

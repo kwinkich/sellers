@@ -1,7 +1,7 @@
 import { BlockingModal } from "@/components/ui/blocking-modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Badge,
   ClientIcon,
@@ -22,6 +22,30 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
 import { handleFormSuccess, handleFormError } from "@/shared";
 
+// Helper function for Russian declension of "навык"
+function getSkillDeclension(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  
+  // Special cases: 11-14 always use "навыков"
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "навыков";
+  }
+  
+  // 1, 21, 31, etc. → "навык"
+  if (lastDigit === 1) {
+    return "навык";
+  }
+  
+  // 2, 3, 4, 22, 23, 24, etc. → "навыка"
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "навыка";
+  }
+  
+  // 0, 5, 6, 7, 8, 9, 10, 20, etc. → "навыков"
+  return "навыков";
+}
+
 function PracticeInfoCardSimple({
   data,
   openCaseInfo,
@@ -30,6 +54,7 @@ function PracticeInfoCardSimple({
   openCaseInfo: (practice: any) => void;
 }) {
   const copyButtonRef = useRef<HTMLButtonElement>(null);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", {
     day: "2-digit",
@@ -69,16 +94,38 @@ function PracticeInfoCardSimple({
       )}
 
       {!!data.skills?.length && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          {data.skills.map((s: any) => (
-            <Badge
-              key={s.id}
-              label={s.name}
-              variant="gray"
-              size="md"
-              className="bg-gray-300 text-gray-700"
-            />
-          ))}
+        <div className="mb-2">
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(skillsExpanded
+              ? data.skills
+              : data.skills.slice(0, 4)
+            ).map((s: any) => (
+              <Badge
+                key={s.id}
+                label={s.name}
+                variant="gray"
+                size="md"
+                className="bg-gray-300 text-gray-700"
+              />
+            ))}
+            {!skillsExpanded && data.skills.length > 4 && (
+              <Badge
+                label={`+${data.skills.length - 4} ${getSkillDeclension(data.skills.length - 4)}`}
+                variant="gray"
+                size="md"
+                className="bg-gray-300 text-gray-700 cursor-pointer hover:bg-gray-400"
+                onClick={() => setSkillsExpanded(true)}
+              />
+            )}
+          </div>
+          {data.skills.length > 4 && (
+            <button
+              onClick={() => setSkillsExpanded(!skillsExpanded)}
+              className="text-xs text-base-main hover:underline"
+            >
+              {skillsExpanded ? "Скрыть" : "Показать все"}
+            </button>
+          )}
         </div>
       )}
 
