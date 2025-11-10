@@ -183,9 +183,12 @@ export function Assess1to5Block({
             </div>
           )}
           {/* 1) Scale editor */}
-          <div className="space-y-2">
+          <div>
             <Label className="text-sm">Система оценивания</Label>
-            <div className="space-y-2">
+            <span className="text-xs text-muted-foreground">
+              Расположите варианты от негативного к позитивному
+            </span>
+            <div className="space-y-2 mt-1">
               {scaleOptions.map((option, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <span className="w-[20px] text-xs text-muted-foreground">
@@ -243,6 +246,7 @@ export function Assess1to5Block({
                     options={skillOptions.filter(
                       (o) => o.value === val || !taken.has(o.value)
                     )}
+                    className="cursor-pointer"
                   />
                   <Button
                     size="2s"

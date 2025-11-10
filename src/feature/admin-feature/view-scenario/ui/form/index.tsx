@@ -18,6 +18,17 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   const [activeTab, setActiveTab] = useState<"SELLER" | "BUYER" | "MODERATOR">(
     "SELLER"
   );
+  
+  // Sub-tab state for each role: "scenario" or "evaluation"
+  const [subTab, setSubTab] = useState<{
+    SELLER: "scenario" | "evaluation";
+    BUYER: "scenario" | "evaluation";
+    MODERATOR: "scenario" | "evaluation";
+  }>({
+    SELLER: "scenario",
+    BUYER: "scenario",
+    MODERATOR: "scenario",
+  });
 
   // Fetch scenario data
   const {
@@ -52,18 +63,38 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   }, [activeTab, navigate]);
 
   const handleNextTab = () => {
-    if (activeTab === "SELLER") {
-      setActiveTab("BUYER");
-    } else if (activeTab === "BUYER") {
-      setActiveTab("MODERATOR");
+    const currentSubTab = subTab[activeTab];
+
+    // If on scenario sub-tab, move to evaluation sub-tab of same role
+    if (currentSubTab === "scenario") {
+      setSubTab((prev) => ({ ...prev, [activeTab]: "evaluation" }));
+    } else {
+      // If on evaluation sub-tab, move to next role's scenario sub-tab
+      if (activeTab === "SELLER") {
+        setActiveTab("BUYER");
+        setSubTab((prev) => ({ ...prev, BUYER: "scenario" }));
+      } else if (activeTab === "BUYER") {
+        setActiveTab("MODERATOR");
+        setSubTab((prev) => ({ ...prev, MODERATOR: "scenario" }));
+      }
     }
   };
 
   const handlePrevTab = () => {
-    if (activeTab === "BUYER") {
-      setActiveTab("SELLER");
-    } else if (activeTab === "MODERATOR") {
-      setActiveTab("BUYER");
+    const currentSubTab = subTab[activeTab];
+
+    if (currentSubTab === "evaluation") {
+      // Go back to scenario sub-tab of same role
+      setSubTab((prev) => ({ ...prev, [activeTab]: "scenario" }));
+    } else {
+      // Go back to previous role's evaluation sub-tab
+      if (activeTab === "BUYER") {
+        setActiveTab("SELLER");
+        setSubTab((prev) => ({ ...prev, SELLER: "evaluation" }));
+      } else if (activeTab === "MODERATOR") {
+        setActiveTab("BUYER");
+        setSubTab((prev) => ({ ...prev, BUYER: "evaluation" }));
+      }
     }
   };
 
@@ -89,18 +120,23 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
   }
 
   const scenario = scenarioData.data;
-  const sellerForm = scenario.forms.find((f) => f.role === "SELLER");
-  const buyerForm = scenario.forms.find((f) => f.role === "BUYER");
-  const moderatorForm = scenario.forms.find((f) => f.role === "MODERATOR");
+  
+  // Split forms by role and type
+  const sellerScenarioForm = scenario.forms.find((f) => f.role === "SELLER" && f.type === "SCENARIO");
+  const sellerEvaluationForm = scenario.forms.find((f) => f.role === "SELLER" && f.type === "EVALUATION");
+  const buyerScenarioForm = scenario.forms.find((f) => f.role === "BUYER" && f.type === "SCENARIO");
+  const buyerEvaluationForm = scenario.forms.find((f) => f.role === "BUYER" && f.type === "EVALUATION");
+  const moderatorScenarioForm = scenario.forms.find((f) => f.role === "MODERATOR" && f.type === "SCENARIO");
+  const moderatorEvaluationForm = scenario.forms.find((f) => f.role === "MODERATOR" && f.type === "EVALUATION");
 
   return (
     <div className="space-y-4 min-h-0">
       {/* Tabs for different roles */}
-      <Tabs value={activeTab}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "SELLER" | "BUYER" | "MODERATOR")}>
         <div className="sticky top-0 bg-white z-50 pb-2">
           <TabsList
             variant="second"
-            className="grid grid-cols-3 w-full pointer-events-none"
+            className="grid grid-cols-3 w-full"
           >
             <TabsTrigger variant="second" value="SELLER">
               {getRoleLabel("SELLER")}
@@ -119,11 +155,31 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <div className="overflow-visible min-h-0">
-            <ViewBlocksContainer
-              blocks={sellerForm?.blocks || []}
-              role="SELLER"
-            />
+          <div className="overflow-visible min-h-0 space-y-4">
+            <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
+              <TabsList variant="second" className="grid grid-cols-2 w-full">
+                <TabsTrigger variant="second" value="scenario">
+                  Сценарный блок
+                </TabsTrigger>
+                <TabsTrigger variant="second" value="evaluation">
+                  Оценочный блок
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="scenario" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={sellerScenarioForm?.blocks || []}
+                  role="SELLER"
+                />
+              </TabsContent>
+
+              <TabsContent value="evaluation" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={sellerEvaluationForm?.blocks || []}
+                  role="SELLER"
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </TabsContent>
         <TabsContent
@@ -131,11 +187,31 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <div className="overflow-visible min-h-0">
-            <ViewBlocksContainer
-              blocks={buyerForm?.blocks || []}
-              role="BUYER"
-            />
+          <div className="overflow-visible min-h-0 space-y-4">
+            <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
+              <TabsList variant="second" className="grid grid-cols-2 w-full">
+                <TabsTrigger variant="second" value="scenario">
+                  Сценарный блок
+                </TabsTrigger>
+                <TabsTrigger variant="second" value="evaluation">
+                  Оценочный блок
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="scenario" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={buyerScenarioForm?.blocks || []}
+                  role="BUYER"
+                />
+              </TabsContent>
+
+              <TabsContent value="evaluation" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={buyerEvaluationForm?.blocks || []}
+                  role="BUYER"
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </TabsContent>
         <TabsContent
@@ -143,11 +219,31 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
           className="pt-3 data-[state=inactive]:hidden"
           forceMount
         >
-          <div className="overflow-visible min-h-0">
-            <ViewBlocksContainer
-              blocks={moderatorForm?.blocks || []}
-              role="MODERATOR"
-            />
+          <div className="overflow-visible min-h-0 space-y-4">
+            <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
+              <TabsList variant="second" className="grid grid-cols-2 w-full">
+                <TabsTrigger variant="second" value="scenario">
+                  Сценарный блок
+                </TabsTrigger>
+                <TabsTrigger variant="second" value="evaluation">
+                  Оценочный блок
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="scenario" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={moderatorScenarioForm?.blocks || []}
+                  role="MODERATOR"
+                />
+              </TabsContent>
+
+              <TabsContent value="evaluation" className="mt-4">
+                <ViewBlocksContainer
+                  blocks={moderatorEvaluationForm?.blocks || []}
+                  role="MODERATOR"
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </TabsContent>
       </Tabs>

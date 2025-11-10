@@ -5,15 +5,38 @@ import type { BlockKind } from "./BlocksContainer";
 
 interface AddBlockDrawerProps {
   onPick: (type: BlockKind) => void;
+  allowedBlockTypes?: BlockKind[]; // Only these types can be added
+  excludeBlockTypes?: BlockKind[]; // These types cannot be added
 }
 
-export function AddBlockDrawer({ onPick }: AddBlockDrawerProps) {
+export function AddBlockDrawer({ onPick, allowedBlockTypes, excludeBlockTypes }: AddBlockDrawerProps) {
   const [open, setOpen] = useState(false);
 
   const pick = (t: BlockKind) => {
     onPick(t);
     setOpen(false);
   };
+
+  // Filter block types based on allowed/excluded lists
+  const allBlockTypes = [
+    { t: "TEXT" as BlockKind, title: "Добавить текст", subtitle: "" },
+    { t: "QA" as BlockKind, title: "Вопрос-ответ", subtitle: "" },
+    { t: "SCALE_SKILL_SINGLE" as BlockKind, title: "Оценка", subtitle: "Да/Нет/50 на 50" },
+    { t: "SCALE_SKILL_MULTI" as BlockKind, title: "Оценка", subtitle: "От 1 до 5" },
+  ];
+
+  const availableBlockTypes = allBlockTypes.filter((opt) => {
+    // If allowedBlockTypes is specified, only include those types
+    if (allowedBlockTypes && allowedBlockTypes.length > 0) {
+      return allowedBlockTypes.includes(opt.t);
+    }
+    // If excludeBlockTypes is specified, exclude those types
+    if (excludeBlockTypes && excludeBlockTypes.length > 0) {
+      return !excludeBlockTypes.includes(opt.t);
+    }
+    // Otherwise, include all types
+    return true;
+  });
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
@@ -34,12 +57,7 @@ export function AddBlockDrawer({ onPick }: AddBlockDrawerProps) {
           <DrawerTitle className="text-white text-xl">Добавление блока формы</DrawerTitle>
         </DrawerHeader>
         <div className="grid grid-cols-2 gap-3 p-4">
-          {([
-            { t: "TEXT", title: "Добавить текст",  },
-            { t: "QA", title: "Вопрос-ответ",  },
-            { t: "SCALE_SKILL_SINGLE", title: "Оценка", subtitle: "Да/Нет/50 на 50" },
-            { t: "SCALE_SKILL_MULTI", title: "Оценка", subtitle: "От 1 до 5" },
-          ] as { t: BlockKind; title: string; subtitle: string }[]).map((opt) => (
+          {availableBlockTypes.map((opt) => (
             <button
               key={opt.t}
               onClick={() => pick(opt.t)}

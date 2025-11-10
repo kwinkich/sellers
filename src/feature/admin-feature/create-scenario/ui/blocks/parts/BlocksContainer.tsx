@@ -111,6 +111,8 @@ export const BlocksContainer = React.memo(function BlocksContainer({
   onDataChange,
   showValidation,
   touchedBlocks,
+  allowedBlockTypes,
+  excludeBlockTypes,
 }: {
   blocks: ScenarioBlockItem[];
   onAdd: (type: BlockKind) => void;
@@ -118,13 +120,19 @@ export const BlocksContainer = React.memo(function BlocksContainer({
   onDataChange?: (id: string, data: any) => void;
   showValidation?: boolean;
   touchedBlocks?: Set<string>;
+  allowedBlockTypes?: BlockKind[]; // Only these types can be added
+  excludeBlockTypes?: BlockKind[]; // These types cannot be added
 }) {
   return (
     <div className="flex flex-col gap-3">
       {blocks.map((b) =>
         renderBlock(b, onRemove, onDataChange, showValidation, touchedBlocks)
       )}
-      <AddBlockDrawer onPick={onAdd} />
+      <AddBlockDrawer 
+        onPick={onAdd} 
+        allowedBlockTypes={allowedBlockTypes}
+        excludeBlockTypes={excludeBlockTypes}
+      />
     </div>
   );
 });

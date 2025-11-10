@@ -150,7 +150,7 @@ export function AssessYN50Block({
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Оценка Да/Нет/50 на 50</CardTitle>
+        <CardTitle>Оценка Нет/50на50/Да/?</CardTitle>
         <Button
           size="2s"
           variant="ghost"
@@ -175,25 +175,23 @@ export function AssessYN50Block({
               value={String(selectedSkill)}
               onValueChange={(value) => handleSkillChange(parseInt(value))}
               options={skillOptions}
+              className="cursor-pointer"
             />
           </div>
 
           {/* 2) Scale editor */}
           <div className="space-y-2">
             <Label className="text-sm">Система оценивания</Label>
-            <div className="space-y-2">
+            <div className="flex gap-2">
               {scaleOptions.map((option, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <span className="w-[20px] text-xs text-muted-foreground">
-                    {idx + 1}.
-                  </span>
-                  <Input
-                    value={option.label}
-                    onChange={(e) => updateScaleLabel(idx, e.target.value)}
-                    className="h-10 flex-1"
-                    placeholder="Название опции"
-                  />
-                </div>
+                <Input
+                  key={idx}
+                  value={option.label}
+                  onChange={(e) => updateScaleLabel(idx, e.target.value)}
+                  className="h-10 flex-1 disabled:opacity-100 text-center p-0"
+                  placeholder="Название опции"
+                  disabled={true}
+                />
               ))}
             </div>
           </div>
