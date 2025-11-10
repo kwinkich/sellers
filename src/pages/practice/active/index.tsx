@@ -1,52 +1,44 @@
-import { BlockingModal } from "@/components/ui/blocking-modal";
+import { useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
 import {
   Badge,
   ClientIcon,
-  TimerIcon,
-  PracticeWithCaseIcon,
+  CopyButton,
   MiniGameIcon,
   PracticeNoCaseIcon,
-  CopyButton,
+  PracticeWithCaseIcon,
+  TimerIcon,
   getRoleLabel,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
-import { useCaseInfoStore } from "../model/caseInfo.store";
-import { useFinishPracticeStore } from "../model/finishPractice.store";
-import { useFinishedPracticeStore } from "../model/finishedPractice.store";
-import { useQuery } from "@tanstack/react-query";
-import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCaseInfoStore } from "@/feature/practice-feature/model/caseInfo.store";
+import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
-import { handleFormSuccess, handleFormError } from "@/shared";
+import { handleFormError, handleFormSuccess } from "@/shared";
 
-// Helper function for Russian declension of "навык"
 function getSkillDeclension(count: number): string {
   const lastDigit = count % 10;
   const lastTwoDigits = count % 100;
-  
-  // Special cases: 11-14 always use "навыков"
+
   if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
     return "навыков";
   }
-  
-  // 1, 21, 31, etc. → "навык"
+
   if (lastDigit === 1) {
     return "навык";
   }
-  
-  // 2, 3, 4, 22, 23, 24, etc. → "навыка"
+
   if (lastDigit >= 2 && lastDigit <= 4) {
     return "навыка";
   }
-  
-  // 0, 5, 6, 7, 8, 9, 10, 20, etc. → "навыков"
+
   return "навыков";
 }
 
-function PracticeInfoCardSimple({
+function PracticeInfoCard({
   data,
   openCaseInfo,
 }: {
@@ -96,21 +88,22 @@ function PracticeInfoCardSimple({
       {!!data.skills?.length && (
         <div className="mb-2">
           <div className="flex flex-wrap gap-2 mb-2">
-            {(skillsExpanded
-              ? data.skills
-              : data.skills.slice(0, 4)
-            ).map((s: any) => (
-              <Badge
-                key={s.id}
-                label={s.name}
-                variant="gray"
-                size="md"
-                className="bg-gray-300 text-gray-700"
-              />
-            ))}
+            {(skillsExpanded ? data.skills : data.skills.slice(0, 4)).map(
+              (s: any) => (
+                <Badge
+                  key={s.id}
+                  label={s.name}
+                  variant="gray"
+                  size="md"
+                  className="bg-gray-300 text-gray-700"
+                />
+              )
+            )}
             {!skillsExpanded && data.skills.length > 4 && (
               <Badge
-                label={`+${data.skills.length - 4} ${getSkillDeclension(data.skills.length - 4)}`}
+                label={`+${data.skills.length - 4} ${getSkillDeclension(
+                  data.skills.length - 4
+                )}`}
                 variant="gray"
                 size="md"
                 className="bg-gray-300 text-gray-700 cursor-pointer hover:bg-gray-400"
@@ -203,28 +196,33 @@ function PracticeInfoCardSimple({
   );
 }
 
-export const PracticeFinishModal = () => {
-  const { isOpen, practiceId, hide } = useFinishPracticeStore();
-  const showFinished = useFinishedPracticeStore((s) => s.show);
-  const queryClient = useQueryClient();
+const PracticeActivePage = () => {
+  const navigate = useNavigate();
   const openCaseInfo = useCaseInfoStore((s) => s.open);
+  const practice = useActivePracticeStore((s) => s.practice);
+  const blocking = useActivePracticeStore((s) => s.blocking);
+  const hideActive = useActivePracticeStore((s) => s.hide);
+  const queryClient = useQueryClient();
 
-  const { data: practiceRes } = useQuery({
-    queryKey: ["practices", "detail", practiceId],
-    queryFn: () => PracticesAPI.getPracticeById(practiceId!),
-    enabled: !!practiceId,
-  });
+  if (!practice || !blocking) {
+    return <Navigate to="/practice" replace />;
+  }
+
+  const handleConnect = () => {
+    if (practice.zoomLink) {
+      window.open(practice.zoomLink, "_blank");
+    } else {
+      navigate("/practice");
+    }
+  };
+
+  const isModerator = practice.myRole === "MODERATOR";
 
   const finishMutation = useMutation({
     ...practicesMutationOptions.finish(),
-    onSuccess: () => {
+    onSuccess: (_, practiceId) => {
       handleFormSuccess("Практика успешно завершена");
-      hide();
-      // Show the finished modal to the moderator
-      if (practiceId) {
-        showFinished(practiceId);
-      }
-      // Invalidate queries to refresh data
+      hideActive();
       queryClient.invalidateQueries({ queryKey: ["practices", "cards"] });
       queryClient.invalidateQueries({ queryKey: ["practices", "mine"] });
       queryClient.invalidateQueries({ queryKey: ["practices", "past"] });
@@ -232,6 +230,7 @@ export const PracticeFinishModal = () => {
         queryClient.invalidateQueries({
           queryKey: ["practices", "detail", practiceId],
         });
+        navigate(`/evaluation/evaluate/${practiceId}`);
       }
     },
     onError: (error) => {
@@ -239,36 +238,41 @@ export const PracticeFinishModal = () => {
     },
   });
 
-  if (!practiceId || !practiceRes?.data) return null;
-
-  const practice = practiceRes.data;
-
   const handleFinish = () => {
-    finishMutation.mutate(practiceId);
-  };
-
-  const handleConnect = () => {
-    if (practice.zoomLink) {
-      window.open(practice.zoomLink, "_blank");
-    }
+    if (!practice?.id) return;
+    finishMutation.mutate(practice.id);
   };
 
   return (
-    <BlockingModal open={isOpen}>
-      <PracticeInfoCardSimple data={practice} openCaseInfo={openCaseInfo} />
-      <div className="mt-4 space-y-2">
-        <Button className="w-full h-12" onClick={handleConnect}>
-          Подключиться
-        </Button>
-        <Button
-          className="w-full h-12 bg-red-500 hover:bg-red-600 focus-visible:ring-red-500"
-          onClick={handleFinish}
-          disabled={finishMutation.isPending}
-          text="white"
-        >
-          {finishMutation.isPending ? "Завершение..." : "Завершить практику"}
-        </Button>
+    <div className="bg-white text-black min-h-[calc(100vh-var(--nav-h,80px))] flex flex-col pb-3">
+      <div className="flex-1 overflow-auto px-4 py-6 md:px-6 md:py-10">
+          <PracticeInfoCard data={practice} openCaseInfo={openCaseInfo} />
       </div>
-    </BlockingModal>
+
+      <div
+        className="px-4 pb-4"
+        style={{ paddingBottom: "calc(1rem + var(--nav-h, 80px))" }}
+      >
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+          <Button className="h-12 w-full" onClick={handleConnect}>
+            Подключиться
+          </Button>
+          {isModerator && (
+            <Button
+              className="h-12 w-full bg-red-500 hover:bg-red-600 focus-visible:ring-red-500"
+              onClick={handleFinish}
+              disabled={finishMutation.isPending}
+              text="white"
+            >
+              {finishMutation.isPending
+                ? "Завершение..."
+                : "Завершить практику"}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
+
+export default PracticeActivePage;

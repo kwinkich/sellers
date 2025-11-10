@@ -2,12 +2,9 @@ import { TelegramBackSync } from "@/app/telegram";
 import { PracticesAPI } from "@/entities/practices/model/api/practices.api";
 import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
 import { useFinishedPracticeStore } from "@/feature/practice-feature/model/finishedPractice.store";
-import { useFinishPracticeStore } from "@/feature/practice-feature/model/finishPractice.store";
 import { useUploadRecordingStore } from "@/feature/practice-feature/model/uploadRecording.store";
 import { CaseInfoDrawer } from "@/feature/practice-feature/ui/CaseInfoDrawer";
-import { PracticeActiveModal } from "@/feature/practice-feature/ui/PracticeActiveModal";
 import { PracticeFinishedModal } from "@/feature/practice-feature/ui/PracticeFinishedModal";
-import { PracticeFinishModal } from "@/feature/practice-feature/ui/PracticeFinishModal";
 import { PracticeUploadRecordingModal } from "@/feature/practice-feature/ui/PracticeUploadRecordingModal";
 import { BlockedPage } from "@/pages/Blocked";
 import { useAppInit } from "@/shared";
@@ -16,7 +13,7 @@ import { sseClient } from "@/shared/lib/sse";
 import { useQueryClient } from "@tanstack/react-query";
 import WebApp from "@twa-dev/sdk";
 import { useEffect, useRef } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useKeyboardChrome, RouteChromeResetter, ScrollToTop } from "@/shared";
 
 export const AppInitLayout = () => {
@@ -32,10 +29,14 @@ export const AppInitLayout = () => {
   const showActive = useActivePracticeStore((s) => s.show);
   const hideActive = useActivePracticeStore((s) => s.hide);
   const showFinished = useFinishedPracticeStore((s) => s.show);
-  const showFinish = useFinishPracticeStore((s) => s.show);
   const showUpload = useUploadRecordingStore((s) => s.show);
   const currentRole = userData?.role;
   const sseBound = useRef(false);
+  const previousPathRef = useRef<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const blocking = useActivePracticeStore((s) => s.blocking);
+  const practice = useActivePracticeStore((s) => s.practice);
 
   useEffect(() => {
     if (currentRole === "CLIENT" || isLoading || !userData) return;
@@ -51,15 +52,14 @@ export const AppInitLayout = () => {
         const modalState = stateData.state;
 
         if (modalState === "OPEN_IN_PROGRESS_MODAL") {
-          if (practice?.myRole === "MODERATOR") {
-            showFinish(practice.id);
-          } else if (practice) {
+          if (practice) {
             showActive(practice);
           }
         }
 
         if (modalState === "OPEN_EVAL_MODAL") {
           if (practice?.id) {
+            hideActive();
             showFinished(practice.id);
           }
         }
@@ -78,9 +78,9 @@ export const AppInitLayout = () => {
     isLoading,
     userData,
     showActive,
-    showFinish,
     showFinished,
     showUpload,
+    hideActive,
   ]);
 
   useEffect(() => {
@@ -103,14 +103,8 @@ export const AppInitLayout = () => {
 
           if (practice?.myRole) {
             console.log("User role in practice:", practice.myRole);
-            // Show finish modal only to moderators
-            if (practice.myRole === "MODERATOR") {
-              console.log("Showing finish modal for moderator");
-              showFinish(e.practiceId);
-            } else {
-              console.log("Showing active modal for non-moderator");
-              showActive(practice);
-            }
+            console.log("Showing active page for practice");
+            showActive(practice);
           } else {
             console.log("No myRole found in practice data");
           }
@@ -147,7 +141,37 @@ export const AppInitLayout = () => {
     showActive,
     hideActive,
     showFinished,
-    showFinish,
+  ]);
+
+  useEffect(() => {
+    if (blocking && practice) {
+      if (
+        location.pathname !== "/practice/active" &&
+        !previousPathRef.current
+      ) {
+        previousPathRef.current = location.pathname + location.search;
+      }
+      if (location.pathname !== "/practice/active") {
+        navigate("/practice/active", { replace: true });
+      }
+      return;
+    }
+
+    if (!blocking && location.pathname === "/practice/active") {
+      const target = previousPathRef.current ?? "/practice";
+      previousPathRef.current = null;
+      navigate(target, { replace: true });
+    }
+
+    if (!blocking && location.pathname !== "/practice/active") {
+      previousPathRef.current = null;
+    }
+  }, [
+    blocking,
+    practice,
+    location.pathname,
+    location.search,
+    navigate,
   ]);
 
   // Индикатор загрузки
@@ -178,10 +202,8 @@ export const AppInitLayout = () => {
       >
         <Outlet />
       </UserRoleProvider>
-      <PracticeActiveModal />
       <PracticeFinishedModal />
       <PracticeUploadRecordingModal />
-      <PracticeFinishModal />
       <CaseInfoDrawer />
     </>
   );

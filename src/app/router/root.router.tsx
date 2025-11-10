@@ -45,6 +45,7 @@ import PracticeCreatePage from "@/pages/practice/create";
 import PracticeHomePage from "@/pages/practice/home";
 import PracticePreviewPage from "@/pages/practice/preview";
 import PracticeReplayPage from "@/pages/practice/replay";
+import PracticeActivePage from "@/pages/practice/active";
 import { createBrowserRouter } from "react-router-dom";
 import { AppInitLayout, MopLayout, PracticeLayout } from "../layouts";
 import { AdminLayout } from "../layouts/AdminLayout/admin.layout";
@@ -344,6 +345,10 @@ export const route = createBrowserRouter(
             {
               path: "create",
               element: <PracticeCreatePage />,
+            },
+            {
+              path: "active",
+              element: <PracticeActivePage />,
             },
             {
               path: "preview",

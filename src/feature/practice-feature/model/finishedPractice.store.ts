@@ -19,4 +19,3 @@ export const useFinishedPracticeStore = create<FinishedPracticeState>((set) => (
     set({ isOpen: false, practiceId: undefined });
   },
 }));
-

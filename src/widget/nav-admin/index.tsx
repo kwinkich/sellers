@@ -28,8 +28,8 @@ export const AdminNavBar = () => {
   return (
     <div
       className="fixed left-0 right-0 z-50 rounded-t-3xl bg-black
-                 transition-[opacity,transform] ease-out duration-100
-                 will-change-transform cursor-pointer"
+        transition-[opacity,transform] ease-out duration-100
+        will-change-transform cursor-pointer"
       style={{
         bottom: 0,
         // bar height includes the safe area (no padding here)
