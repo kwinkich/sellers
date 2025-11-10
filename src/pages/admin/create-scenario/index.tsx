@@ -70,11 +70,15 @@ export const AdminScenariosCreatePage = () => {
   // Disable Telegram vertical swipes to prevent accidental app close during creation
   useTelegramVerticalSwipes(true);
 
-  const [sellerBlocks, setSellerBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [buyerBlocks, setBuyerBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [moderatorBlocks, setModeratorBlocks] = useState<ExtendedBlockItem[]>(
-    []
-  );
+  // Split blocks into scenario (TEXT only) and evaluation (all other blocks) for each role
+  const [sellerScenarioBlocks, setSellerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [sellerEvaluationBlocks, setSellerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
+  
+  const [buyerScenarioBlocks, setBuyerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [buyerEvaluationBlocks, setBuyerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
+  
+  const [moderatorScenarioBlocks, setModeratorScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [moderatorEvaluationBlocks, setModeratorEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
 
   // Form data state
   const [formData, setFormData] = useState<{
@@ -94,22 +98,42 @@ export const AdminScenariosCreatePage = () => {
     "SELLER"
   );
 
-  // Track validation triggers per tab (only show validation after Next is clicked)
-  const [validationTriggered, setValidationTriggered] = useState({
-    SELLER: false,
-    BUYER: false,
-    MODERATOR: false,
+  // Sub-tab state for each role: "scenario" or "evaluation"
+  const [subTab, setSubTab] = useState<{
+    SELLER: "scenario" | "evaluation";
+    BUYER: "scenario" | "evaluation";
+    MODERATOR: "scenario" | "evaluation";
+  }>({
+    SELLER: "scenario",
+    BUYER: "scenario",
+    MODERATOR: "scenario",
   });
 
-  // Track which blocks have been edited/touched (per tab)
+  // Track validation triggers per tab and sub-tab
+  const [validationTriggered, setValidationTriggered] = useState({
+    SELLER_scenario: false,
+    SELLER_evaluation: false,
+    BUYER_scenario: false,
+    BUYER_evaluation: false,
+    MODERATOR_scenario: false,
+    MODERATOR_evaluation: false,
+  });
+
+  // Track which blocks have been edited/touched (per tab and sub-tab)
   const [touchedBlocks, setTouchedBlocks] = useState<{
-    SELLER: Set<string>;
-    BUYER: Set<string>;
-    MODERATOR: Set<string>;
+    SELLER_scenario: Set<string>;
+    SELLER_evaluation: Set<string>;
+    BUYER_scenario: Set<string>;
+    BUYER_evaluation: Set<string>;
+    MODERATOR_scenario: Set<string>;
+    MODERATOR_evaluation: Set<string>;
   }>({
-    SELLER: new Set(),
-    BUYER: new Set(),
-    MODERATOR: new Set(),
+    SELLER_scenario: new Set(),
+    SELLER_evaluation: new Set(),
+    BUYER_scenario: new Set(),
+    BUYER_evaluation: new Set(),
+    MODERATOR_scenario: new Set(),
+    MODERATOR_evaluation: new Set(),
   });
 
   // Track if pre-built blocks have been initialized
@@ -193,12 +217,12 @@ export const AdminScenariosCreatePage = () => {
     },
   });
 
-  // Create pre-built blocks when skills are loaded (only once)
+  // Create pre-built blocks when skills are loaded (only once) - these go in evaluation blocks
   useEffect(() => {
     if (skillsLoading || prebuiltInitialized.current || skills.length === 0)
       return;
 
-    // Add MODERATOR pre-built block
+    // Add MODERATOR pre-built block to evaluation blocks
     const moderatorSkillIds = PREBUILT_BLOCKS.MODERATOR.skillCodes
       .map((skillCode) => findSkillIdByCode(skillCode))
       .filter((id): id is number => id !== undefined);
@@ -215,7 +239,7 @@ export const AdminScenariosCreatePage = () => {
           { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
         ],
       };
-      setModeratorBlocks((prev) => [...prev, prebuiltBlock]);
+      setModeratorEvaluationBlocks((prev) => [...prev, prebuiltBlock]);
     } else {
       console.warn(
         "No MODERATOR skills found for prebuilt block. Expected codes:",
@@ -223,7 +247,7 @@ export const AdminScenariosCreatePage = () => {
       );
     }
 
-    // Add BUYER pre-built block
+    // Add BUYER pre-built block to evaluation blocks
     const buyerSkillIds = PREBUILT_BLOCKS.BUYER.skillCodes
       .map((skillCode) => findSkillIdByCode(skillCode))
       .filter((id): id is number => id !== undefined);
@@ -240,7 +264,7 @@ export const AdminScenariosCreatePage = () => {
           { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
         ],
       };
-      setBuyerBlocks((prev) => [...prev, prebuiltBlock]);
+      setBuyerEvaluationBlocks((prev) => [...prev, prebuiltBlock]);
     } else {
       console.warn(
         "No BUYER skills found for prebuilt block. Expected codes:",
@@ -254,9 +278,9 @@ export const AdminScenariosCreatePage = () => {
 
   const handleAdd = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
-      const createItem = (t: BlockKind): ExtendedBlockItem => {
+      const createItem = (t: BlockKind, formType: "scenario" | "evaluation"): ExtendedBlockItem => {
         const baseItem: ExtendedBlockItem = {
-          id: `${role}-${t}-${Date.now()}`,
+          id: `${role}-${formType}-${t}-${Date.now()}`,
           type: t,
           textContent: "",
           questionContent: "",
@@ -286,24 +310,57 @@ export const AdminScenariosCreatePage = () => {
         return baseItem;
       };
 
-      if (role === "SELLER")
-        setSellerBlocks((prev) => [...prev, createItem(type)]);
-      if (role === "BUYER")
-        setBuyerBlocks((prev) => [...prev, createItem(type)]);
-      if (role === "MODERATOR")
-        setModeratorBlocks((prev) => [...prev, createItem(type)]);
+      // Route based on CURRENT SUB-TAB, not block type
+      const currentSubTab = subTab[role];
+      const newItem = createItem(type, currentSubTab);
+
+      // Add to scenario or evaluation based on which sub-tab is currently active
+      if (role === "SELLER") {
+        if (currentSubTab === "scenario") {
+          setSellerScenarioBlocks((prev) => [...prev, newItem]);
+        } else {
+          setSellerEvaluationBlocks((prev) => [...prev, newItem]);
+        }
+      } else if (role === "BUYER") {
+        if (currentSubTab === "scenario") {
+          setBuyerScenarioBlocks((prev) => [...prev, newItem]);
+        } else {
+          setBuyerEvaluationBlocks((prev) => [...prev, newItem]);
+        }
+      } else if (role === "MODERATOR") {
+        if (currentSubTab === "scenario") {
+          setModeratorScenarioBlocks((prev) => [...prev, newItem]);
+        } else {
+          setModeratorEvaluationBlocks((prev) => [...prev, newItem]);
+        }
+      }
     },
-    []
+    [subTab]
   );
 
   const handleRemove = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string) => {
-      if (role === "SELLER")
-        setSellerBlocks((prev) => prev.filter((b) => b.id !== id));
-      if (role === "BUYER")
-        setBuyerBlocks((prev) => prev.filter((b) => b.id !== id));
-      if (role === "MODERATOR")
-        setModeratorBlocks((prev) => prev.filter((b) => b.id !== id));
+      // Remove from the correct array based on ID (which includes formType)
+      // ID format: `${role}-${formType}-${type}-${timestamp}`
+      if (id.includes("-scenario-")) {
+        // Remove from scenario blocks
+        if (role === "SELLER") {
+          setSellerScenarioBlocks((prev) => prev.filter((b) => b.id !== id));
+        } else if (role === "BUYER") {
+          setBuyerScenarioBlocks((prev) => prev.filter((b) => b.id !== id));
+        } else if (role === "MODERATOR") {
+          setModeratorScenarioBlocks((prev) => prev.filter((b) => b.id !== id));
+        }
+      } else if (id.includes("-evaluation-")) {
+        // Remove from evaluation blocks
+        if (role === "SELLER") {
+          setSellerEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
+        } else if (role === "BUYER") {
+          setBuyerEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
+        } else if (role === "MODERATOR") {
+          setModeratorEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
+        }
+      }
     },
     []
   );
@@ -322,20 +379,51 @@ export const AdminScenariosCreatePage = () => {
 
   const handleDataChange = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (id: string, data: any) => {
+      // Helper to find which array contains this block
+      const findBlockLocation = () => {
+        if (role === "SELLER") {
+          const inScenario = sellerScenarioBlocks.some(b => b.id === id);
+          return inScenario ? "scenario" : "evaluation";
+        } else if (role === "BUYER") {
+          const inScenario = buyerScenarioBlocks.some(b => b.id === id);
+          return inScenario ? "scenario" : "evaluation";
+        } else {
+          const inScenario = moderatorScenarioBlocks.some(b => b.id === id);
+          return inScenario ? "scenario" : "evaluation";
+        }
+      };
+
+      const subTabKey = findBlockLocation();
+      const touchKey = `${role}_${subTabKey}` as keyof typeof touchedBlocks;
+
       // Mark block as touched/edited
       setTouchedBlocks((prev) => ({
         ...prev,
-        [role]: new Set(prev[role]).add(id),
+        [touchKey]: new Set(prev[touchKey]).add(id),
       }));
 
-      if (role === "SELLER")
-        setSellerBlocks((prev) => updateById(prev, id, data));
-      if (role === "BUYER")
-        setBuyerBlocks((prev) => updateById(prev, id, data));
-      if (role === "MODERATOR")
-        setModeratorBlocks((prev) => updateById(prev, id, data));
+      // Update the appropriate blocks array
+      if (role === "SELLER") {
+        if (subTabKey === "scenario") {
+          setSellerScenarioBlocks((prev) => updateById(prev, id, data));
+        } else {
+          setSellerEvaluationBlocks((prev) => updateById(prev, id, data));
+        }
+      } else if (role === "BUYER") {
+        if (subTabKey === "scenario") {
+          setBuyerScenarioBlocks((prev) => updateById(prev, id, data));
+        } else {
+          setBuyerEvaluationBlocks((prev) => updateById(prev, id, data));
+        }
+      } else if (role === "MODERATOR") {
+        if (subTabKey === "scenario") {
+          setModeratorScenarioBlocks((prev) => updateById(prev, id, data));
+        } else {
+          setModeratorEvaluationBlocks((prev) => updateById(prev, id, data));
+        }
+      }
     },
-    [updateById]
+    [updateById, sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]
   );
 
   // Validate a single block based on its type
@@ -372,23 +460,43 @@ export const AdminScenariosCreatePage = () => {
     [validateBlock]
   );
 
-  // Tab navigation helpers
+  // Compute which tabs should be clickable based on current block validation
+  // A tab becomes clickable when its evaluation sub-tab meets minimum requirements
+  const clickableTabs = useMemo(() => {
+    const isSellerEvaluationValid = sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks);
+    const isBuyerEvaluationValid = buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks);
+
+    return {
+      SELLER: true, // SELLER is always clickable (it's the first tab)
+      BUYER: isSellerEvaluationValid, // BUYER becomes clickable when SELLER evaluation is valid
+      MODERATOR: isBuyerEvaluationValid, // MODERATOR becomes clickable when BUYER evaluation is valid
+    };
+  }, [sellerEvaluationBlocks, buyerEvaluationBlocks, areAllBlocksValid]);
+
+  // Helper to get current blocks based on role and sub-tab
+  const getCurrentBlocks = useCallback((role: "SELLER" | "BUYER" | "MODERATOR", subTabType: "scenario" | "evaluation") => {
+    if (role === "SELLER") {
+      return subTabType === "scenario" ? sellerScenarioBlocks : sellerEvaluationBlocks;
+    } else if (role === "BUYER") {
+      return subTabType === "scenario" ? buyerScenarioBlocks : buyerEvaluationBlocks;
+    } else {
+      return subTabType === "scenario" ? moderatorScenarioBlocks : moderatorEvaluationBlocks;
+    }
+  }, [sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]);
+
+  // Tab navigation helpers - now with sub-tab support
   const handleNextTab = useCallback(() => {
-    // Get current blocks based on active tab
-    const currentBlocks =
-      activeTab === "SELLER"
-        ? sellerBlocks
-        : activeTab === "BUYER"
-        ? buyerBlocks
-        : moderatorBlocks;
+    const currentSubTab = subTab[activeTab];
+    const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
+    const validationKey = `${activeTab}_${currentSubTab}` as keyof typeof validationTriggered;
 
     // Validate blocks
     const invalidBlockIndex = currentBlocks.findIndex(
       (block) => !validateBlock(block)
     );
 
-    // Trigger validation for current tab
-    setValidationTriggered((prev) => ({ ...prev, [activeTab]: true }));
+    // Trigger validation for current sub-tab
+    setValidationTriggered((prev) => ({ ...prev, [validationKey]: true }));
 
     // If there are invalid blocks, scroll to first invalid one
     if (invalidBlockIndex !== -1) {
@@ -405,63 +513,106 @@ export const AdminScenariosCreatePage = () => {
           });
         }, 100);
       }
-      return; // Don't proceed to next tab
+      return; // Don't proceed
     }
 
-    // All blocks are valid, proceed to next tab
-    if (activeTab === "SELLER") {
-      setActiveTab("BUYER");
-    } else if (activeTab === "BUYER") {
-      setActiveTab("MODERATOR");
+    // All blocks are valid, proceed to next sub-tab or next role tab
+    if (currentSubTab === "scenario") {
+      // Move to evaluation sub-tab of same role
+      setSubTab((prev) => ({ ...prev, [activeTab]: "evaluation" }));
+    } else {
+      // Move to next role's scenario sub-tab
+      if (activeTab === "SELLER") {
+        setActiveTab("BUYER");
+        setSubTab((prev) => ({ ...prev, BUYER: "scenario" }));
+      } else if (activeTab === "BUYER") {
+        setActiveTab("MODERATOR");
+        setSubTab((prev) => ({ ...prev, MODERATOR: "scenario" }));
+      }
     }
-  }, [activeTab, sellerBlocks, buyerBlocks, moderatorBlocks, validateBlock]);
+  }, [activeTab, subTab, getCurrentBlocks, validateBlock]);
 
   const handlePrevTab = useCallback(() => {
-    if (activeTab === "BUYER") {
-      setActiveTab("SELLER");
-    } else if (activeTab === "MODERATOR") {
-      setActiveTab("BUYER");
+    const currentSubTab = subTab[activeTab];
+
+    if (currentSubTab === "evaluation") {
+      // Go back to scenario sub-tab of same role
+      setSubTab((prev) => ({ ...prev, [activeTab]: "scenario" }));
+    } else {
+      // Go back to previous role's evaluation sub-tab
+      if (activeTab === "BUYER") {
+        setActiveTab("SELLER");
+        setSubTab((prev) => ({ ...prev, SELLER: "evaluation" }));
+      } else if (activeTab === "MODERATOR") {
+        setActiveTab("BUYER");
+        setSubTab((prev) => ({ ...prev, BUYER: "evaluation" }));
+      }
     }
-    // Reset validation trigger for the tab we're leaving
-    setValidationTriggered((prev) => ({ ...prev, [activeTab]: false }));
-  }, [activeTab]);
+  }, [activeTab, subTab]);
+
+  // Handle tab click - only allow if tab is clickable
+  const handleTabClick = useCallback((tab: "SELLER" | "BUYER" | "MODERATOR") => {
+    // Can always click current tab (no-op)
+    if (tab === activeTab) return;
+
+    // Can click if tab is marked as clickable
+    if (clickableTabs[tab]) {
+      setActiveTab(tab);
+      setSubTab((prev) => ({ ...prev, [tab]: "scenario" }));
+    }
+  }, [activeTab, clickableTabs]);
 
   // Check if next button should be enabled
   const isNextEnabled = useCallback(() => {
-    if (activeTab === "SELLER") {
-      return sellerBlocks.length >= 3 && areAllBlocksValid(sellerBlocks);
-    } else if (activeTab === "BUYER") {
-      // For BUYER, we need at least 1 block and all must be valid
-      return buyerBlocks.length >= 1 && areAllBlocksValid(buyerBlocks);
-    } else if (activeTab === "MODERATOR") {
-      // For MODERATOR, we need at least 1 block and all must be valid
-      return moderatorBlocks.length >= 1 && areAllBlocksValid(moderatorBlocks);
+    const currentSubTab = subTab[activeTab];
+    const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
+    
+    // For scenario blocks, no validation required - can be empty
+    if (currentSubTab === "scenario") {
+      // If there are blocks, they must be valid
+      if (currentBlocks.length === 0) return true;
+      return areAllBlocksValid(currentBlocks);
     }
+    
+    // For evaluation blocks, apply minimum block requirements
+    if (currentSubTab === "evaluation") {
+      const minBlocks = activeTab === "SELLER" ? 3 : 1;
+      if (currentBlocks.length < minBlocks) return false;
+      return areAllBlocksValid(currentBlocks);
+    }
+    
     return false;
-  }, [
-    activeTab,
-    sellerBlocks,
-    buyerBlocks,
-    moderatorBlocks,
-    areAllBlocksValid,
-  ]);
+  }, [activeTab, subTab, getCurrentBlocks, areAllBlocksValid]);
 
   // Check if create scenario button should be enabled (all roles must have required blocks)
   const isCreateScenarioEnabled = useCallback(() => {
+    // Scenario blocks can be empty (will be skipped) or valid if they have blocks
+    const hasValidSellerScenario = sellerScenarioBlocks.length === 0 || areAllBlocksValid(sellerScenarioBlocks);
+    const hasValidBuyerScenario = buyerScenarioBlocks.length === 0 || areAllBlocksValid(buyerScenarioBlocks);
+    const hasValidModeratorScenario = moderatorScenarioBlocks.length === 0 || areAllBlocksValid(moderatorScenarioBlocks);
+    
+    // Evaluation blocks have minimum requirements (always required)
+    const hasValidSellerEvaluation = sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks);
+    const hasValidBuyerEvaluation = buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks);
+    const hasValidModeratorEvaluation = moderatorEvaluationBlocks.length >= 1 && areAllBlocksValid(moderatorEvaluationBlocks);
+
     const enabled =
-      sellerBlocks.length >= 3 &&
-      buyerBlocks.length >= 1 &&
-      moderatorBlocks.length >= 1 &&
-      formData.title.trim().length > 0 &&
-      areAllBlocksValid(sellerBlocks) &&
-      areAllBlocksValid(buyerBlocks) &&
-      areAllBlocksValid(moderatorBlocks);
+      hasValidSellerScenario &&
+      hasValidSellerEvaluation &&
+      hasValidBuyerScenario &&
+      hasValidBuyerEvaluation &&
+      hasValidModeratorScenario &&
+      hasValidModeratorEvaluation &&
+      formData.title.trim().length > 0;
 
     return enabled;
   }, [
-    sellerBlocks,
-    buyerBlocks,
-    moderatorBlocks,
+    sellerScenarioBlocks,
+    sellerEvaluationBlocks,
+    buyerScenarioBlocks,
+    buyerEvaluationBlocks,
+    moderatorScenarioBlocks,
+    moderatorEvaluationBlocks,
     formData.title,
     areAllBlocksValid,
   ]);
@@ -599,28 +750,66 @@ export const AdminScenariosCreatePage = () => {
     }
 
     try {
+      // Build forms array - skip scenario forms if they have 0 blocks
+      const forms: CreateScenarioRequest["forms"] = [];
+
+      // SELLER forms
+      if (sellerScenarioBlocks.length > 0) {
+        forms.push({
+          role: "SELLER",
+          type: "SCENARIO",
+          title: "Сценарный блок продавца",
+          descr: "Сценарный блок для продавца",
+          blocks: convertBlocksToFormBlocks(sellerScenarioBlocks),
+        });
+      }
+      forms.push({
+        role: "SELLER",
+        type: "EVALUATION",
+        title: "Оценочный блок продавца",
+        descr: "Оценочный блок для продавца",
+        blocks: convertBlocksToFormBlocks(sellerEvaluationBlocks),
+      });
+
+      // BUYER forms
+      if (buyerScenarioBlocks.length > 0) {
+        forms.push({
+          role: "BUYER",
+          type: "SCENARIO",
+          title: "Сценарный блок покупателя",
+          descr: "Сценарный блок для покупателя",
+          blocks: convertBlocksToFormBlocks(buyerScenarioBlocks),
+        });
+      }
+      forms.push({
+        role: "BUYER",
+        type: "EVALUATION",
+        title: "Оценочный блок покупателя",
+        descr: "Оценочный блок для покупателя",
+        blocks: convertBlocksToFormBlocks(buyerEvaluationBlocks),
+      });
+
+      // MODERATOR forms
+      if (moderatorScenarioBlocks.length > 0) {
+        forms.push({
+          role: "MODERATOR",
+          type: "SCENARIO",
+          title: "Сценарный блок модератора",
+          descr: "Сценарный блок для модератора",
+          blocks: convertBlocksToFormBlocks(moderatorScenarioBlocks),
+        });
+      }
+      forms.push({
+        role: "MODERATOR",
+        type: "EVALUATION",
+        title: "Оценочный блок модератора",
+        descr: "Оценочный блок для модератора",
+        blocks: convertBlocksToFormBlocks(moderatorEvaluationBlocks),
+      });
+
       const requestData: CreateScenarioRequest = {
         title: formData.title,
-        forms: [
-          {
-            role: "SELLER",
-            title: "Форма продавца",
-            descr: "Сценарий для продавца",
-            blocks: convertBlocksToFormBlocks(sellerBlocks),
-          },
-          {
-            role: "BUYER",
-            title: "Форма покупателя",
-            descr: "Сценарий для покупателя",
-            blocks: convertBlocksToFormBlocks(buyerBlocks),
-          },
-          {
-            role: "MODERATOR",
-            title: "Форма модератора",
-            descr: "Сценарий для модератора",
-            blocks: convertBlocksToFormBlocks(moderatorBlocks),
-          },
-        ],
+        forms,
       };
 
       // Debug: Log the request data to see what we're sending
@@ -643,9 +832,12 @@ export const AdminScenariosCreatePage = () => {
   }, [
     formData.title,
     convertBlocksToFormBlocks,
-    sellerBlocks,
-    buyerBlocks,
-    moderatorBlocks,
+    sellerScenarioBlocks,
+    sellerEvaluationBlocks,
+    buyerScenarioBlocks,
+    buyerEvaluationBlocks,
+    moderatorScenarioBlocks,
+    moderatorEvaluationBlocks,
     createScenario,
   ]);
 
@@ -670,19 +862,31 @@ export const AdminScenariosCreatePage = () => {
         data-scroll-container
       >
         <div className="flex flex-col pb-[calc(96px+env(safe-area-inset-bottom))] gap-6 px-2 min-h-full">
-          <Tabs value={activeTab}>
+          <Tabs value={activeTab} onValueChange={(value) => handleTabClick(value as "SELLER" | "BUYER" | "MODERATOR")}>
             <div className="sticky top-0 bg-white z-50">
               <TabsList
                 variant="second"
-                className="grid grid-cols-3 w-full pointer-events-none"
+                className="grid grid-cols-3 w-full"
               >
-                <TabsTrigger variant="second" value="SELLER">
+                <TabsTrigger 
+                  variant="second" 
+                  value="SELLER"
+                  className={activeTab !== "SELLER" && !clickableTabs.SELLER ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                >
                   {getRoleLabel("SELLER")}
                 </TabsTrigger>
-                <TabsTrigger variant="second" value="BUYER">
+                <TabsTrigger 
+                  variant="second" 
+                  value="BUYER"
+                  className={activeTab !== "BUYER" && !clickableTabs.BUYER ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                >
                   {getRoleLabel("BUYER")}
                 </TabsTrigger>
-                <TabsTrigger variant="second" value="MODERATOR">
+                <TabsTrigger 
+                  variant="second" 
+                  value="MODERATOR"
+                  className={activeTab !== "MODERATOR" && !clickableTabs.MODERATOR ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                >
                   {getRoleLabel("MODERATOR")}
                 </TabsTrigger>
               </TabsList>
@@ -692,37 +896,53 @@ export const AdminScenariosCreatePage = () => {
               value="SELLER"
               className="pt-3 data-[state=inactive]:hidden"
             >
-              <div className="overflow-visible min-h-0">
-                <BlocksContainer
-                  blocks={sellerBlocks}
-                  onAdd={onAddSeller}
-                  onRemove={onRemoveSeller}
-                  onDataChange={onDataChangeSeller}
-                  showValidation={validationTriggered.SELLER}
-                  touchedBlocks={touchedBlocks.SELLER}
-                />
-                {sellerBlocks.length < 3 && (
-                  <p className="mt-2 text-xs text-muted-foreground text-center">
-                    Необходимо добавить минимум 3 блока
-                  </p>
-                )}
-                {sellerBlocks.some(
-                  (block) =>
-                    block.type === "TEXT" &&
-                    (!block.textContent ||
-                      block.textContent.trim().length === 0)
-                ) && (
-                  <p className="mt-2 text-xs text-amber-600 text-center">
-                    Заполните текст во всех текстовых блоках
-                  </p>
-                )}
+              <div className="overflow-visible min-h-0 space-y-4">
+                {/* Sub-tabs for Scenario and Evaluation */}
+                <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
+                  <TabsList variant="second" className="grid grid-cols-2 w-full">
+                    <TabsTrigger variant="second" value="scenario">
+                      Сценарный блок
+                    </TabsTrigger>
+                    <TabsTrigger variant="second" value="evaluation">
+                      Оценочный блок
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="scenario" className="mt-4">
+                    <BlocksContainer
+                      blocks={sellerScenarioBlocks}
+                      onAdd={onAddSeller}
+                      onRemove={onRemoveSeller}
+                      onDataChange={onDataChangeSeller}
+                      showValidation={validationTriggered.SELLER_scenario}
+                      touchedBlocks={touchedBlocks.SELLER_scenario}
+                      allowedBlockTypes={["TEXT"]}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="evaluation" className="mt-4">
+                    <BlocksContainer
+                      blocks={sellerEvaluationBlocks}
+                      onAdd={onAddSeller}
+                      onRemove={onRemoveSeller}
+                      onDataChange={onDataChangeSeller}
+                      showValidation={validationTriggered.SELLER_evaluation}
+                      touchedBlocks={touchedBlocks.SELLER_evaluation}
+                    />
+                    {sellerEvaluationBlocks.length < 3 && (
+                      <p className="mt-2 text-xs text-muted-foreground text-center">
+                        Необходимо добавить минимум 3 блока
+                      </p>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
             </TabsContent>
             <TabsContent
               value="BUYER"
               className="pt-3 data-[state=inactive]:hidden"
             >
-              <div className="overflow-visible min-h-0">
+              <div className="overflow-visible min-h-0 space-y-4">
                 {skillsLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <p className="text-sm text-muted-foreground">
@@ -730,31 +950,44 @@ export const AdminScenariosCreatePage = () => {
                     </p>
                   </div>
                 ) : (
-                  <>
-                    <BlocksContainer
-                      blocks={buyerBlocks}
-                      onAdd={onAddBuyer}
-                      onRemove={onRemoveBuyer}
-                      onDataChange={onDataChangeBuyer}
-                      showValidation={validationTriggered.BUYER}
-                      touchedBlocks={touchedBlocks.BUYER}
-                    />
-                    {buyerBlocks.length < 1 && (
-                      <p className="mt-2 text-xs text-muted-foreground text-center">
-                        Необходимо добавить минимум 1 блок
-                      </p>
-                    )}
-                    {buyerBlocks.some(
-                      (block) =>
-                        block.type === "TEXT" &&
-                        (!block.textContent ||
-                          block.textContent.trim().length === 0)
-                    ) && (
-                      <p className="mt-2 text-xs text-amber-600 text-center">
-                        Заполните текст во всех текстовых блоках
-                      </p>
-                    )}
-                  </>
+                  <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
+                    <TabsList variant="second" className="grid grid-cols-2 w-full">
+                      <TabsTrigger variant="second" value="scenario">
+                        Сценарный блок
+                      </TabsTrigger>
+                      <TabsTrigger variant="second" value="evaluation">
+                        Оценочный блок
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="scenario" className="mt-4">
+                      <BlocksContainer
+                        blocks={buyerScenarioBlocks}
+                        onAdd={onAddBuyer}
+                        onRemove={onRemoveBuyer}
+                        onDataChange={onDataChangeBuyer}
+                        showValidation={validationTriggered.BUYER_scenario}
+                        touchedBlocks={touchedBlocks.BUYER_scenario}
+                        allowedBlockTypes={["TEXT"]}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="evaluation" className="mt-4">
+                      <BlocksContainer
+                        blocks={buyerEvaluationBlocks}
+                        onAdd={onAddBuyer}
+                        onRemove={onRemoveBuyer}
+                        onDataChange={onDataChangeBuyer}
+                        showValidation={validationTriggered.BUYER_evaluation}
+                        touchedBlocks={touchedBlocks.BUYER_evaluation}
+                      />
+                      {buyerEvaluationBlocks.length < 1 && (
+                        <p className="mt-2 text-xs text-muted-foreground text-center">
+                          Необходимо добавить минимум 1 блок
+                        </p>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 )}
               </div>
             </TabsContent>
@@ -762,7 +995,7 @@ export const AdminScenariosCreatePage = () => {
               value="MODERATOR"
               className="pt-3 data-[state=inactive]:hidden"
             >
-              <div className="overflow-visible min-h-0">
+              <div className="overflow-visible min-h-0 space-y-4">
                 {skillsLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <p className="text-sm text-muted-foreground">
@@ -770,31 +1003,44 @@ export const AdminScenariosCreatePage = () => {
                     </p>
                   </div>
                 ) : (
-                  <>
-                    <BlocksContainer
-                      blocks={moderatorBlocks}
-                      onAdd={onAddModerator}
-                      onRemove={onRemoveModerator}
-                      onDataChange={onDataChangeModerator}
-                      showValidation={validationTriggered.MODERATOR}
-                      touchedBlocks={touchedBlocks.MODERATOR}
-                    />
-                    {moderatorBlocks.length < 1 && (
-                      <p className="mt-2 text-xs text-muted-foreground text-center">
-                        Необходимо добавить минимум 1 блок
-                      </p>
-                    )}
-                    {moderatorBlocks.some(
-                      (block) =>
-                        block.type === "TEXT" &&
-                        (!block.textContent ||
-                          block.textContent.trim().length === 0)
-                    ) && (
-                      <p className="mt-2 text-xs text-amber-600 text-center">
-                        Заполните текст во всех текстовых блоках
-                      </p>
-                    )}
-                  </>
+                  <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
+                    <TabsList variant="second" className="grid grid-cols-2 w-full">
+                      <TabsTrigger variant="second" value="scenario">
+                        Сценарный блок
+                      </TabsTrigger>
+                      <TabsTrigger variant="second" value="evaluation">
+                        Оценочный блок
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="scenario" className="mt-4">
+                      <BlocksContainer
+                        blocks={moderatorScenarioBlocks}
+                        onAdd={onAddModerator}
+                        onRemove={onRemoveModerator}
+                        onDataChange={onDataChangeModerator}
+                        showValidation={validationTriggered.MODERATOR_scenario}
+                        touchedBlocks={touchedBlocks.MODERATOR_scenario}
+                        allowedBlockTypes={["TEXT"]}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="evaluation" className="mt-4">
+                      <BlocksContainer
+                        blocks={moderatorEvaluationBlocks}
+                        onAdd={onAddModerator}
+                        onRemove={onRemoveModerator}
+                        onDataChange={onDataChangeModerator}
+                        showValidation={validationTriggered.MODERATOR_evaluation}
+                        touchedBlocks={touchedBlocks.MODERATOR_evaluation}
+                      />
+                      {moderatorEvaluationBlocks.length < 1 && (
+                        <p className="mt-2 text-xs text-muted-foreground text-center">
+                          Необходимо добавить минимум 1 блок
+                        </p>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 )}
               </div>
             </TabsContent>

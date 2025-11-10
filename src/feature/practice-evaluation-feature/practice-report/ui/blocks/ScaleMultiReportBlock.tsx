@@ -35,7 +35,7 @@ export const ScaleMultiReportBlock = ({
     <Card>
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">
-          Оценивание нескольких навыков
+          Оценка по шкале
         </h3>
 
         <div className="space-y-4">

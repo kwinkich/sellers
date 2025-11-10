@@ -1,4 +1,5 @@
 export type FormRole = "SELLER" | "BUYER" | "MODERATOR";
+export type ScenarioFormType = "SCENARIO" | "EVALUATION";
 export type BlockType =
   | "TEXT"
   | "QA"
@@ -22,6 +23,7 @@ export interface ScenarioListItem {
 export interface ScenarioForm {
   id: number;
   role: FormRole;
+  type: ScenarioFormType;
   title: string;
   descr: string;
   blocksCount?: number;
@@ -89,6 +91,7 @@ export interface CreateScenarioRequest {
   title: string;
   forms: {
     role: FormRole;
+    type: ScenarioFormType;
     title: string;
     descr: string;
     blocks: FormBlock[];
@@ -97,6 +100,13 @@ export interface CreateScenarioRequest {
 
 export interface UpdateScenarioRequest {
   title?: string;
+  forms?: {
+    role: FormRole;
+    type: ScenarioFormType;
+    title: string;
+    descr: string;
+    blocks: FormBlock[];
+  }[];
 }
 
 export interface UpdateFormMetaRequest {
