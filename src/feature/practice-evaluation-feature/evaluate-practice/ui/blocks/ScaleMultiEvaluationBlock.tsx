@@ -8,6 +8,7 @@ interface ScaleMultiEvaluationBlockProps {
   onChange?: (data: { position: number; values: Record<number, number> }) => void;
   showValidation?: boolean;
   isInvalid?: boolean;
+  readOnly?: boolean;
 }
 
 export const ScaleMultiEvaluationBlock = ({
@@ -16,6 +17,7 @@ export const ScaleMultiEvaluationBlock = ({
   onChange,
   showValidation,
   isInvalid,
+  readOnly = false,
 }: ScaleMultiEvaluationBlockProps) => {
   // Controlled selection per skill
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
@@ -29,7 +31,7 @@ export const ScaleMultiEvaluationBlock = ({
   const cardHighlight = showValidation && isInvalid ? "border-red-400 ring-2 ring-red-200" : "";
 
   return (
-    <Card className={cardHighlight}>
+    <Card className={[cardHighlight, readOnly ? "opacity-100" : ""].filter(Boolean).join(" ")}>
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">
           Оценка по шкале
@@ -46,16 +48,23 @@ export const ScaleMultiEvaluationBlock = ({
 
                 <div className="space-y-2">
                   {block.scale?.options.map((option) => (
-                    <label key={option.ord} className="flex items-center justify-start gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                    <label
+                      key={option.ord}
+                      className={`flex items-center justify-start gap-3 p-2 rounded-lg transition-colors ${
+                        readOnly ? "cursor-default" : "cursor-pointer hover:bg-gray-50"
+                      }`}
+                    >
                       <input
                         type="radio"
                         name={groupName}
                         value={option.value}
                         className="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
                         checked={selected === option.value}
-                        onChange={() =>
-                          setAnswers((prev) => ({ ...prev, [item.skillId ?? 0]: option.value }))
-                        }
+                        disabled={readOnly}
+                        onChange={() => {
+                          if (readOnly) return;
+                          setAnswers((prev) => ({ ...prev, [item.skillId ?? 0]: option.value }));
+                        }}
                       />
                       <span className="text-sm text-gray-700">{option.label}</span>
                     </label>

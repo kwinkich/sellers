@@ -8,6 +8,7 @@ interface QAEvaluationBlockProps {
   onChange?: (data: { position: number; value: string }) => void;
   showValidation?: boolean;
   isInvalid?: boolean;
+  readOnly?: boolean;
 }
 
 export const QAEvaluationBlock = ({
@@ -16,13 +17,21 @@ export const QAEvaluationBlock = ({
   onChange,
   showValidation,
   isInvalid,
+  readOnly = false,
 }: QAEvaluationBlockProps) => {
   const [value, setValue] = useState("");
 
   const borderClass = showValidation && isInvalid ? "border-red-400 ring-2 ring-red-200" : "border-gray-200";
 
   return (
-    <Card className={showValidation && isInvalid ? "border-red-400" : undefined}>
+    <Card
+      className={[
+        showValidation && isInvalid ? "border-red-400" : "",
+        readOnly ? "opacity-100" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <CardContent className="p-4">
         <h3 className="text-sm font-medium text-gray-700 mb-3">
           {block.title || `Вопрос про ${formRole.toLowerCase()}`}
@@ -30,14 +39,19 @@ export const QAEvaluationBlock = ({
         <input
           type="text"
           placeholder={`Ваш ответ`}
-          className={`w-full p-3 bg-gray-100 border ${borderClass} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow`}
+          className={`w-full p-3 bg-gray-100 border ${borderClass} rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow ${
+            readOnly ? "cursor-not-allowed" : ""
+          }`}
+          disabled={readOnly}
+          readOnly={readOnly}
           value={value}
           onChange={(e) => {
+            if (readOnly) return;
             const v = e.target.value;
             setValue(v);
             onChange?.({ position: block.position, value: v });
           }}
-        />
+        /> 
         {showValidation && isInvalid && (
           <p className="mt-2 text-sm text-red-500">
             Заполните ответ перед переходом

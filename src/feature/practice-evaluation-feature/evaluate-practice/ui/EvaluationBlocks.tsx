@@ -10,6 +10,7 @@ interface EvaluationBlocksProps {
   onAnswersChange?: (answers: any) => void;
   showValidation?: boolean;
   invalidPositions?: Set<number>;
+  readOnly?: boolean;
 }
 
 export const EvaluationBlocks = ({
@@ -18,6 +19,7 @@ export const EvaluationBlocks = ({
   onAnswersChange,
   showValidation,
   invalidPositions,
+  readOnly = false,
 }: EvaluationBlocksProps) => {
   return (
     <>
@@ -37,6 +39,7 @@ export const EvaluationBlocks = ({
               onAnswersChange={onAnswersChange}
               showValidation={!!showValidation}
               isInvalid={isInvalid}
+              readOnly={readOnly}
             />
           </div>
         );
@@ -52,12 +55,14 @@ const EvaluationBlockRenderer = ({
   onAnswersChange,
   showValidation,
   isInvalid,
+  readOnly,
 }: { 
   block: EvaluationBlock; 
   formRole: string;
   onAnswersChange?: (answers: any) => void;
   showValidation?: boolean;
   isInvalid?: boolean;
+  readOnly?: boolean;
 }) => {
   switch (block.type) {
     case "TEXT":
@@ -69,6 +74,7 @@ const EvaluationBlockRenderer = ({
           formRole={formRole}
           showValidation={showValidation}
           isInvalid={isInvalid}
+          readOnly={readOnly}
           onChange={(d) => onAnswersChange?.({ kind: "QA", ...d })}
         />
       );
@@ -79,6 +85,7 @@ const EvaluationBlockRenderer = ({
           formRole={formRole}
           showValidation={showValidation}
           isInvalid={isInvalid}
+          readOnly={readOnly}
           onChange={(d) => onAnswersChange?.({ kind: "SINGLE", ...d })}
         />
       );
@@ -89,6 +96,7 @@ const EvaluationBlockRenderer = ({
           formRole={formRole}
           showValidation={showValidation}
           isInvalid={isInvalid}
+          readOnly={readOnly}
           onChange={(d) => onAnswersChange?.({ kind: "MULTI", ...d })}
         />
       );

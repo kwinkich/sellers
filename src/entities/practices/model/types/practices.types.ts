@@ -45,6 +45,8 @@ export interface PracticeCard {
   practiceType: PracticeType;
   title: string;
   description: string | null;
+  scenarioId: number;
+  scenarioVersion: number;
   skills: SkillPractices[];
   participantsCount: number;
   startAt: string;

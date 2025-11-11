@@ -1,6 +1,6 @@
-import { useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Tabs,
@@ -19,10 +19,30 @@ import {
   TimerIcon,
   getRoleLabel,
 } from "@/shared";
+import { Loader2 } from "lucide-react";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
 import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
+import { scenariosQueryOptions } from "@/entities/scenarios/model/api/scenarios.api";
 import { handleFormError, handleFormSuccess } from "@/shared";
+import type { EvaluationBlock } from "@/feature/practice-evaluation-feature/evaluate-practice/ui/EvaluationForm";
+import { EvaluationBlocks } from "@/feature/practice-evaluation-feature/evaluate-practice/ui";
+import type {
+  ScenarioForm,
+  ScaleFormBlock,
+} from "@/entities/scenarios/model/types/scenarios.types";
+
+type PracticeFormRole = "SELLER" | "BUYER" | "MODERATOR";
+type PracticeFormType = "SCENARIO" | "EVALUATION";
+
+interface PracticeViewForm {
+  id: number;
+  role: PracticeFormRole;
+  type: PracticeFormType;
+  title?: string;
+  descr?: string;
+  blocks: EvaluationBlock[];
+}
 
 function PracticeInfoCard({
   data,
@@ -131,6 +151,109 @@ const PracticeActivePage = () => {
   const blocking = useActivePracticeStore((s) => s.blocking);
   const hideActive = useActivePracticeStore((s) => s.hide);
   const queryClient = useQueryClient();
+  const scenarioId = practice?.scenarioId;
+  console.log("practice", practice);
+  console.log("scenarioId", scenarioId);
+
+  const { data: formsResponse, isLoading: formsLoading } = useQuery({
+    ...scenariosQueryOptions.forms(scenarioId ?? 0),
+    enabled: !!scenarioId,
+  });
+
+  const forms = useMemo<PracticeViewForm[]>(() => {
+    const rawForms = (formsResponse?.data ?? []) as ScenarioForm[];
+    return rawForms
+      .map((form) => {
+        const type = form.type as PracticeFormType | undefined;
+        const role = form.role as PracticeFormRole | undefined;
+
+        if (!type || !role) {
+          return null;
+        }
+
+        const blocks: EvaluationBlock[] = (form.blocks ?? []).map((block) => {
+          const baseBlock: EvaluationBlock = {
+            id: block.id,
+            type: (block.type as EvaluationBlock["type"]) ?? "TEXT",
+            title: block.title ?? undefined,
+            required: !!block.required,
+            position: block.position,
+          };
+
+          if (
+            block.type === "SCALE_SKILL_SINGLE" ||
+            block.type === "SCALE_SKILL_MULTI"
+          ) {
+            const scaleBlock = block as ScaleFormBlock;
+            baseBlock.scale = {
+              id: undefined,
+              options: scaleBlock.scale.options.map((opt) => ({
+                id: undefined,
+                ord: opt.ord,
+                label: opt.label,
+                value: opt.value,
+                countsTowardsScore: opt.countsTowardsScore,
+              })),
+            };
+            baseBlock.items = scaleBlock.items.map((item) => ({
+              id: item.id,
+              title: item.title,
+              position: item.position,
+              skillId: item.skillId ?? null,
+            }));
+          }
+
+          return baseBlock;
+        });
+
+        return {
+          id: form.id,
+          role,
+          type,
+          title: form.title ?? undefined,
+          descr: form.descr ?? undefined,
+          blocks,
+        } as PracticeViewForm;
+      })
+      .filter(
+        (form: PracticeViewForm | null): form is PracticeViewForm =>
+          form !== null
+      );
+  }, [formsResponse]);
+
+  const myRole = practice?.myRole as PracticeFormRole | undefined;
+
+  const scenarioForm = useMemo(() => {
+    if (!myRole) return undefined;
+    return forms.find(
+      (form: PracticeViewForm) => form.type === "SCENARIO" && form.role === myRole
+    );
+  }, [forms, myRole]);
+
+  const evaluationForms = useMemo(() => {
+    if (!myRole) return [];
+    return forms.filter(
+      (form: PracticeViewForm) => form.type === "EVALUATION" && form.role !== myRole
+    );
+  }, [forms, myRole]);
+
+  const [activeEvaluationRole, setActiveEvaluationRole] = useState<
+    PracticeFormRole | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (evaluationForms.length === 0) {
+      setActiveEvaluationRole(undefined);
+      return;
+    }
+
+    setActiveEvaluationRole((prev) => {
+      if (prev && evaluationForms.some((form) => form.role === prev)) {
+        return prev;
+      }
+      return evaluationForms[0].role;
+    });
+  }, [evaluationForms]);
 
   if (!practice || !blocking) {
     return <Navigate to="/practice" replace />;
@@ -145,6 +268,16 @@ const PracticeActivePage = () => {
   };
 
   const isModerator = practice.myRole === "MODERATOR";
+
+  const scenarioFallback = "Сценарий появится позднее.";
+  const evaluationFallback = "Оценка будет доступна позже.";
+
+  const formsLoader = (
+    <div className="flex items-center justify-center py-6 text-base-gray">
+      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+      <span>Загрузка форм...</span>
+    </div>
+  );
 
   const finishMutation = useMutation({
     ...practicesMutationOptions.finish(),
@@ -176,19 +309,66 @@ const PracticeActivePage = () => {
       <div className="flex-1 overflow-auto px-4 py-3 md:px-6 md:py-10">
         <PracticeInfoCard data={practice} />
         <Tabs defaultValue="scenario" className="mt-6">
-          <TabsList variant="default" className="max-w-md">
+          <TabsList variant="default" className="w-full">
             <TabsTrigger value="scenario">Сценарий</TabsTrigger>
             <TabsTrigger value="evaluation">Оценка</TabsTrigger>
           </TabsList>
-          <TabsContent value="scenario" className="mt-4">
-            <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
-              {practice.scenario ?? "Сценарий появится позднее."}
-            </div>
+          <TabsContent value="scenario" className="mt-4 bg-gray-100 rounded-xl p-2">
+            {formsLoading ? (
+              formsLoader
+            ) : scenarioForm ? (
+              <div className="space-y-4">
+                <EvaluationBlocks
+                  blocks={scenarioForm.blocks}
+                  formRole={scenarioForm.role}
+                  readOnly
+                />
+              </div>
+            ) : (
+              <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
+                {scenarioFallback}
+              </div>
+            )}
           </TabsContent>
-          <TabsContent value="evaluation" className="mt-4">
-            <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
-              {practice.evaluationSummary ?? "Оценка будет доступна позже."}
-            </div>
+          <TabsContent value="evaluation" className="mt-2 space-y-6 bg-gray-100 rounded-xl p-2">
+            {formsLoading ? (
+              formsLoader
+            ) : evaluationForms.length > 0 && activeEvaluationRole ? (
+              <Tabs
+                value={activeEvaluationRole}
+                onValueChange={(value) =>
+                  setActiveEvaluationRole(value as PracticeFormRole)
+                }
+                className="space-y-4"
+              >
+                <TabsList variant="default" className="w-full grid grid-cols-2">
+                  {evaluationForms.map((form) => (
+                    <TabsTrigger variant="default" key={form.id} value={form.role}>
+                      {getRoleLabel(form.role)}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {evaluationForms.map((form) => (
+                  <TabsContent
+                    key={form.id}
+                    value={form.role}
+                    className="space-y-3 data-[state=inactive]:hidden"
+                    forceMount
+                  >
+                    <EvaluationBlocks
+                      blocks={form.blocks}
+                      formRole={form.role}
+                      readOnly
+                    />
+                  </TabsContent>
+                ))}
+              </Tabs>
+            ) : (
+              <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
+                {evaluationFallback}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

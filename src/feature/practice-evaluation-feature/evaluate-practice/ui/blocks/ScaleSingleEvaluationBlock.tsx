@@ -10,6 +10,7 @@ interface ScaleSingleEvaluationBlockProps {
   onChange?: (data: { position: number; values: Record<number, number> }) => void;
   showValidation?: boolean;
   isInvalid?: boolean;
+  readOnly?: boolean;
 }
 
 // default text colors by ord: 0→rose, 1→amber, 2→emerald, 3→slate
@@ -34,6 +35,7 @@ export const ScaleSingleEvaluationBlock = ({
   onChange,
   showValidation,
   isInvalid,
+  readOnly = false,
 }: ScaleSingleEvaluationBlockProps) => {
   // Resolve skill name by skillId of the first item
   const firstSkillId = block.items?.[0]?.skillId;
@@ -55,9 +57,10 @@ export const ScaleSingleEvaluationBlock = ({
   }, [answers]);
 
   const cardHighlight = showValidation && isInvalid ? "border-red-400 ring-2 ring-red-200" : "";
+  const chipHoverClass = readOnly ? "" : "hover:bg-muted/80";
 
   return (
-    <Card className={cardHighlight}>
+    <Card className={[cardHighlight, readOnly ? "opacity-100" : ""].filter(Boolean).join(" ")}>
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">
           Навык: {skillTitle}
@@ -81,15 +84,18 @@ export const ScaleSingleEvaluationBlock = ({
                         value={option.value}
                         className="peer absolute inset-0 h-0 w-0 opacity-0 pointer-events-none appearance-none"
                         checked={selected === option.value}
-                        onChange={() =>
-                          setAnswers((prev) => ({ ...prev, [itemIndex]: option.value }))
-                        }
+                        disabled={readOnly}
+                        onChange={() => {
+                          if (readOnly) return;
+                          setAnswers((prev) => ({ ...prev, [itemIndex]: option.value }));
+                        }}
                       />
                        <div
                          className={[
                            // base unselected "chip"
                            "select-none rounded-xl px-0 py-2 text-center transition-colors",
-                           "bg-muted hover:bg-muted/80 border border-transparent box-border",
+                           `bg-muted ${chipHoverClass}`.trim(),
+                           "border border-transparent box-border",
                            // default text color by ord
                            textColorsByOrd[option.ord] ?? "text-foreground/80",
                            // selected background colors by ord

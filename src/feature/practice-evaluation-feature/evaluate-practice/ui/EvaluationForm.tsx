@@ -419,7 +419,7 @@ export const EvaluationForm = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="bg-white px-4 py-2">
+        <div className="bg-white px-4 py-0">
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
