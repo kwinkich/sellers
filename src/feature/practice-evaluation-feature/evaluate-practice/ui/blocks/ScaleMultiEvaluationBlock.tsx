@@ -6,9 +6,17 @@ interface ScaleMultiEvaluationBlockProps {
   block: EvaluationBlock;
   formRole: string;
   onChange?: (data: { position: number; values: Record<number, number> }) => void;
+  showValidation?: boolean;
+  isInvalid?: boolean;
 }
 
-export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMultiEvaluationBlockProps) => {
+export const ScaleMultiEvaluationBlock = ({
+  block,
+  formRole,
+  onChange,
+  showValidation,
+  isInvalid,
+}: ScaleMultiEvaluationBlockProps) => {
   // Controlled selection per skill
   const [answers, setAnswers] = React.useState<Record<number, number>>({});
 
@@ -18,8 +26,10 @@ export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers]);
 
+  const cardHighlight = showValidation && isInvalid ? "border-red-400 ring-2 ring-red-200" : "";
+
   return (
-    <Card>
+    <Card className={cardHighlight}>
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">
           Оценка по шкале
@@ -55,6 +65,11 @@ export const ScaleMultiEvaluationBlock = ({ block, formRole, onChange }: ScaleMu
             );
           })}
         </div>
+        {showValidation && isInvalid && (
+          <p className="mt-3 text-sm text-red-500">
+            Выберите оценку для каждого навыка
+          </p>
+        )}
       </CardContent>
     </Card>
   );

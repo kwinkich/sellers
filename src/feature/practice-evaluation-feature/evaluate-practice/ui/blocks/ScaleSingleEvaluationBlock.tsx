@@ -8,6 +8,8 @@ interface ScaleSingleEvaluationBlockProps {
   block: EvaluationBlock;
   formRole: string;
   onChange?: (data: { position: number; values: Record<number, number> }) => void;
+  showValidation?: boolean;
+  isInvalid?: boolean;
 }
 
 // default text colors by ord: 0→rose, 1→amber, 2→emerald, 3→slate
@@ -30,6 +32,8 @@ export const ScaleSingleEvaluationBlock = ({
   block,
   formRole,
   onChange,
+  showValidation,
+  isInvalid,
 }: ScaleSingleEvaluationBlockProps) => {
   // Resolve skill name by skillId of the first item
   const firstSkillId = block.items?.[0]?.skillId;
@@ -50,8 +54,10 @@ export const ScaleSingleEvaluationBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers]);
 
+  const cardHighlight = showValidation && isInvalid ? "border-red-400 ring-2 ring-red-200" : "";
+
   return (
-    <Card>
+    <Card className={cardHighlight}>
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-bold text-gray-800">
           Навык: {skillTitle}
@@ -101,6 +107,11 @@ export const ScaleSingleEvaluationBlock = ({
             );
           })}
         </div>
+        {showValidation && isInvalid && (
+          <p className="mt-3 text-sm text-red-500">
+            Выберите оценку для каждого вопроса
+          </p>
+        )}
       </CardContent>
     </Card>
   );

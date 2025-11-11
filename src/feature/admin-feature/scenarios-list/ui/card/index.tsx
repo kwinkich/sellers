@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import type { ScenarioListItem } from "@/entities";
 import { ArrowIcon, Badge, Box } from "@/shared";
 import { X } from "lucide-react";
-import type { FC } from "react";
+import { useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface ScenarioCardProps {
@@ -13,6 +13,26 @@ interface ScenarioCardProps {
 
 export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
   const navigate = useNavigate();
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
+
+  const getSkillDeclension = (count: number) => {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return "навыков";
+    }
+
+    if (lastDigit === 1) {
+      return "навык";
+    }
+
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return "навыка";
+    }
+
+    return "навыков";
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -60,7 +80,7 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
         <div className="flex flex-col gap-2 w-full">
           <p className="text-sm text-white/80 font-medium">Навыки:</p>
           <div className="flex flex-wrap gap-2 justify-start">
-            {data.skills.map((skill) => (
+            {(skillsExpanded ? data.skills : data.skills.slice(0, 4)).map((skill) => (
               <Badge
                 key={skill.id}
                 label={skill.name}
@@ -68,7 +88,26 @@ export const ScenarioCard: FC<ScenarioCardProps> = ({ data, onDelete }) => {
                 size="md"
               />
             ))}
+            {!skillsExpanded && data.skills.length > 4 && (
+              <Badge
+                label={`+${data.skills.length - 4} ${getSkillDeclension(
+                  data.skills.length - 4
+                )}`}
+                variant="gray"
+                size="md"
+                className="cursor-pointer hover:bg-white/20 transition-colors"
+                onClick={() => setSkillsExpanded(true)}
+              />
+            )}
           </div>
+          {data.skills.length > 4 && (
+            <button
+              onClick={() => setSkillsExpanded((prev) => !prev)}
+              className="text-xs text-white/80 hover:underline self-start"
+            >
+              {skillsExpanded ? "Скрыть" : "Показать все"}
+            </button>
+          )}
         </div>
       )}
 

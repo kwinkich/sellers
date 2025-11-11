@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { EvaluationForm as ApiEvaluationForm } from "@/entities/practice-evaluation/model/types/practice-evaluation.types";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { EvaluationHeader } from "./index";
@@ -51,10 +51,6 @@ export interface EvaluationBlock {
   }>;
 }
 
-export interface EvaluationResponse {
-  forms: EvaluationFormData[];
-}
-
 export const EvaluationForm = ({
   formsData = [],
   practiceId,
@@ -69,6 +65,12 @@ export const EvaluationForm = ({
     {}
   );
   const [roleFilled, setRoleFilled] = useState<Record<string, boolean>>({});
+  const [validationTriggered, setValidationTriggered] = useState<
+    Record<string, boolean>
+  >({});
+  const [invalidBlocks, setInvalidBlocks] = useState<
+    Record<string, Set<number>>
+  >({});
 
   const navigate = useNavigate();
   const showUploadModal = useUploadRecordingStore((s) => s.show);
@@ -83,52 +85,232 @@ export const EvaluationForm = ({
   });
 
   // Build evaluation data from real forms
-  const evaluationData: EvaluationResponse = {
-    forms: formsData.map((f) => ({
-      id: f.id,
-      role: f.role,
-      evaluatedUserId: f.evaluatedUserId,
-      title: f.title ?? undefined,
-      descr: f.descr ?? undefined,
-      blocks: (f.blocks || []).map((b) => ({
-        id: b.id,
-        type: (b.type as any) ?? "TEXT",
-        title: b.title ?? undefined,
-        required: b.required,
-        position: b.position,
-        scale: b.scale?.options
-          ? {
-              id: b.scale!.id,
-              options: b.scale!.options.map((opt) => ({
-                id: opt.id,
-                ord: opt.ord,
-                label: opt.label,
-                value: opt.value,
-                countsTowardsScore: opt.countsTowardsScore,
-              })),
-            }
-          : undefined,
-        items: (b.items || []).map((it) => ({
-          id: it.id,
-          title: it.title,
-          position: it.position,
-          skillId: it.skillId ?? null,
+  const forms: EvaluationFormData[] = useMemo(
+    () =>
+      (formsData || []).map((f) => ({
+        id: f.id,
+        role: f.role,
+        evaluatedUserId: f.evaluatedUserId,
+        title: f.title ?? undefined,
+        descr: f.descr ?? undefined,
+        blocks: (f.blocks || []).map((b) => ({
+          id: b.id,
+          type: (b.type as any) ?? "TEXT",
+          title: b.title ?? undefined,
+          required: b.required,
+          position: b.position,
+          scale: b.scale?.options
+            ? {
+                id: b.scale!.id,
+                options: b.scale!.options.map((opt) => ({
+                  id: opt.id,
+                  ord: opt.ord,
+                  label: opt.label,
+                  value: opt.value,
+                  countsTowardsScore: opt.countsTowardsScore,
+                })),
+              }
+            : undefined,
+          items: (b.items || []).map((it) => ({
+            id: it.id,
+            title: it.title,
+            position: it.position,
+            skillId: it.skillId ?? null,
+          })),
         })),
       })),
-    })),
-  };
-  const isLoading = false;
+    [formsData]
+  );
+
+  const isBlockValid = useCallback(
+    (
+      block: EvaluationBlock,
+      roleAnswers: Record<number, any>
+    ): boolean => {
+      if (!block.required) return true;
+
+      const answerPayload = roleAnswers?.[block.position];
+
+      switch (block.type) {
+        case "QA": {
+          const value = answerPayload?.value;
+          return !!value && String(value).trim().length > 0;
+        }
+        case "SCALE_SKILL_SINGLE": {
+          const itemsCount = block.items?.length ?? 0;
+          if (itemsCount === 0) return true;
+          const values =
+            (answerPayload?.values as Record<number, number>) || {};
+          for (let idx = 0; idx < itemsCount; idx++) {
+            const val = values[idx];
+            if (val === undefined || val === null) {
+              return false;
+            }
+          }
+          return true;
+        }
+        case "SCALE_SKILL_MULTI": {
+          const items = block.items ?? [];
+          if (items.length === 0) return true;
+          const values =
+            (answerPayload?.values as Record<number, number>) || {};
+          return items.every((item, index) => {
+            const key = item.skillId ?? index;
+            const val = values[key];
+            return val !== undefined && val !== null;
+          });
+        }
+        default:
+          return true;
+      }
+    },
+    []
+  );
+
+  const calculateInvalidBlocks = useCallback(
+    (form: EvaluationFormData, roleAnswers: Record<number, any>) => {
+      const invalid = new Set<number>();
+      form.blocks.forEach((block) => {
+        if (!isBlockValid(block, roleAnswers || {})) {
+          invalid.add(block.position);
+        }
+      });
+      return invalid;
+    },
+    [isBlockValid]
+  );
 
   // Set initial active tab when data loads
   useEffect(() => {
-    if (
-      evaluationData?.forms &&
-      evaluationData.forms.length > 0 &&
-      !activeTab
-    ) {
-      setActiveTab(evaluationData.forms[0].role);
+    if (forms.length > 0 && !activeTab) {
+      setActiveTab(forms[0].role);
     }
-  }, [evaluationData, activeTab]);
+  }, [forms, activeTab]);
+
+  useEffect(() => {
+    if (forms.length === 0) return;
+
+    const initialValidation: Record<string, boolean> = {};
+    const initialInvalid: Record<string, Set<number>> = {};
+    const initialFilled: Record<string, boolean> = {};
+
+    forms.forEach((form) => {
+      initialValidation[form.role] = false;
+      const invalid = calculateInvalidBlocks(form, {});
+      initialInvalid[form.role] = invalid;
+      initialFilled[form.role] = invalid.size === 0;
+    });
+
+    setValidationTriggered(initialValidation);
+    setInvalidBlocks(initialInvalid);
+    setRoleFilled(initialFilled);
+  }, [forms, calculateInvalidBlocks]);
+
+  const handleNext = useCallback(() => {
+    const currentIndex = forms.findIndex((form) => form.role === activeTab);
+    if (currentIndex === -1) return;
+
+    const currentForm = forms[currentIndex];
+    const roleAnswers = answers[currentForm.role] || {};
+    const invalid = calculateInvalidBlocks(currentForm, roleAnswers);
+
+    setInvalidBlocks((prev) => ({ ...prev, [currentForm.role]: invalid }));
+
+    if (invalid.size > 0) {
+      setValidationTriggered((prev) => ({
+        ...prev,
+        [currentForm.role]: true,
+      }));
+      setRoleFilled((prev) => ({
+        ...prev,
+        [currentForm.role]: false,
+      }));
+
+      const firstInvalid = Array.from(invalid)[0];
+      if (firstInvalid !== undefined) {
+        requestAnimationFrame(() => {
+          const el = document.querySelector(
+            `[data-eval-block="${currentForm.role}-${firstInvalid}"]`
+          );
+          if (el instanceof HTMLElement) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      }
+      return;
+    }
+
+    setRoleFilled((prev) => ({
+      ...prev,
+      [currentForm.role]: true,
+    }));
+    setValidationTriggered((prev) => ({
+      ...prev,
+      [currentForm.role]: false,
+    }));
+
+    if (currentIndex < forms.length - 1) {
+      setActiveTab(forms[currentIndex + 1].role);
+    }
+  }, [activeTab, answers, forms, calculateInvalidBlocks]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      if (value === activeTab) return;
+
+      const currentIndex = forms.findIndex((form) => form.role === activeTab);
+      const targetIndex = forms.findIndex((form) => form.role === value);
+
+      if (currentIndex === -1 || targetIndex === -1) {
+        setActiveTab(value);
+        return;
+      }
+
+      if (targetIndex > currentIndex) {
+        const currentForm = forms[currentIndex];
+        const roleAnswers = answers[currentForm.role] || {};
+        const invalid = calculateInvalidBlocks(currentForm, roleAnswers);
+
+        setInvalidBlocks((prev) => ({ ...prev, [currentForm.role]: invalid }));
+
+        if (invalid.size > 0) {
+          setValidationTriggered((prev) => ({
+            ...prev,
+            [currentForm.role]: true,
+          }));
+          setRoleFilled((prev) => ({
+            ...prev,
+            [currentForm.role]: false,
+          }));
+
+          const firstInvalid = Array.from(invalid)[0];
+          if (firstInvalid !== undefined) {
+            requestAnimationFrame(() => {
+              const el = document.querySelector(
+                `[data-eval-block="${currentForm.role}-${firstInvalid}"]`
+              );
+              if (el instanceof HTMLElement) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            });
+          }
+          return;
+        }
+
+        setRoleFilled((prev) => ({
+          ...prev,
+          [currentForm.role]: true,
+        }));
+        setValidationTriggered((prev) => ({
+          ...prev,
+          [currentForm.role]: false,
+        }));
+      }
+
+      setActiveTab(value);
+    },
+    [activeTab, answers, forms, calculateInvalidBlocks]
+  );
 
   // Swipe handling functions
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -141,41 +323,23 @@ export const EvaluationForm = ({
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (touchStart === null || touchEnd === null) return;
 
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
-    if (isLeftSwipe || isRightSwipe) {
-      const currentIndex =
-        evaluationData?.forms.findIndex((form) => form.role === activeTab) ?? 0;
-      const totalForms = evaluationData?.forms.length ?? 0;
-
-      if (isLeftSwipe && currentIndex < totalForms - 1) {
-        // Swipe left - go to next tab
-        const nextForm = evaluationData?.forms[currentIndex + 1];
-        if (nextForm) setActiveTab(nextForm.role);
-      } else if (isRightSwipe && currentIndex > 0) {
-        // Swipe right - go to previous tab
-        const prevForm = evaluationData?.forms[currentIndex - 1];
-        if (prevForm) setActiveTab(prevForm.role);
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      const currentIndex = forms.findIndex((form) => form.role === activeTab);
+      if (currentIndex > 0) {
+        setActiveTab(forms[currentIndex - 1].role);
       }
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка форм...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!evaluationData?.forms || evaluationData.forms.length === 0) {
+  if (forms.length === 0) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
@@ -258,16 +422,13 @@ export const EvaluationForm = ({
         <div className="bg-white px-4 py-2">
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="bg-gray-100 rounded-xl gap-0"
           >
-            <EvaluationTabs
-              forms={evaluationData.forms}
-              activeTab={activeTab}
-            />
+            <EvaluationTabs forms={forms} activeTab={activeTab} />
 
             {/* Tab Contents */}
-            {evaluationData.forms.map((form) => {
+            {forms.map((form) => {
               const handleAnswersChange = useCallback(
                 (payload: any) => {
                   setAnswers((prev) => {
@@ -277,48 +438,26 @@ export const EvaluationForm = ({
                     byRole[payload.position] = payload;
                     const next = { ...prev, [form.role]: byRole };
 
-                    // Recompute filled flag for this role immediately
-                    const currentForm = evaluationData.forms.find(
-                      (f) => f.role === form.role
-                    );
-                    const computeFilled = () => {
-                      if (!currentForm) return false;
-                      const roleAns = next[form.role] || {};
-                      for (const block of currentForm.blocks) {
-                        if (block.type === "QA") {
-                          const a = roleAns[block.position]?.value ?? "";
-                          if (!a || !String(a).trim()) return false;
-                        } else if (block.type === "SCALE_SKILL_SINGLE") {
-                          const vals =
-                            (roleAns[block.position]?.values as Record<
-                              number,
-                              number
-                            >) || {};
-                          const itemsCount = block.items?.length ?? 0;
-                          if (Object.keys(vals).length !== itemsCount)
-                            return false;
-                        } else if (block.type === "SCALE_SKILL_MULTI") {
-                          const vals =
-                            (roleAns[block.position]?.values as Record<
-                              number,
-                              number
-                            >) || {};
-                          const itemsCount = block.items?.length ?? 0;
-                          if (Object.keys(vals).length !== itemsCount)
-                            return false;
-                        }
-                      }
-                      return true;
-                    };
+                    const invalid = calculateInvalidBlocks(form, byRole);
+                    setInvalidBlocks((prevInvalid) => ({
+                      ...prevInvalid,
+                      [form.role]: invalid,
+                    }));
                     setRoleFilled((prevFlags) => ({
                       ...prevFlags,
-                      [form.role]: computeFilled(),
+                      [form.role]: invalid.size === 0,
                     }));
+                    if (invalid.size === 0) {
+                      setValidationTriggered((prevTriggers) => ({
+                        ...prevTriggers,
+                        [form.role]: false,
+                      }));
+                    }
 
                     return next;
                   });
                 },
-                [evaluationData.forms, form.role]
+                [form, calculateInvalidBlocks]
               );
 
               return (
@@ -333,6 +472,8 @@ export const EvaluationForm = ({
                       blocks={form.blocks}
                       formRole={form.role}
                       onAnswersChange={handleAnswersChange}
+                      showValidation={validationTriggered[form.role]}
+                      invalidPositions={invalidBlocks[form.role]}
                     />
                   </div>
                 </TabsContent>
@@ -345,22 +486,15 @@ export const EvaluationForm = ({
       {/* Footer CTA */}
       <EvaluationFooter
         isLastTab={
-          activeTab ===
-          evaluationData.forms[evaluationData.forms.length - 1].role
+          activeTab === forms[forms.length - 1].role
         }
-        canFinish={evaluationData.forms.every((f) => roleFilled[f.role])}
+        canFinish={forms.every((f) => roleFilled[f.role])}
         loading={isSubmitting}
-        onNext={() => {
-          const currentIndex = evaluationData.forms.findIndex(
-            (f) => f.role === activeTab
-          );
-          const next = evaluationData.forms[currentIndex + 1];
-          if (next) setActiveTab(next.role);
-        }}
+        onNext={handleNext}
         onFinish={() => {
           (async () => {
             try {
-              const submissions = evaluationData.forms.map((form) =>
+              const submissions = forms.map((form) =>
                 buildSubmissionForForm(form)
               );
               console.log(submissions);
