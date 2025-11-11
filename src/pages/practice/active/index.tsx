@@ -1,7 +1,13 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -14,39 +20,16 @@ import {
   getRoleLabel,
 } from "@/shared";
 import { getPracticeTypeLabel } from "@/shared/lib/getPracticeTypeLabel";
-import { useCaseInfoStore } from "@/feature/practice-feature/model/caseInfo.store";
 import { useActivePracticeStore } from "@/feature/practice-feature/model/activePractice.store";
 import { practicesMutationOptions } from "@/entities/practices/model/api/practices.api";
 import { handleFormError, handleFormSuccess } from "@/shared";
 
-function getSkillDeclension(count: number): string {
-  const lastDigit = count % 10;
-  const lastTwoDigits = count % 100;
-
-  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-    return "навыков";
-  }
-
-  if (lastDigit === 1) {
-    return "навык";
-  }
-
-  if (lastDigit >= 2 && lastDigit <= 4) {
-    return "навыка";
-  }
-
-  return "навыков";
-}
-
 function PracticeInfoCard({
   data,
-  openCaseInfo,
 }: {
   data: any;
-  openCaseInfo: (practice: any) => void;
 }) {
   const copyButtonRef = useRef<HTMLButtonElement>(null);
-  const [skillsExpanded, setSkillsExpanded] = useState(false);
   const start = new Date(data.startAt);
   const date = start.toLocaleDateString("ru-RU", {
     day: "2-digit",
@@ -70,7 +53,7 @@ function PracticeInfoCard({
   const role = data.myRole ? getRoleLabel(data.myRole) : "—";
 
   return (
-    <div className="bg-gray-100 rounded-2xl p-3 text-black">
+    <div className="text-black">
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <Badge
@@ -83,43 +66,6 @@ function PracticeInfoCard({
       <p className="text-lg font-semibold mb-1">{data.title}</p>
       {data.description && (
         <p className="text-xs text-second-gray mb-2">{data.description}</p>
-      )}
-
-      {!!data.skills?.length && (
-        <div className="mb-2">
-          <div className="flex flex-wrap gap-2 mb-2">
-            {(skillsExpanded ? data.skills : data.skills.slice(0, 4)).map(
-              (s: any) => (
-                <Badge
-                  key={s.id}
-                  label={s.name}
-                  variant="gray"
-                  size="md"
-                  className="bg-gray-300 text-gray-700"
-                />
-              )
-            )}
-            {!skillsExpanded && data.skills.length > 4 && (
-              <Badge
-                label={`+${data.skills.length - 4} ${getSkillDeclension(
-                  data.skills.length - 4
-                )}`}
-                variant="gray"
-                size="md"
-                className="bg-gray-300 text-gray-700 cursor-pointer hover:bg-gray-400"
-                onClick={() => setSkillsExpanded(true)}
-              />
-            )}
-          </div>
-          {data.skills.length > 4 && (
-            <button
-              onClick={() => setSkillsExpanded(!skillsExpanded)}
-              className="text-xs text-base-main hover:underline"
-            >
-              {skillsExpanded ? "Скрыть" : "Показать все"}
-            </button>
-          )}
-        </div>
       )}
 
       <div className="flex items-center justify-between text-xs text-base-gray">
@@ -139,7 +85,7 @@ function PracticeInfoCard({
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
+        <div className="bg-gray-100 rounded-xl px-3 py-2 flex items-center justify-between">
           <div className="text-xs">
             <div className="text-base-gray">Ваша роль</div>
             <div className="text-black font-medium">{role}</div>
@@ -148,9 +94,9 @@ function PracticeInfoCard({
 
         <div
           className={cn(
-            "bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between",
+            "bg-gray-100 rounded-xl px-3 py-2 flex items-center justify-between",
             "transition-all duration-200 cursor-pointer",
-            "hover:bg-white/80 hover:shadow-sm"
+            "hover:bg-gray-200 hover:shadow-sm"
           )}
           onClick={() => {
             if (data.zoomLink && copyButtonRef.current) {
@@ -174,23 +120,6 @@ function PracticeInfoCard({
           )}
         </div>
 
-        {data.case && (
-          <div className="bg-white/60 rounded-xl px-3 py-2 flex items-center justify-between">
-            <div className="text-xs">
-              <div className="text-base-gray">Название кейса</div>
-              <div className="text-black font-medium">{data.case.title}</div>
-            </div>
-            <Button
-              className="bg-base-main h-8"
-              size="2s"
-              onClick={() => {
-                if (data.case) openCaseInfo(data);
-              }}
-            >
-              Изучить
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -198,7 +127,6 @@ function PracticeInfoCard({
 
 const PracticeActivePage = () => {
   const navigate = useNavigate();
-  const openCaseInfo = useCaseInfoStore((s) => s.open);
   const practice = useActivePracticeStore((s) => s.practice);
   const blocking = useActivePracticeStore((s) => s.blocking);
   const hideActive = useActivePracticeStore((s) => s.hide);
@@ -245,8 +173,24 @@ const PracticeActivePage = () => {
 
   return (
     <div className="bg-white text-black min-h-[calc(100vh-var(--nav-h,80px))] flex flex-col pb-3">
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-6 md:py-10">
-          <PracticeInfoCard data={practice} openCaseInfo={openCaseInfo} />
+      <div className="flex-1 overflow-auto px-4 py-3 md:px-6 md:py-10">
+        <PracticeInfoCard data={practice} />
+        <Tabs defaultValue="scenario" className="mt-6">
+          <TabsList variant="default" className="max-w-md">
+            <TabsTrigger value="scenario">Сценарий</TabsTrigger>
+            <TabsTrigger value="evaluation">Оценка</TabsTrigger>
+          </TabsList>
+          <TabsContent value="scenario" className="mt-4">
+            <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
+              {practice.scenario ?? "Сценарий появится позднее."}
+            </div>
+          </TabsContent>
+          <TabsContent value="evaluation" className="mt-4">
+            <div className="bg-white/60 rounded-xl px-4 py-3 text-sm text-black">
+              {practice.evaluationSummary ?? "Оценка будет доступна позже."}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div
