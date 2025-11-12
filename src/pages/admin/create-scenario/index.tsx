@@ -758,16 +758,16 @@ export const AdminScenariosCreatePage = () => {
         forms.push({
           role: "SELLER",
           type: "SCENARIO",
-          title: "Сценарный блок продавца",
-          descr: "Сценарный блок для продавца",
+          title: "Сценарная часть продавца",
+          descr: "Сценарная часть для продавца",
           blocks: convertBlocksToFormBlocks(sellerScenarioBlocks),
         });
       }
       forms.push({
         role: "SELLER",
         type: "EVALUATION",
-        title: "Оценочный блок продавца",
-        descr: "Оценочный блок для продавца",
+        title: "Оценочная часть продавца",
+        descr: "Оценочная часть для продавца",
         blocks: convertBlocksToFormBlocks(sellerEvaluationBlocks),
       });
 
@@ -776,16 +776,16 @@ export const AdminScenariosCreatePage = () => {
         forms.push({
           role: "BUYER",
           type: "SCENARIO",
-          title: "Сценарный блок покупателя",
-          descr: "Сценарный блок для покупателя",
+          title: "Сценарная часть покупателя",
+          descr: "Сценарная часть для покупателя",
           blocks: convertBlocksToFormBlocks(buyerScenarioBlocks),
         });
       }
       forms.push({
         role: "BUYER",
         type: "EVALUATION",
-        title: "Оценочный блок покупателя",
-        descr: "Оценочный блок для покупателя",
+        title: "Оценочная часть покупателя",
+        descr: "Оценочная часть для покупателя",
         blocks: convertBlocksToFormBlocks(buyerEvaluationBlocks),
       });
 
@@ -794,16 +794,16 @@ export const AdminScenariosCreatePage = () => {
         forms.push({
           role: "MODERATOR",
           type: "SCENARIO",
-          title: "Сценарный блок модератора",
-          descr: "Сценарный блок для модератора",
+          title: "Сценарная часть модератора",
+          descr: "Сценарная часть для модератора",
           blocks: convertBlocksToFormBlocks(moderatorScenarioBlocks),
         });
       }
       forms.push({
         role: "MODERATOR",
         type: "EVALUATION",
-        title: "Оценочный блок модератора",
-        descr: "Оценочный блок для модератора",
+        title: "Оценочная часть модератора",
+        descr: "Оценочная часть для модератора",
         blocks: convertBlocksToFormBlocks(moderatorEvaluationBlocks),
       });
 
@@ -901,10 +901,10 @@ export const AdminScenariosCreatePage = () => {
                 <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
                   <TabsList variant="second" className="grid grid-cols-2 w-full">
                     <TabsTrigger variant="second" value="scenario">
-                      Сценарный блок
+                      Сценарная часть
                     </TabsTrigger>
                     <TabsTrigger variant="second" value="evaluation">
-                      Оценочный блок
+                      Оценочная часть
                     </TabsTrigger>
                   </TabsList>
 
@@ -953,10 +953,10 @@ export const AdminScenariosCreatePage = () => {
                   <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
                     <TabsList variant="second" className="grid grid-cols-2 w-full">
                       <TabsTrigger variant="second" value="scenario">
-                        Сценарный блок
+                        Сценарная часть
                       </TabsTrigger>
                       <TabsTrigger variant="second" value="evaluation">
-                        Оценочный блок
+                        Оценочная часть
                       </TabsTrigger>
                     </TabsList>
 
@@ -1006,10 +1006,10 @@ export const AdminScenariosCreatePage = () => {
                   <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
                     <TabsList variant="second" className="grid grid-cols-2 w-full">
                       <TabsTrigger variant="second" value="scenario">
-                        Сценарный блок
+                        Сценарная часть
                       </TabsTrigger>
                       <TabsTrigger variant="second" value="evaluation">
-                        Оценочный блок
+                        Оценочная часть
                       </TabsTrigger>
                     </TabsList>
 

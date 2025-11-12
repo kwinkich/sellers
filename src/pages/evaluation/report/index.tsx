@@ -16,6 +16,10 @@ export const EvaluationReportPage = () => {
     error,
   } = useQuery(practiceEvaluationQueryOptions.formsFinal(id));
 
+  console.log(formsRes);
+  console.log(error);
+  console.log(id);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">

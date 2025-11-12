@@ -159,10 +159,10 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
             <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
-                  Сценарный блок
+                  Сценарная часть
                 </TabsTrigger>
                 <TabsTrigger variant="second" value="evaluation">
-                  Оценочный блок
+                  Оценочная часть
                 </TabsTrigger>
               </TabsList>
 
@@ -191,10 +191,10 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
             <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
-                  Сценарный блок
+                  Сценарная часть
                 </TabsTrigger>
                 <TabsTrigger variant="second" value="evaluation">
-                  Оценочный блок
+                  Оценочная часть
                 </TabsTrigger>
               </TabsList>
 
@@ -223,10 +223,10 @@ export function ViewScenarioForm({ scenarioId }: ViewScenarioFormProps) {
             <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
-                  Сценарный блок
+                  Сценарная часть
                 </TabsTrigger>
                 <TabsTrigger variant="second" value="evaluation">
-                  Оценочный блок
+                  Оценочная часть
                 </TabsTrigger>
               </TabsList>
 

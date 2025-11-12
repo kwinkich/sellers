@@ -19,6 +19,7 @@ import type {
   RecordingPresignRequest,
   RecordingPresignResponse,
 } from "../types/practices.types";
+import type { ScenarioForm } from "@/entities/scenarios/model/types/scenarios.types";
 
 export const PracticesAPI = {
   createPractice: (practiceData: CreatePracticeRequest) =>
