@@ -510,7 +510,7 @@ export const EvaluationForm = ({
                   showUploadModal(practiceId);
                 }, 100);
               } else {
-                navigate(`/practice`);
+                navigate(`/practice?tab=past`);
               }
             } catch (e) {
               handleFormError(e, "Не удалось отправить оценку");

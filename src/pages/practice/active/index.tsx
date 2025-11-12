@@ -287,6 +287,38 @@ const PracticeActivePage = () => {
     });
   }, [evaluationForms]);
 
+  // ✅ Move finishMutation hook BEFORE early return
+  const finishMutation = useMutation({
+    ...practicesMutationOptions.finish(),
+    onSuccess: (response, practiceIdVariable) => {
+      // Extract practiceId from response or use the variable we passed in
+      const practiceId = response?.data?.practiceId ?? practiceIdVariable;
+      
+      handleFormSuccess("Практика успешно завершена");
+      
+      // Invalidate all practice-related queries
+      queryClient.invalidateQueries({ queryKey: ["practices", "cards"] });
+      queryClient.invalidateQueries({ queryKey: ["practices", "mine"] });
+      queryClient.invalidateQueries({ queryKey: ["practices", "past"] });
+      queryClient.invalidateQueries({ queryKey: ["practices", "current"] });
+      queryClient.invalidateQueries({ queryKey: ["practices", "current", "state"] });
+      
+      if (practiceId) {
+        queryClient.invalidateQueries({
+          queryKey: ["practices", "detail", practiceId],
+        });
+      }
+      
+      // Hide the active practice modal/page
+      // The backend will handle showing the finished modal via SSE/state check
+      hideActive();
+    },
+    onError: (error) => {
+      handleFormError(error, "Ошибка завершения практики");
+    },
+  });
+
+  // ✅ Early return AFTER all hooks
   if (!practice || !blocking) {
     return <Navigate to="/practice" replace />;
   }
@@ -310,27 +342,6 @@ const PracticeActivePage = () => {
       <span>Загрузка форм...</span>
     </div>
   );
-
-  const finishMutation = useMutation({
-    ...practicesMutationOptions.finish(),
-    onSuccess: (_, practiceId) => {
-      handleFormSuccess("Практика успешно завершена");
-      queryClient.invalidateQueries({ queryKey: ["practices", "cards"] });
-      queryClient.invalidateQueries({ queryKey: ["practices", "mine"] });
-      queryClient.invalidateQueries({ queryKey: ["practices", "past"] });
-      if (practiceId) {
-        queryClient.invalidateQueries({
-          queryKey: ["practices", "detail", practiceId],
-        });
-        // Navigate directly to evaluation page for moderator
-        hideActive();
-        navigate(`/evaluation/evaluate/${practiceId}`);
-      }
-    },
-    onError: (error) => {
-      handleFormError(error, "Ошибка завершения практики");
-    },
-  });
 
   const handleFinish = () => {
     if (!practice?.id) return;

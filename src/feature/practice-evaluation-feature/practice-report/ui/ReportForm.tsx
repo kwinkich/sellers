@@ -194,7 +194,7 @@ export const ReportForm = ({
           if (next) setActiveTab(next.role);
         }}
         onFinish={() => {
-          navigate("/practice");
+          navigate("/practice?tab=past");
         }}
       />
     </div>

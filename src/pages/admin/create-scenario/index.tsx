@@ -469,7 +469,7 @@ export const AdminScenariosCreatePage = () => {
     return {
       SELLER: true, // SELLER is always clickable (it's the first tab)
       BUYER: isSellerEvaluationValid, // BUYER becomes clickable when SELLER evaluation is valid
-      MODERATOR: isBuyerEvaluationValid, // MODERATOR becomes clickable when BUYER evaluation is valid
+      MODERATOR: isBuyerEvaluationValid && isSellerEvaluationValid, // MODERATOR becomes clickable when BUYER evaluation is valid
     };
   }, [sellerEvaluationBlocks, buyerEvaluationBlocks, areAllBlocksValid]);
 
