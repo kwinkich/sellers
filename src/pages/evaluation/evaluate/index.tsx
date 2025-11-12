@@ -12,6 +12,7 @@ export const EvaluationPage = () => {
   const { data, isLoading } = useQuery(
     practiceEvaluationQueryOptions.forms(id)
   );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center pb-3">
@@ -20,5 +21,15 @@ export const EvaluationPage = () => {
     );
   }
 
-  return <EvaluationForm formsData={data?.data || []} practiceId={id} />;
+  if (!data?.data) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center pb-3">
+        <div className="text-center">
+          <p className="text-gray-600">Нет данных для оценки</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <EvaluationForm formsData={data.data} practiceId={id} />;
 };

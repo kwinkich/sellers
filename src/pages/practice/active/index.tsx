@@ -152,8 +152,6 @@ const PracticeActivePage = () => {
   const hideActive = useActivePracticeStore((s) => s.hide);
   const queryClient = useQueryClient();
   const scenarioId = practice?.scenarioId;
-  console.log("practice", practice);
-  console.log("scenarioId", scenarioId);
 
   const { data: formsResponse, isLoading: formsLoading } = useQuery({
     ...scenariosQueryOptions.forms(scenarioId ?? 0),
@@ -221,25 +219,59 @@ const PracticeActivePage = () => {
       );
   }, [formsResponse]);
 
-  const myRole = practice?.myRole as PracticeFormRole | undefined;
+  const myRole = practice?.myRole;
+  const isObserver = myRole === "OBSERVER";
 
-  const scenarioForm = useMemo(() => {
-    if (!myRole) return undefined;
-    return forms.find(
-      (form: PracticeViewForm) => form.type === "SCENARIO" && form.role === myRole
+  // For OBSERVER: get all SCENARIO forms, for others: get own SCENARIO form
+  const scenarioForms = useMemo(() => {
+    if (!myRole) return [];
+    if (isObserver) {
+      return forms.filter(
+        (form: PracticeViewForm) => form.type === "SCENARIO"
+      );
+    }
+    const ownForm = forms.find(
+      (form: PracticeViewForm) =>
+        form.type === "SCENARIO" && form.role === myRole
     );
-  }, [forms, myRole]);
+    return ownForm ? [ownForm] : [];
+  }, [forms, myRole, isObserver]);
 
+  // For OBSERVER: get all EVALUATION forms, for others: get other roles' EVALUATION forms
   const evaluationForms = useMemo(() => {
     if (!myRole) return [];
+    if (isObserver) {
+      return forms.filter(
+        (form: PracticeViewForm) => form.type === "EVALUATION"
+      );
+    }
     return forms.filter(
-      (form: PracticeViewForm) => form.type === "EVALUATION" && form.role !== myRole
+      (form: PracticeViewForm) =>
+        form.type === "EVALUATION" && form.role !== myRole
     );
-  }, [forms, myRole]);
+  }, [forms, myRole, isObserver]);
+
+  const [activeScenarioRole, setActiveScenarioRole] = useState<
+    PracticeFormRole | undefined
+  >(undefined);
 
   const [activeEvaluationRole, setActiveEvaluationRole] = useState<
     PracticeFormRole | undefined
   >(undefined);
+
+  useEffect(() => {
+    if (scenarioForms.length === 0) {
+      setActiveScenarioRole(undefined);
+      return;
+    }
+
+    setActiveScenarioRole((prev) => {
+      if (prev && scenarioForms.some((form) => form.role === prev)) {
+        return prev;
+      }
+      return scenarioForms[0].role;
+    });
+  }, [scenarioForms]);
 
   useEffect(() => {
     if (evaluationForms.length === 0) {
@@ -283,7 +315,6 @@ const PracticeActivePage = () => {
     ...practicesMutationOptions.finish(),
     onSuccess: (_, practiceId) => {
       handleFormSuccess("Практика успешно завершена");
-      hideActive();
       queryClient.invalidateQueries({ queryKey: ["practices", "cards"] });
       queryClient.invalidateQueries({ queryKey: ["practices", "mine"] });
       queryClient.invalidateQueries({ queryKey: ["practices", "past"] });
@@ -291,6 +322,8 @@ const PracticeActivePage = () => {
         queryClient.invalidateQueries({
           queryKey: ["practices", "detail", practiceId],
         });
+        // Navigate directly to evaluation page for moderator
+        hideActive();
         navigate(`/evaluation/evaluate/${practiceId}`);
       }
     },
@@ -316,11 +349,42 @@ const PracticeActivePage = () => {
           <TabsContent value="scenario" className="mt-4 bg-gray-100 rounded-xl p-2">
             {formsLoading ? (
               formsLoader
-            ) : scenarioForm ? (
+            ) : isObserver && scenarioForms.length > 0 && activeScenarioRole ? (
+              <Tabs
+                value={activeScenarioRole}
+                onValueChange={(value) =>
+                  setActiveScenarioRole(value as PracticeFormRole)
+                }
+                className="space-y-4"
+              >
+                <TabsList variant="default" className="w-full grid grid-cols-3">
+                  {scenarioForms.map((form) => (
+                    <TabsTrigger variant="default" key={form.id} value={form.role}>
+                      {getRoleLabel(form.role)}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {scenarioForms.map((form) => (
+                  <TabsContent
+                    key={form.id}
+                    value={form.role}
+                    className="space-y-3 data-[state=inactive]:hidden"
+                    forceMount
+                  >
+                    <EvaluationBlocks
+                      blocks={form.blocks}
+                      formRole={form.role}
+                      readOnly
+                    />
+                  </TabsContent>
+                ))}
+              </Tabs>
+            ) : !isObserver && scenarioForms.length > 0 ? (
               <div className="space-y-4">
                 <EvaluationBlocks
-                  blocks={scenarioForm.blocks}
-                  formRole={scenarioForm.role}
+                  blocks={scenarioForms[0].blocks}
+                  formRole={scenarioForms[0].role}
                   readOnly
                 />
               </div>
@@ -341,7 +405,12 @@ const PracticeActivePage = () => {
                 }
                 className="space-y-4"
               >
-                <TabsList variant="default" className="w-full grid grid-cols-2">
+                <TabsList
+                  variant="default"
+                  className={`w-full grid ${
+                    isObserver ? "grid-cols-3" : "grid-cols-2"
+                  }`}
+                >
                   {evaluationForms.map((form) => (
                     <TabsTrigger variant="default" key={form.id} value={form.role}>
                       {getRoleLabel(form.role)}
@@ -377,7 +446,7 @@ const PracticeActivePage = () => {
         className="px-4 pb-4"
         style={{ paddingBottom: "calc(1rem + var(--nav-h, 80px))" }}
       >
-        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+        <div className="w-full grid gap-3">
           <Button className="h-12 w-full" onClick={handleConnect}>
             Подключиться
           </Button>

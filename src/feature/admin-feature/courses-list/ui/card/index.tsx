@@ -10,7 +10,6 @@ import { coursesMutationOptions } from "@/entities";
 import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 
 export const CourseCard: FC<{ data: Course }> = ({ data }) => {
-  console.log("Admin CourseCard rendered with data:", data);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);

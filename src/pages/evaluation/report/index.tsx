@@ -16,9 +16,9 @@ export const EvaluationReportPage = () => {
     error,
   } = useQuery(practiceEvaluationQueryOptions.formsFinal(id));
 
-  console.log(formsRes);
-  console.log(error);
-  console.log(id);
+  // console.log(formsRes);
+  // console.log(error);
+  // console.log(id);
 
   if (isLoading) {
     return (
