@@ -11,7 +11,10 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/components/ui/button-group";
-import { create1to5Scale } from "@/shared/lib/scaleUtils";
+import {
+  create1to5Scale,
+  regenerateScaleValues,
+} from "@/shared/lib/scaleUtils";
 import type { ScaleOption } from "@/entities/scenarios/model/types/scenarios.types";
 import { cn } from "@/lib/utils";
 
@@ -103,34 +106,45 @@ export function Assess1to5Block({
   const addScalePoint = () => {
     if (scaleOptions.length < 5) {
       const newLabel = `Опция ${scaleOptions.length + 1}`;
-      const newScale = create1to5Scale([
-        ...scaleOptions.map((opt) => opt.label),
-        newLabel,
-      ]);
-      setScaleOptions(newScale);
+      const newOption: ScaleOption = {
+        label: newLabel,
+        value: 0,
+        countsTowardsScore: true,
+        ord: scaleOptions.length,
+      };
+      const newScale = [...scaleOptions, newOption];
+      // Регенерируем значения для всех опций
+      const regeneratedScale = regenerateScaleValues(newScale);
+      setScaleOptions(regeneratedScale);
       onDataChange?.({
         selectedSkills: selectedSkills
           .filter(Boolean)
           .map((id) => parseInt(id)),
-        scaleOptionsMulti: newScale,
+        scaleOptionsMulti: regeneratedScale,
       });
     }
   };
 
   const removeScalePoint = () => {
     if (scaleOptions.length > 1) {
-      const newScale = scaleOptions.slice(0, -1);
-      setScaleOptions(newScale);
+      const newScale = scaleOptions.slice(0, -1).map((opt, idx) => ({
+        ...opt,
+        ord: idx,
+      }));
+      // Регенерируем значения для всех опций
+      const regeneratedScale = regenerateScaleValues(newScale);
+      setScaleOptions(regeneratedScale);
       onDataChange?.({
         selectedSkills: selectedSkills
           .filter(Boolean)
           .map((id) => parseInt(id)),
-        scaleOptionsMulti: newScale,
+        scaleOptionsMulti: regeneratedScale,
       });
     }
   };
 
   const updateScaleLabel = (index: number, label: string) => {
+    // При изменении только label не нужно регенерировать значения
     const updatedScale = scaleOptions.map((opt, i) =>
       i === index ? { ...opt, label } : opt
     );

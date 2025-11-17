@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import type { UpdateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
 import WebApp from "@twa-dev/sdk";
 import { scenariosQueryOptions } from "@/entities";
+import { createYN50Scale, create1to5Scale } from "@/shared/lib/scaleUtils";
 
 // Extended block item with actual data
 interface ExtendedBlockItem extends ScenarioBlockItem {
@@ -59,12 +60,24 @@ export function EditScenarioForm({
   const navigate = useNavigate();
 
   // Split blocks into scenario and evaluation for each role
-  const [sellerScenarioBlocks, setSellerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [sellerEvaluationBlocks, setSellerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [buyerScenarioBlocks, setBuyerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [buyerEvaluationBlocks, setBuyerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [moderatorScenarioBlocks, setModeratorScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [moderatorEvaluationBlocks, setModeratorEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [sellerScenarioBlocks, setSellerScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [sellerEvaluationBlocks, setSellerEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [buyerScenarioBlocks, setBuyerScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [buyerEvaluationBlocks, setBuyerEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [moderatorScenarioBlocks, setModeratorScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [moderatorEvaluationBlocks, setModeratorEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
 
   // Form data state
   const [formData, setFormData] = useState<{
@@ -165,7 +178,9 @@ export function EditScenarioForm({
       ): ExtendedBlockItem[] => {
         return blocks.map((block) => {
           const baseItem: ExtendedBlockItem = {
-            id: `${role}-${formType}-${block.type}-${block.position}-${Date.now()}`,
+            id: `${role}-${formType}-${block.type}-${
+              block.position
+            }-${Date.now()}`,
             type: block.type as BlockKind,
             textContent: "",
             questionContent: "",
@@ -212,30 +227,66 @@ export function EditScenarioForm({
       };
 
       // Split forms by role and type
-      const sellerScenarioForm = scenario.forms.find((f) => f.role === "SELLER" && f.type === "SCENARIO");
-      const sellerEvaluationForm = scenario.forms.find((f) => f.role === "SELLER" && f.type === "EVALUATION");
-      const buyerScenarioForm = scenario.forms.find((f) => f.role === "BUYER" && f.type === "SCENARIO");
-      const buyerEvaluationForm = scenario.forms.find((f) => f.role === "BUYER" && f.type === "EVALUATION");
-      const moderatorScenarioForm = scenario.forms.find((f) => f.role === "MODERATOR" && f.type === "SCENARIO");
-      const moderatorEvaluationForm = scenario.forms.find((f) => f.role === "MODERATOR" && f.type === "EVALUATION");
+      const sellerScenarioForm = scenario.forms.find(
+        (f) => f.role === "SELLER" && f.type === "SCENARIO"
+      );
+      const sellerEvaluationForm = scenario.forms.find(
+        (f) => f.role === "SELLER" && f.type === "EVALUATION"
+      );
+      const buyerScenarioForm = scenario.forms.find(
+        (f) => f.role === "BUYER" && f.type === "SCENARIO"
+      );
+      const buyerEvaluationForm = scenario.forms.find(
+        (f) => f.role === "BUYER" && f.type === "EVALUATION"
+      );
+      const moderatorScenarioForm = scenario.forms.find(
+        (f) => f.role === "MODERATOR" && f.type === "SCENARIO"
+      );
+      const moderatorEvaluationForm = scenario.forms.find(
+        (f) => f.role === "MODERATOR" && f.type === "EVALUATION"
+      );
 
       setSellerScenarioBlocks(
-        convertApiBlocksToExtended(sellerScenarioForm?.blocks || [], "SELLER", "scenario")
+        convertApiBlocksToExtended(
+          sellerScenarioForm?.blocks || [],
+          "SELLER",
+          "scenario"
+        )
       );
       setSellerEvaluationBlocks(
-        convertApiBlocksToExtended(sellerEvaluationForm?.blocks || [], "SELLER", "evaluation")
+        convertApiBlocksToExtended(
+          sellerEvaluationForm?.blocks || [],
+          "SELLER",
+          "evaluation"
+        )
       );
       setBuyerScenarioBlocks(
-        convertApiBlocksToExtended(buyerScenarioForm?.blocks || [], "BUYER", "scenario")
+        convertApiBlocksToExtended(
+          buyerScenarioForm?.blocks || [],
+          "BUYER",
+          "scenario"
+        )
       );
       setBuyerEvaluationBlocks(
-        convertApiBlocksToExtended(buyerEvaluationForm?.blocks || [], "BUYER", "evaluation")
+        convertApiBlocksToExtended(
+          buyerEvaluationForm?.blocks || [],
+          "BUYER",
+          "evaluation"
+        )
       );
       setModeratorScenarioBlocks(
-        convertApiBlocksToExtended(moderatorScenarioForm?.blocks || [], "MODERATOR", "scenario")
+        convertApiBlocksToExtended(
+          moderatorScenarioForm?.blocks || [],
+          "MODERATOR",
+          "scenario"
+        )
       );
       setModeratorEvaluationBlocks(
-        convertApiBlocksToExtended(moderatorEvaluationForm?.blocks || [], "MODERATOR", "evaluation")
+        convertApiBlocksToExtended(
+          moderatorEvaluationForm?.blocks || [],
+          "MODERATOR",
+          "evaluation"
+        )
       );
 
       // Store original data for change detection
@@ -342,7 +393,16 @@ export function EditScenarioForm({
       setHasChanges(hasChangesValue);
       onFormChange?.(hasChangesValue);
     }
-  }, [formData, sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks, onFormChange]);
+  }, [
+    formData,
+    sellerScenarioBlocks,
+    sellerEvaluationBlocks,
+    buyerScenarioBlocks,
+    buyerEvaluationBlocks,
+    moderatorScenarioBlocks,
+    moderatorEvaluationBlocks,
+    onFormChange,
+  ]);
 
   // Telegram back button handler for tab navigation
   useEffect(() => {
@@ -389,7 +449,10 @@ export function EditScenarioForm({
 
   const handleAdd =
     (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
-      const createItem = (t: BlockKind, formType: "scenario" | "evaluation"): ExtendedBlockItem => {
+      const createItem = (
+        t: BlockKind,
+        formType: "scenario" | "evaluation"
+      ): ExtendedBlockItem => {
         const baseItem: ExtendedBlockItem = {
           id: `${role}-${formType}-${t}-${Date.now()}`,
           type: t,
@@ -404,18 +467,15 @@ export function EditScenarioForm({
 
         // Initialize with default values based on block type
         if (t === "SCALE_SKILL_SINGLE") {
-          baseItem.scaleOptions = [
-            { label: "НЕТ", value: -2, countsTowardsScore: true, ord: 0 },
-            { label: "50/50", value: -1, countsTowardsScore: true, ord: 1 },
-            { label: "ДА", value: 1, countsTowardsScore: true, ord: 2 },
-            { label: "?", value: 2, countsTowardsScore: false, ord: 3 },
-          ];
+          // Используем функцию для генерации правильных значений
+          baseItem.scaleOptions = createYN50Scale();
         } else if (t === "SCALE_SKILL_MULTI") {
-          baseItem.scaleOptionsMulti = [
-            { label: "плохо", value: -1, countsTowardsScore: true, ord: 0 },
-            { label: "хорошо", value: 0, countsTowardsScore: true, ord: 1 },
-            { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
-          ];
+          // Используем функцию для генерации правильных значений
+          baseItem.scaleOptionsMulti = create1to5Scale([
+            "плохо",
+            "хорошо",
+            "отлично",
+          ]);
         }
 
         return baseItem;
@@ -467,7 +527,9 @@ export function EditScenarioForm({
         } else if (role === "BUYER") {
           setBuyerEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
         } else if (role === "MODERATOR") {
-          setModeratorEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
+          setModeratorEvaluationBlocks((prev) =>
+            prev.filter((b) => b.id !== id)
+          );
         }
       }
     };
@@ -477,13 +539,13 @@ export function EditScenarioForm({
       // Helper to find which array contains this block
       const findBlockLocation = () => {
         if (role === "SELLER") {
-          const inScenario = sellerScenarioBlocks.some(b => b.id === id);
+          const inScenario = sellerScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         } else if (role === "BUYER") {
-          const inScenario = buyerScenarioBlocks.some(b => b.id === id);
+          const inScenario = buyerScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         } else {
-          const inScenario = moderatorScenarioBlocks.some(b => b.id === id);
+          const inScenario = moderatorScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         }
       };
@@ -523,7 +585,15 @@ export function EditScenarioForm({
         }
       }
     },
-    [subTab, sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]
+    [
+      subTab,
+      sellerScenarioBlocks,
+      sellerEvaluationBlocks,
+      buyerScenarioBlocks,
+      buyerEvaluationBlocks,
+      moderatorScenarioBlocks,
+      moderatorEvaluationBlocks,
+    ]
   );
 
   // Validate a single block based on its type
@@ -561,21 +631,41 @@ export function EditScenarioForm({
   );
 
   // Helper to get current blocks based on role and sub-tab
-  const getCurrentBlocks = useCallback((role: "SELLER" | "BUYER" | "MODERATOR", subTabType: "scenario" | "evaluation") => {
-    if (role === "SELLER") {
-      return subTabType === "scenario" ? sellerScenarioBlocks : sellerEvaluationBlocks;
-    } else if (role === "BUYER") {
-      return subTabType === "scenario" ? buyerScenarioBlocks : buyerEvaluationBlocks;
-    } else {
-      return subTabType === "scenario" ? moderatorScenarioBlocks : moderatorEvaluationBlocks;
-    }
-  }, [sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]);
+  const getCurrentBlocks = useCallback(
+    (
+      role: "SELLER" | "BUYER" | "MODERATOR",
+      subTabType: "scenario" | "evaluation"
+    ) => {
+      if (role === "SELLER") {
+        return subTabType === "scenario"
+          ? sellerScenarioBlocks
+          : sellerEvaluationBlocks;
+      } else if (role === "BUYER") {
+        return subTabType === "scenario"
+          ? buyerScenarioBlocks
+          : buyerEvaluationBlocks;
+      } else {
+        return subTabType === "scenario"
+          ? moderatorScenarioBlocks
+          : moderatorEvaluationBlocks;
+      }
+    },
+    [
+      sellerScenarioBlocks,
+      sellerEvaluationBlocks,
+      buyerScenarioBlocks,
+      buyerEvaluationBlocks,
+      moderatorScenarioBlocks,
+      moderatorEvaluationBlocks,
+    ]
+  );
 
   // Tab navigation helpers
   const handleNextTab = useCallback(() => {
     const currentSubTab = subTab[activeTab];
     const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
-    const validationKey = `${activeTab}_${currentSubTab}` as keyof typeof validationTriggered;
+    const validationKey =
+      `${activeTab}_${currentSubTab}` as keyof typeof validationTriggered;
 
     // Validate blocks
     const invalidBlockIndex = currentBlocks.findIndex(
@@ -665,53 +755,74 @@ export function EditScenarioForm({
   const isNextEnabled = useCallback(() => {
     const currentSubTab = subTab[activeTab];
     const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
-    
+
     // For scenario blocks, no validation required - can be empty
     if (currentSubTab === "scenario") {
       // If there are blocks, they must be valid
       if (currentBlocks.length === 0) return true;
       return areAllBlocksValid(currentBlocks);
     }
-    
+
     // For evaluation blocks, apply minimum block requirements
     if (currentSubTab === "evaluation") {
       const minBlocks = activeTab === "SELLER" ? 3 : 1;
       if (currentBlocks.length < minBlocks) return false;
       return areAllBlocksValid(currentBlocks);
     }
-    
+
     return false;
   }, [activeTab, subTab, getCurrentBlocks, areAllBlocksValid]);
 
   // Handle tab change with validation
-  const handleTabChange = useCallback((value: string) => {
-    // If there are invalid blocks, trigger validation and block tab change
-    if (hasInvalidBlocks) {
-      // Trigger validation for all sub-tabs
-      setValidationTriggered({
-        SELLER_scenario: true,
-        SELLER_evaluation: true,
-        BUYER_scenario: true,
-        BUYER_evaluation: true,
-        MODERATOR_scenario: true,
-        MODERATOR_evaluation: true,
-      });
-      return; // Block tab change
-    }
-    // Allow tab change if no invalid blocks
-    setActiveTab(value as "SELLER" | "BUYER" | "MODERATOR");
-  }, [hasInvalidBlocks]);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      // If there are invalid blocks, trigger validation and block tab change
+      if (hasInvalidBlocks) {
+        // Trigger validation for all sub-tabs
+        setValidationTriggered({
+          SELLER_scenario: true,
+          SELLER_evaluation: true,
+          BUYER_scenario: true,
+          BUYER_evaluation: true,
+          MODERATOR_scenario: true,
+          MODERATOR_evaluation: true,
+        });
+        return; // Block tab change
+      }
+      // Allow tab change if no invalid blocks
+      setActiveTab(value as "SELLER" | "BUYER" | "MODERATOR");
+    },
+    [hasInvalidBlocks]
+  );
 
   const handleSubmit = useCallback(() => {
     // Validate all blocks before submitting
-    const sellerScenarioValid = sellerScenarioBlocks.length === 0 || areAllBlocksValid(sellerScenarioBlocks);
-    const sellerEvaluationValid = sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks);
-    const buyerScenarioValid = buyerScenarioBlocks.length === 0 || areAllBlocksValid(buyerScenarioBlocks);
-    const buyerEvaluationValid = buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks);
-    const moderatorScenarioValid = moderatorScenarioBlocks.length === 0 || areAllBlocksValid(moderatorScenarioBlocks);
-    const moderatorEvaluationValid = moderatorEvaluationBlocks.length >= 1 && areAllBlocksValid(moderatorEvaluationBlocks);
-    
-    const allTabsValid = sellerScenarioValid && sellerEvaluationValid && buyerScenarioValid && buyerEvaluationValid && moderatorScenarioValid && moderatorEvaluationValid;
+    const sellerScenarioValid =
+      sellerScenarioBlocks.length === 0 ||
+      areAllBlocksValid(sellerScenarioBlocks);
+    const sellerEvaluationValid =
+      sellerEvaluationBlocks.length >= 3 &&
+      areAllBlocksValid(sellerEvaluationBlocks);
+    const buyerScenarioValid =
+      buyerScenarioBlocks.length === 0 ||
+      areAllBlocksValid(buyerScenarioBlocks);
+    const buyerEvaluationValid =
+      buyerEvaluationBlocks.length >= 1 &&
+      areAllBlocksValid(buyerEvaluationBlocks);
+    const moderatorScenarioValid =
+      moderatorScenarioBlocks.length === 0 ||
+      areAllBlocksValid(moderatorScenarioBlocks);
+    const moderatorEvaluationValid =
+      moderatorEvaluationBlocks.length >= 1 &&
+      areAllBlocksValid(moderatorEvaluationBlocks);
+
+    const allTabsValid =
+      sellerScenarioValid &&
+      sellerEvaluationValid &&
+      buyerScenarioValid &&
+      buyerEvaluationValid &&
+      moderatorScenarioValid &&
+      moderatorEvaluationValid;
 
     if (!formData.title.trim()) {
       handleFormError("Ошибка валидации", "Заполните название сценария");
@@ -734,17 +845,20 @@ export function EditScenarioForm({
       let firstInvalidTab: "SELLER" | "BUYER" | "MODERATOR" = "SELLER";
 
       if (!sellerEvaluationValid) {
-        firstInvalidBlock = sellerEvaluationBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidBlock =
+          sellerEvaluationBlocks.find((b) => !validateBlock(b)) || null;
         firstInvalidTab = "SELLER";
-        setSubTab(prev => ({ ...prev, SELLER: "evaluation" }));
+        setSubTab((prev) => ({ ...prev, SELLER: "evaluation" }));
       } else if (!buyerEvaluationValid) {
-        firstInvalidBlock = buyerEvaluationBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidBlock =
+          buyerEvaluationBlocks.find((b) => !validateBlock(b)) || null;
         firstInvalidTab = "BUYER";
-        setSubTab(prev => ({ ...prev, BUYER: "evaluation" }));
+        setSubTab((prev) => ({ ...prev, BUYER: "evaluation" }));
       } else if (!moderatorEvaluationValid) {
-        firstInvalidBlock = moderatorEvaluationBlocks.find((b) => !validateBlock(b)) || null;
+        firstInvalidBlock =
+          moderatorEvaluationBlocks.find((b) => !validateBlock(b)) || null;
         firstInvalidTab = "MODERATOR";
-        setSubTab(prev => ({ ...prev, MODERATOR: "evaluation" }));
+        setSubTab((prev) => ({ ...prev, MODERATOR: "evaluation" }));
       }
 
       // Switch to tab with invalid block and scroll
@@ -886,7 +1000,10 @@ export function EditScenarioForm({
 
     // MODERATOR forms
     // Scenario form: include if it existed originally OR if it has blocks now
-    if (originalForms?.moderatorScenario || moderatorScenarioBlocks.length > 0) {
+    if (
+      originalForms?.moderatorScenario ||
+      moderatorScenarioBlocks.length > 0
+    ) {
       forms.push({
         role: "MODERATOR",
         type: "SCENARIO",
@@ -940,7 +1057,9 @@ export function EditScenarioForm({
         <div className="sticky top-0 bg-white z-50 pb-2">
           <TabsList
             variant="second"
-            className={`grid grid-cols-3 w-full ${hasInvalidBlocks ? "pointer-events-none opacity-50" : ""}`}
+            className={`grid grid-cols-3 w-full ${
+              hasInvalidBlocks ? "pointer-events-none opacity-50" : ""
+            }`}
           >
             <TabsTrigger variant="second" value="SELLER">
               {getRoleLabel("SELLER")}
@@ -960,7 +1079,15 @@ export function EditScenarioForm({
           forceMount
         >
           <div className="overflow-visible min-h-0 space-y-4">
-            <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
+            <Tabs
+              value={subTab.SELLER}
+              onValueChange={(value) =>
+                setSubTab((prev) => ({
+                  ...prev,
+                  SELLER: value as "scenario" | "evaluation",
+                }))
+              }
+            >
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
                   Сценарная часть
@@ -1001,7 +1128,15 @@ export function EditScenarioForm({
           forceMount
         >
           <div className="overflow-visible min-h-0 space-y-4">
-            <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
+            <Tabs
+              value={subTab.BUYER}
+              onValueChange={(value) =>
+                setSubTab((prev) => ({
+                  ...prev,
+                  BUYER: value as "scenario" | "evaluation",
+                }))
+              }
+            >
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
                   Сценарная часть
@@ -1042,7 +1177,15 @@ export function EditScenarioForm({
           forceMount
         >
           <div className="overflow-visible min-h-0 space-y-4">
-            <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
+            <Tabs
+              value={subTab.MODERATOR}
+              onValueChange={(value) =>
+                setSubTab((prev) => ({
+                  ...prev,
+                  MODERATOR: value as "scenario" | "evaluation",
+                }))
+              }
+            >
               <TabsList variant="second" className="grid grid-cols-2 w-full">
                 <TabsTrigger variant="second" value="scenario">
                   Сценарная часть
@@ -1125,12 +1268,30 @@ export function EditScenarioForm({
                 isPending ||
                 !formData.title.trim() ||
                 !hasChanges ||
-                !(sellerScenarioBlocks.length === 0 || areAllBlocksValid(sellerScenarioBlocks)) ||
-                !(sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks)) ||
-                !(buyerScenarioBlocks.length === 0 || areAllBlocksValid(buyerScenarioBlocks)) ||
-                !(buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks)) ||
-                !(moderatorScenarioBlocks.length === 0 || areAllBlocksValid(moderatorScenarioBlocks)) ||
-                !(moderatorEvaluationBlocks.length >= 1 && areAllBlocksValid(moderatorEvaluationBlocks))
+                !(
+                  sellerScenarioBlocks.length === 0 ||
+                  areAllBlocksValid(sellerScenarioBlocks)
+                ) ||
+                !(
+                  sellerEvaluationBlocks.length >= 3 &&
+                  areAllBlocksValid(sellerEvaluationBlocks)
+                ) ||
+                !(
+                  buyerScenarioBlocks.length === 0 ||
+                  areAllBlocksValid(buyerScenarioBlocks)
+                ) ||
+                !(
+                  buyerEvaluationBlocks.length >= 1 &&
+                  areAllBlocksValid(buyerEvaluationBlocks)
+                ) ||
+                !(
+                  moderatorScenarioBlocks.length === 0 ||
+                  areAllBlocksValid(moderatorScenarioBlocks)
+                ) ||
+                !(
+                  moderatorEvaluationBlocks.length >= 1 &&
+                  areAllBlocksValid(moderatorEvaluationBlocks)
+                )
               }
               className="flex-1 h-12"
             >

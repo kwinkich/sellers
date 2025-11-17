@@ -20,6 +20,7 @@ import { handleFormSuccess, handleFormError, ERROR_MESSAGES } from "@/shared";
 import { useNavigate } from "react-router-dom";
 import type { CreateScenarioRequest } from "@/entities/scenarios/model/types/scenarios.types";
 import WebApp from "@twa-dev/sdk";
+import { createYN50Scale, create1to5Scale } from "@/shared/lib/scaleUtils";
 
 // Pre-built block configurations using skill codes
 const PREBUILT_BLOCKS = {
@@ -71,14 +72,26 @@ export const AdminScenariosCreatePage = () => {
   useTelegramVerticalSwipes(true);
 
   // Split blocks into scenario (TEXT only) and evaluation (all other blocks) for each role
-  const [sellerScenarioBlocks, setSellerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [sellerEvaluationBlocks, setSellerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
-  
-  const [buyerScenarioBlocks, setBuyerScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [buyerEvaluationBlocks, setBuyerEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
-  
-  const [moderatorScenarioBlocks, setModeratorScenarioBlocks] = useState<ExtendedBlockItem[]>([]);
-  const [moderatorEvaluationBlocks, setModeratorEvaluationBlocks] = useState<ExtendedBlockItem[]>([]);
+  const [sellerScenarioBlocks, setSellerScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [sellerEvaluationBlocks, setSellerEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+
+  const [buyerScenarioBlocks, setBuyerScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [buyerEvaluationBlocks, setBuyerEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+
+  const [moderatorScenarioBlocks, setModeratorScenarioBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
+  const [moderatorEvaluationBlocks, setModeratorEvaluationBlocks] = useState<
+    ExtendedBlockItem[]
+  >([]);
 
   // Form data state
   const [formData, setFormData] = useState<{
@@ -233,11 +246,7 @@ export const AdminScenariosCreatePage = () => {
         type: PREBUILT_BLOCKS.MODERATOR.type,
         prebuiltSkills: moderatorSkillIds,
         selectedSkills: moderatorSkillIds,
-        scaleOptionsMulti: [
-          { label: "плохо", value: -1, countsTowardsScore: true, ord: 0 },
-          { label: "хорошо", value: 0, countsTowardsScore: true, ord: 1 },
-          { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
-        ],
+        scaleOptionsMulti: create1to5Scale(["плохо", "хорошо", "отлично"]),
       };
       setModeratorEvaluationBlocks((prev) => [...prev, prebuiltBlock]);
     } else {
@@ -258,11 +267,7 @@ export const AdminScenariosCreatePage = () => {
         type: PREBUILT_BLOCKS.BUYER.type,
         prebuiltSkills: buyerSkillIds,
         selectedSkills: buyerSkillIds,
-        scaleOptionsMulti: [
-          { label: "плохо", value: -1, countsTowardsScore: true, ord: 0 },
-          { label: "хорошо", value: 0, countsTowardsScore: true, ord: 1 },
-          { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
-        ],
+        scaleOptionsMulti: create1to5Scale(["плохо", "хорошо", "отлично"]),
       };
       setBuyerEvaluationBlocks((prev) => [...prev, prebuiltBlock]);
     } else {
@@ -278,7 +283,10 @@ export const AdminScenariosCreatePage = () => {
 
   const handleAdd = useCallback(
     (role: "SELLER" | "BUYER" | "MODERATOR") => (type: BlockKind) => {
-      const createItem = (t: BlockKind, formType: "scenario" | "evaluation"): ExtendedBlockItem => {
+      const createItem = (
+        t: BlockKind,
+        formType: "scenario" | "evaluation"
+      ): ExtendedBlockItem => {
         const baseItem: ExtendedBlockItem = {
           id: `${role}-${formType}-${t}-${Date.now()}`,
           type: t,
@@ -293,18 +301,15 @@ export const AdminScenariosCreatePage = () => {
 
         // Initialize with default values based on block type
         if (t === "SCALE_SKILL_SINGLE") {
-          baseItem.scaleOptions = [
-            { label: "НЕТ", value: -2, countsTowardsScore: true, ord: 0 },
-            { label: "50/50", value: -1, countsTowardsScore: true, ord: 1 },
-            { label: "ДА", value: 1, countsTowardsScore: true, ord: 2 },
-            { label: "?", value: 2, countsTowardsScore: false, ord: 3 },
-          ];
+          // Используем функцию для генерации правильных значений
+          baseItem.scaleOptions = createYN50Scale();
         } else if (t === "SCALE_SKILL_MULTI") {
-          baseItem.scaleOptionsMulti = [
-            { label: "плохо", value: -1, countsTowardsScore: true, ord: 0 },
-            { label: "хорошо", value: 0, countsTowardsScore: true, ord: 1 },
-            { label: "отлично", value: 1, countsTowardsScore: true, ord: 2 },
-          ];
+          // Используем функцию для генерации правильных значений
+          baseItem.scaleOptionsMulti = create1to5Scale([
+            "плохо",
+            "хорошо",
+            "отлично",
+          ]);
         }
 
         return baseItem;
@@ -358,7 +363,9 @@ export const AdminScenariosCreatePage = () => {
         } else if (role === "BUYER") {
           setBuyerEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
         } else if (role === "MODERATOR") {
-          setModeratorEvaluationBlocks((prev) => prev.filter((b) => b.id !== id));
+          setModeratorEvaluationBlocks((prev) =>
+            prev.filter((b) => b.id !== id)
+          );
         }
       }
     },
@@ -382,13 +389,13 @@ export const AdminScenariosCreatePage = () => {
       // Helper to find which array contains this block
       const findBlockLocation = () => {
         if (role === "SELLER") {
-          const inScenario = sellerScenarioBlocks.some(b => b.id === id);
+          const inScenario = sellerScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         } else if (role === "BUYER") {
-          const inScenario = buyerScenarioBlocks.some(b => b.id === id);
+          const inScenario = buyerScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         } else {
-          const inScenario = moderatorScenarioBlocks.some(b => b.id === id);
+          const inScenario = moderatorScenarioBlocks.some((b) => b.id === id);
           return inScenario ? "scenario" : "evaluation";
         }
       };
@@ -423,7 +430,15 @@ export const AdminScenariosCreatePage = () => {
         }
       }
     },
-    [updateById, sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]
+    [
+      updateById,
+      sellerScenarioBlocks,
+      sellerEvaluationBlocks,
+      buyerScenarioBlocks,
+      buyerEvaluationBlocks,
+      moderatorScenarioBlocks,
+      moderatorEvaluationBlocks,
+    ]
   );
 
   // Validate a single block based on its type
@@ -463,8 +478,12 @@ export const AdminScenariosCreatePage = () => {
   // Compute which tabs should be clickable based on current block validation
   // A tab becomes clickable when its evaluation sub-tab meets minimum requirements
   const clickableTabs = useMemo(() => {
-    const isSellerEvaluationValid = sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks);
-    const isBuyerEvaluationValid = buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks);
+    const isSellerEvaluationValid =
+      sellerEvaluationBlocks.length >= 3 &&
+      areAllBlocksValid(sellerEvaluationBlocks);
+    const isBuyerEvaluationValid =
+      buyerEvaluationBlocks.length >= 1 &&
+      areAllBlocksValid(buyerEvaluationBlocks);
 
     return {
       SELLER: true, // SELLER is always clickable (it's the first tab)
@@ -474,21 +493,41 @@ export const AdminScenariosCreatePage = () => {
   }, [sellerEvaluationBlocks, buyerEvaluationBlocks, areAllBlocksValid]);
 
   // Helper to get current blocks based on role and sub-tab
-  const getCurrentBlocks = useCallback((role: "SELLER" | "BUYER" | "MODERATOR", subTabType: "scenario" | "evaluation") => {
-    if (role === "SELLER") {
-      return subTabType === "scenario" ? sellerScenarioBlocks : sellerEvaluationBlocks;
-    } else if (role === "BUYER") {
-      return subTabType === "scenario" ? buyerScenarioBlocks : buyerEvaluationBlocks;
-    } else {
-      return subTabType === "scenario" ? moderatorScenarioBlocks : moderatorEvaluationBlocks;
-    }
-  }, [sellerScenarioBlocks, sellerEvaluationBlocks, buyerScenarioBlocks, buyerEvaluationBlocks, moderatorScenarioBlocks, moderatorEvaluationBlocks]);
+  const getCurrentBlocks = useCallback(
+    (
+      role: "SELLER" | "BUYER" | "MODERATOR",
+      subTabType: "scenario" | "evaluation"
+    ) => {
+      if (role === "SELLER") {
+        return subTabType === "scenario"
+          ? sellerScenarioBlocks
+          : sellerEvaluationBlocks;
+      } else if (role === "BUYER") {
+        return subTabType === "scenario"
+          ? buyerScenarioBlocks
+          : buyerEvaluationBlocks;
+      } else {
+        return subTabType === "scenario"
+          ? moderatorScenarioBlocks
+          : moderatorEvaluationBlocks;
+      }
+    },
+    [
+      sellerScenarioBlocks,
+      sellerEvaluationBlocks,
+      buyerScenarioBlocks,
+      buyerEvaluationBlocks,
+      moderatorScenarioBlocks,
+      moderatorEvaluationBlocks,
+    ]
+  );
 
   // Tab navigation helpers - now with sub-tab support
   const handleNextTab = useCallback(() => {
     const currentSubTab = subTab[activeTab];
     const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
-    const validationKey = `${activeTab}_${currentSubTab}` as keyof typeof validationTriggered;
+    const validationKey =
+      `${activeTab}_${currentSubTab}` as keyof typeof validationTriggered;
 
     // Validate blocks
     const invalidBlockIndex = currentBlocks.findIndex(
@@ -551,50 +590,65 @@ export const AdminScenariosCreatePage = () => {
   }, [activeTab, subTab]);
 
   // Handle tab click - only allow if tab is clickable
-  const handleTabClick = useCallback((tab: "SELLER" | "BUYER" | "MODERATOR") => {
-    // Can always click current tab (no-op)
-    if (tab === activeTab) return;
+  const handleTabClick = useCallback(
+    (tab: "SELLER" | "BUYER" | "MODERATOR") => {
+      // Can always click current tab (no-op)
+      if (tab === activeTab) return;
 
-    // Can click if tab is marked as clickable
-    if (clickableTabs[tab]) {
-      setActiveTab(tab);
-      setSubTab((prev) => ({ ...prev, [tab]: "scenario" }));
-    }
-  }, [activeTab, clickableTabs]);
+      // Can click if tab is marked as clickable
+      if (clickableTabs[tab]) {
+        setActiveTab(tab);
+        setSubTab((prev) => ({ ...prev, [tab]: "scenario" }));
+      }
+    },
+    [activeTab, clickableTabs]
+  );
 
   // Check if next button should be enabled
   const isNextEnabled = useCallback(() => {
     const currentSubTab = subTab[activeTab];
     const currentBlocks = getCurrentBlocks(activeTab, currentSubTab);
-    
+
     // For scenario blocks, no validation required - can be empty
     if (currentSubTab === "scenario") {
       // If there are blocks, they must be valid
       if (currentBlocks.length === 0) return true;
       return areAllBlocksValid(currentBlocks);
     }
-    
+
     // For evaluation blocks, apply minimum block requirements
     if (currentSubTab === "evaluation") {
       const minBlocks = activeTab === "SELLER" ? 3 : 1;
       if (currentBlocks.length < minBlocks) return false;
       return areAllBlocksValid(currentBlocks);
     }
-    
+
     return false;
   }, [activeTab, subTab, getCurrentBlocks, areAllBlocksValid]);
 
   // Check if create scenario button should be enabled (all roles must have required blocks)
   const isCreateScenarioEnabled = useCallback(() => {
     // Scenario blocks can be empty (will be skipped) or valid if they have blocks
-    const hasValidSellerScenario = sellerScenarioBlocks.length === 0 || areAllBlocksValid(sellerScenarioBlocks);
-    const hasValidBuyerScenario = buyerScenarioBlocks.length === 0 || areAllBlocksValid(buyerScenarioBlocks);
-    const hasValidModeratorScenario = moderatorScenarioBlocks.length === 0 || areAllBlocksValid(moderatorScenarioBlocks);
-    
+    const hasValidSellerScenario =
+      sellerScenarioBlocks.length === 0 ||
+      areAllBlocksValid(sellerScenarioBlocks);
+    const hasValidBuyerScenario =
+      buyerScenarioBlocks.length === 0 ||
+      areAllBlocksValid(buyerScenarioBlocks);
+    const hasValidModeratorScenario =
+      moderatorScenarioBlocks.length === 0 ||
+      areAllBlocksValid(moderatorScenarioBlocks);
+
     // Evaluation blocks have minimum requirements (always required)
-    const hasValidSellerEvaluation = sellerEvaluationBlocks.length >= 3 && areAllBlocksValid(sellerEvaluationBlocks);
-    const hasValidBuyerEvaluation = buyerEvaluationBlocks.length >= 1 && areAllBlocksValid(buyerEvaluationBlocks);
-    const hasValidModeratorEvaluation = moderatorEvaluationBlocks.length >= 1 && areAllBlocksValid(moderatorEvaluationBlocks);
+    const hasValidSellerEvaluation =
+      sellerEvaluationBlocks.length >= 3 &&
+      areAllBlocksValid(sellerEvaluationBlocks);
+    const hasValidBuyerEvaluation =
+      buyerEvaluationBlocks.length >= 1 &&
+      areAllBlocksValid(buyerEvaluationBlocks);
+    const hasValidModeratorEvaluation =
+      moderatorEvaluationBlocks.length >= 1 &&
+      areAllBlocksValid(moderatorEvaluationBlocks);
 
     const enabled =
       hasValidSellerScenario &&
@@ -862,30 +916,44 @@ export const AdminScenariosCreatePage = () => {
         data-scroll-container
       >
         <div className="flex flex-col pb-[calc(96px+env(safe-area-inset-bottom))] gap-6 px-2 min-h-full">
-          <Tabs value={activeTab} onValueChange={(value) => handleTabClick(value as "SELLER" | "BUYER" | "MODERATOR")}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              handleTabClick(value as "SELLER" | "BUYER" | "MODERATOR")
+            }
+          >
             <div className="sticky top-0 bg-white z-50">
-              <TabsList
-                variant="second"
-                className="grid grid-cols-3 w-full"
-              >
-                <TabsTrigger 
-                  variant="second" 
+              <TabsList variant="second" className="grid grid-cols-3 w-full">
+                <TabsTrigger
+                  variant="second"
                   value="SELLER"
-                  className={activeTab !== "SELLER" && !clickableTabs.SELLER ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={
+                    activeTab !== "SELLER" && !clickableTabs.SELLER
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 >
                   {getRoleLabel("SELLER")}
                 </TabsTrigger>
-                <TabsTrigger 
-                  variant="second" 
+                <TabsTrigger
+                  variant="second"
                   value="BUYER"
-                  className={activeTab !== "BUYER" && !clickableTabs.BUYER ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={
+                    activeTab !== "BUYER" && !clickableTabs.BUYER
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 >
                   {getRoleLabel("BUYER")}
                 </TabsTrigger>
-                <TabsTrigger 
-                  variant="second" 
+                <TabsTrigger
+                  variant="second"
                   value="MODERATOR"
-                  className={activeTab !== "MODERATOR" && !clickableTabs.MODERATOR ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={
+                    activeTab !== "MODERATOR" && !clickableTabs.MODERATOR
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 >
                   {getRoleLabel("MODERATOR")}
                 </TabsTrigger>
@@ -898,8 +966,19 @@ export const AdminScenariosCreatePage = () => {
             >
               <div className="overflow-visible min-h-0 space-y-4">
                 {/* Sub-tabs for Scenario and Evaluation */}
-                <Tabs value={subTab.SELLER} onValueChange={(value) => setSubTab(prev => ({ ...prev, SELLER: value as "scenario" | "evaluation" }))}>
-                  <TabsList variant="second" className="grid grid-cols-2 w-full">
+                <Tabs
+                  value={subTab.SELLER}
+                  onValueChange={(value) =>
+                    setSubTab((prev) => ({
+                      ...prev,
+                      SELLER: value as "scenario" | "evaluation",
+                    }))
+                  }
+                >
+                  <TabsList
+                    variant="second"
+                    className="grid grid-cols-2 w-full"
+                  >
                     <TabsTrigger variant="second" value="scenario">
                       Сценарная часть
                     </TabsTrigger>
@@ -950,8 +1029,19 @@ export const AdminScenariosCreatePage = () => {
                     </p>
                   </div>
                 ) : (
-                  <Tabs value={subTab.BUYER} onValueChange={(value) => setSubTab(prev => ({ ...prev, BUYER: value as "scenario" | "evaluation" }))}>
-                    <TabsList variant="second" className="grid grid-cols-2 w-full">
+                  <Tabs
+                    value={subTab.BUYER}
+                    onValueChange={(value) =>
+                      setSubTab((prev) => ({
+                        ...prev,
+                        BUYER: value as "scenario" | "evaluation",
+                      }))
+                    }
+                  >
+                    <TabsList
+                      variant="second"
+                      className="grid grid-cols-2 w-full"
+                    >
                       <TabsTrigger variant="second" value="scenario">
                         Сценарная часть
                       </TabsTrigger>
@@ -1003,8 +1093,19 @@ export const AdminScenariosCreatePage = () => {
                     </p>
                   </div>
                 ) : (
-                  <Tabs value={subTab.MODERATOR} onValueChange={(value) => setSubTab(prev => ({ ...prev, MODERATOR: value as "scenario" | "evaluation" }))}>
-                    <TabsList variant="second" className="grid grid-cols-2 w-full">
+                  <Tabs
+                    value={subTab.MODERATOR}
+                    onValueChange={(value) =>
+                      setSubTab((prev) => ({
+                        ...prev,
+                        MODERATOR: value as "scenario" | "evaluation",
+                      }))
+                    }
+                  >
+                    <TabsList
+                      variant="second"
+                      className="grid grid-cols-2 w-full"
+                    >
                       <TabsTrigger variant="second" value="scenario">
                         Сценарная часть
                       </TabsTrigger>
@@ -1031,7 +1132,9 @@ export const AdminScenariosCreatePage = () => {
                         onAdd={onAddModerator}
                         onRemove={onRemoveModerator}
                         onDataChange={onDataChangeModerator}
-                        showValidation={validationTriggered.MODERATOR_evaluation}
+                        showValidation={
+                          validationTriggered.MODERATOR_evaluation
+                        }
                         touchedBlocks={touchedBlocks.MODERATOR_evaluation}
                       />
                       {moderatorEvaluationBlocks.length < 1 && (
